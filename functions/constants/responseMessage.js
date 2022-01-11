@@ -41,4 +41,7 @@ module.exports = {
 
   // 인증
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
+
+  // 전공 목록 조회
+  READ_ALL_MAJORS_SUCCESS: "해당 학교의 학과 목록 조회 성공",
 };
