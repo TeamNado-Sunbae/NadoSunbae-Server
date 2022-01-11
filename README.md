@@ -225,10 +225,9 @@ ex) [FEAT] implement postGET
 ### 💻 Current Progress
 (추가 예정)
 <br>
-<br>
 
 ### 👩🏻‍💻 Developers   
 | 변주현 | 김은지 | 설지원 |
 | :---: | :---: | :---: |
-|<img src="주현.png" width="150px" height="150px" />|<img src ="은지.png" width = "150px" height="150px" />|<img src ="지원.png" width = "150px" height="150px" />|
+|<img src="https://user-images.githubusercontent.com/58043306/148938342-8ebcff6f-3ea1-49d9-987f-8a6d446ff51f.png" width="150px" height="150px" />|<img src ="은지.png" width = "150px" height="150px" />|<img src ="https://user-images.githubusercontent.com/58043306/148938443-f8e66386-0dc4-4889-9168-2c3b4d8c4776.png" width = "150px" height="150px" />|
 |[wngus4296](https://github.com/wngus4296)|[eunji8784](https://github.com/eunji8784)|[seoljiwon](https://github.com/seoljiwon)| 
