@@ -57,11 +57,9 @@ module.exports = functions
       "[api]",
       `[${req.method.toUpperCase()}]`,
       req.originalUrl,
-      `[${req.method}] ${!!req.user ? `${req.user.id}` : ``} ${
-        req.originalUrl
-      }\n ${!!req.query && `query: ${JSON.stringify(req.query)}`} ${
-        !!req.params && `params ${JSON.stringify(req.params)}`
-      }`
+      `[${req.method}] ${!!req.user ? `${req.user.id}` : ``} ${req.originalUrl}\n ${
+        !!req.query && `query: ${JSON.stringify(req.query)}`
+      } ${!!req.params && `params ${JSON.stringify(req.params)}`}`,
     );
 
     // 맨 위에 선언된 express app 객체를 리턴.
