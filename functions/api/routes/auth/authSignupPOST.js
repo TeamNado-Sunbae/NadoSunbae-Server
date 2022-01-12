@@ -24,10 +24,10 @@ module.exports = async (req, res) => {
     !email ||
     !nickname ||
     !password ||
-    (!universityId && universityId !== 0) ||
-    (!firstMajorId && firstMajorId !== 0) ||
+    !universityId ||
+    !firstMajorId ||
     !firstMajorStart ||
-    (!secondMajorId && secondMajorId !== 0) ||
+    !secondMajorId ||
     !secondMajorStart
   ) {
     return res
@@ -75,7 +75,7 @@ module.exports = async (req, res) => {
     // RDS DB에 유저 생성
     const firebaseId = userFirebase.uid;
 
-    let user = await userDB.addUser(
+    let user = await userDB.createUser(
       client,
       email,
       nickname,
