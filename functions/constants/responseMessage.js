@@ -3,7 +3,7 @@ module.exports = {
   OUT_OF_VALUE: "파라미터 값이 잘못되었습니다",
 
   // 회원가입
-  CREATED_USER: "회원 가입 성공",
+  CREATE_USER: "회원 가입 성공",
   DELETE_USER: "회원 탈퇴 성공",
   ALREADY_EMAIL: "이미 사용중인 이메일입니다.",
 
