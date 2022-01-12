@@ -10,13 +10,13 @@ const options = {
   issuer: "nadoSunbae",
 };
 
-// id, email, name, idFirebase가 담긴 JWT를 발급합니다.
+// id, email, name, firebaseId가 담긴 JWT를 발급합니다.
 const sign = (user) => {
   const payload = {
     id: user.id,
     email: user.email,
-    name: user.name || null,
-    idFirebase: user.idFirebase,
+    nickname: user.nickname || null,
+    firebaseId: user.firebaseId,
   };
 
   const result = {
