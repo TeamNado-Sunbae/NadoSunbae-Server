@@ -35,6 +35,19 @@ const createUser = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getUserByUserId = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+      SELECT * FROM "user"
+      WHERE id = $1
+      AND is_deleted = false
+      `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   createUser,
+  getUserByUserId,
 };
