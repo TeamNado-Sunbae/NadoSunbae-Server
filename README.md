@@ -25,7 +25,7 @@
 <br>
 
 ### 🦴 ERD
-<img width="788" alt="nadosunbaeERD" src="https://user-images.githubusercontent.com/58043306/148933131-84df0aaf-cdf6-4b05-b6a1-727585a047e7.png">
+<img width="1424" alt="nadosunbaeERD" src="https://user-images.githubusercontent.com/58043306/149092387-44833862-ce60-45ff-85ad-c610cd91fac7.png">
 <br>
 
 ### 📌 Branch Strategy
@@ -223,7 +223,7 @@ ex) [FEAT] implement postGET
 
 ### 💻 Current Progress
 <details>
-<summary>api 구현</summary>
+<summary>API 구현 담당 및 완료 여부</summary>
 <div markdown="1">  
 
 | 기능명 | 담당자 | 완료 여부 |
