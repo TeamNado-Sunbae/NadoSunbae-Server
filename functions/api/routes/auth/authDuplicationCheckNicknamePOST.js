@@ -8,20 +8,22 @@ const { userDB } = require("../../../db");
 module.exports = async (req, res) => {
   const { nickname } = req.body;
 
-  if (!nickname)
+  if (!nickname) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+  }
 
   let client;
 
   try {
     client = await db.connect(req);
     const user = await userDB.getUserByNickname(client, nickname);
-    if (user)
+    if (user) {
       return res
         .status(statusCode.CONFLICT)
         .send(util.fail(statusCode.CONFLICT, responseMessage.ALREADY_NICKNAME));
+    }
 
     res
       .status(statusCode.OK)
