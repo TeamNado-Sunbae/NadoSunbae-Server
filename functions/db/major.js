@@ -1,14 +1,16 @@
 const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const getMajorsByUniversityId = async (client, universityId) => {
+const getMajorsByUniversityId = async (client, universityId, isFirstMajor, isSecondMajor) => {
   const { rows } = await client.query(
     `
-    SELECT id as major_id, major_name FROM "major" m
+    SELECT id as major_id, major_name, is_first_major, is_second_major FROM "major" m
     WHERE m.university_id = $1
+    AND m.is_first_major = $2
+    AND m.is_second_major = $3
     AND is_deleted = false
         `,
-    [universityId],
+    [universityId, isFirstMajor, isSecondMajor],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };

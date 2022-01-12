@@ -7,7 +7,9 @@ const { majorDB } = require("../../../db");
 
 module.exports = async (req, res) => {
   const { universityId } = req.params;
-  if (!universityId)
+  const filter = req.query;
+
+  if ((!universityId && universityId !== 0) || !filter)
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -17,7 +19,14 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const majorList = await majorDB.getMajorsByUniversityId(client, universityId);
+    let majorList;
+    if (filter === "all") {
+      majorList = await majorDB.getMajorsByUniversityId(client, universityId, true, true);
+    } else if (filter === "firstMajor") {
+      majorList = await majorDB.getMajorsByUniversityId(client, universityId, true, false);
+    } else {
+      majorList = await majorDB.getMajorsByUniversityId(client, universityId, false, false);
+    }
     if (!majorList)
       return res
         .status(statusCode.BAD_REQUEST)
