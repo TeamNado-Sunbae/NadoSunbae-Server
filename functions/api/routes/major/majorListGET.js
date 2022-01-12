@@ -7,7 +7,7 @@ const { majorDB } = require("../../../db");
 
 module.exports = async (req, res) => {
   const { universityId } = req.params;
-  const filter = req.query;
+  const { filter } = req.query;
 
   if ((!universityId && universityId !== 0) || !filter) {
     return res
@@ -28,6 +28,7 @@ module.exports = async (req, res) => {
     } else {
       majorList = await majorDB.getMajorsByUniversityId(client, universityId, false, false);
     }
+
     if (!majorList) {
       return res
         .status(statusCode.BAD_REQUEST)
