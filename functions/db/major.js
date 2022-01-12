@@ -9,10 +9,21 @@ const getMajorsByUniversityId = async (client, universityId, isFirstMajor, isSec
     AND m.is_first_major = $2
     AND m.is_second_major = $3
     AND is_deleted = false
-        `,
+    `,
     [universityId, isFirstMajor, isSecondMajor],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-module.exports = { getMajorsByUniversityId };
+const getDataByMajorId = async (client, majorId) => {
+  const { rows } = await client.query(
+    `
+    SELECT major_name, homepage, subject_table FROM "major" m
+    WHERE m.id = $1
+    `,
+    [majorId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
+module.exports = { getMajorsByUniversityId, getDataByMajorId };
