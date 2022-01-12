@@ -9,10 +9,11 @@ module.exports = async (req, res) => {
   const { universityId } = req.params;
   const filter = req.query;
 
-  if ((!universityId && universityId !== 0) || !filter)
+  if ((!universityId && universityId !== 0) || !filter) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+  }
 
   let client;
 
@@ -27,10 +28,11 @@ module.exports = async (req, res) => {
     } else {
       majorList = await majorDB.getMajorsByUniversityId(client, universityId, false, false);
     }
-    if (!majorList)
+    if (!majorList) {
       return res
         .status(statusCode.BAD_REQUEST)
-        .sned(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+    }
 
     res
       .status(statusCode.OK)
