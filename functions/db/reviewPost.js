@@ -39,4 +39,31 @@ const createReviewPost = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-module.exports = { createReviewPost };
+const deleteReviewPost = async (client, postId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE review_post
+    SET is_deleted = TRUE, updated_at = now()
+    WHERE id = $1
+    RETURNING *
+    `,
+    [postId],
+  );
+
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+const getReviewPostByPostId = async (client, postId) => {
+  const { rows } = await client.query(
+    `
+      SELECT * 
+      FROM review_post
+      WHERE id = $1
+        AND is_deleted = false
+      `,
+    [postId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+module.exports = { createReviewPost, deleteReviewPost, getReviewPostByPostId };
