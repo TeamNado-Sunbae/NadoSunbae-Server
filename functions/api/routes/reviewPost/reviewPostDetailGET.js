@@ -29,60 +29,38 @@ module.exports = async (req, res) => {
     let post = await reviewPostDB.getReviewPostByPostId(client, postId);
     let likeCount = await likeDB.getLikeCountByPostId(client, postId, 1);
     let isLiked = await likeDB.getLikeByPostId(client, postId, 1, 1); // 마지막 1 나중에 req.user.id로 넣기!!!
-    const userId = post.writerId;
-    let writer = await userDB.getUserByUserId(client, userId);
-    const firstMajorId = writer.firstMajorId;
-    const secondMajorId = writer.secondMajorId;
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, secondMajorId);
+    const writerId = post.writerId;
+    let writer = await userDB.getUserByUserId(client, writerId);
+    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
+    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
     const imageId = post.backgroundImageId;
     let imageUrl = await imageDB.getImageUrlByImageId(client, imageId);
+
     let contentList = [];
-    let i = 1;
-
-    contentList[0] = {
-      title: reviewPostContent.PROS_CONS,
-      content: post.prosCons,
-    };
-
-    if (post.curriculum) {
-      contentList[i] = {
-        title: reviewPostContent.CURRICULUM,
-        content: post.curriculum,
-      };
-      i++;
-    }
-
-    if (post.recommend_lecture) {
-      contentList[i] = {
-        title: reviewPostContent.RECOMMEND_LECTURE,
-        content: post.recommend_lecture,
-      };
-      i++;
-    }
-
-    if (post.non_recommend_lecture) {
-      contentList[i] = {
-        title: reviewPostContent.NON_RECOMMEND_LECTURE,
-        content: post.non_recommend_lecture,
-      };
-      i++;
-    }
-
-    if (post.career) {
-      contentList[i] = {
-        title: reviewPostContent.CAREER,
-        content: post.career,
-      };
-      i++;
-    }
-
-    if (post.tip) {
-      contentList[i] = {
-        title: reviewPostContent.TIP,
-        content: post.tip,
-      };
-      i++;
+    let content = [
+      post.prosCons,
+      post.curriculum,
+      post.career,
+      post.recommendLecture,
+      post.nonRecommendLecture,
+      post.tip,
+    ];
+    let tagName = [
+      reviewPostContent.CURRICULUM,
+      reviewPostContent.CAREER,
+      reviewPostContent.RECOMMEND_LECTURE,
+      reviewPostContent.NON_RECOMMEND_LECTURE,
+      reviewPostContent.TIP,
+    ];
+    let j = 0;
+    for (let i = 0; i < tagName.length; i++) {
+      if (content[i]) {
+        contentList[j] = {
+          title: tagName[i],
+          content: content[i],
+        };
+        j++;
+      }
     }
 
     const backgroundImage = {
