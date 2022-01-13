@@ -44,6 +44,15 @@ module.exports = {
   // 인증
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
 
+  // 전공 목록 조회
+  READ_ALL_MAJORS_SUCCESS: "해당 학교의 학과 목록 조회 성공",
+
   // 해당 전공 데이터 조회
   READ_ONE_MAJOR_SUCCESS: "해당 학과 정보 가져오기 성공",
+
+  // 필터값 오류
+  INCORRECT_FILTER: "필터값이 잘못되었습니다.",
+
+  // 데이터 없음
+  NO_CONTENT: "찾는 데이터가 없습니다.",
 };
