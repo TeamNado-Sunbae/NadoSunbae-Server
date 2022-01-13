@@ -3,6 +3,7 @@ const router = express.Router();
 
 router.use("/auth", require("./auth"));
 router.use("/review-post", require("./reviewPost"));
+router.use("/classroom-post", require("./classroomPost"));
 router.use("/major", require("./major"));
 
 module.exports = router;
