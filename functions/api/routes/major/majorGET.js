@@ -3,12 +3,12 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB } = require("../../../db");
+const { majorDB } = require("../../../db");
 
 module.exports = async (req, res) => {
-  const { nickname } = req.body;
+  const { majorId } = req.params;
 
-  if (!nickname) {
+  if (!majorId) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -18,16 +18,17 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
-    const user = await userDB.getUserByNickname(client, nickname);
-    if (user) {
+
+    const majorData = await majorDB.getMajorByMajorId(client, majorId);
+    if (!majorData) {
       return res
-        .status(statusCode.CONFLICT)
-        .send(util.fail(statusCode.CONFLICT, responseMessage.ALREADY_NICKNAME));
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
     }
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.AVAILABLE_NICKNAME, nickname));
+      .send(util.success(statusCode.OK, responseMessage.READ_ONE_MAJOR_SUCCESS, majorData));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
