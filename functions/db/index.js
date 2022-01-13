@@ -3,7 +3,7 @@ module.exports = {
   userDB: require("./user"),
   //   universityDB: require("./university"),
   majorDB: require("./major"),
-  //   reviewPostDB: require("./reviewPost"),
+  reviewPostDB: require("./reviewPost"),
   //   classroomPostDB: require("./classroomPost"),
   //   postTypeDB: require("./postType"),
   //   tagDB: require("./tag"),
