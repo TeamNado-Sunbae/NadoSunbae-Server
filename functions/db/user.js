@@ -46,20 +46,73 @@ const createUser = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const updateUserByIsReviewed = async (client, isReviewed, userId) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM "user"
+    WHERE id = $1
+    AND is_deleted = FALSE
+    `,
+    [userId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const data = _.merge({}, convertSnakeToCamel.keysToCamel(existingRows[0]), { isReviewed });
+
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET is_reviewed = $1, updated_at = now()
+    WHERE id = $2
+    RETURNING *
+    `,
+    [data.isReviewed, userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+const getUserByFirstMajorId = async (client, majorId) => {
+  const { rows } = await client.query(
+    `
+      SELECT * FROM "user"
+      WHERE first_major_id = $1
+      AND is_deleted = FALSE
+      `,
+    [majorId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const getUserByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
       SELECT * FROM "user"
       WHERE id = $1
-      AND is_deleted = false
+      AND is_deleted = FALSE
       `,
     [userId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getUserByFirebaseId = async (client, firebaseId) => {
+  const { rows } = await client.query(
+    `
+    SELECT * FROM "user" u
+    WHERE firebase_id = $1
+      AND is_deleted = FALSE
+    `,
+    [firebaseId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   createUser,
-  getUserByUserId,
   getUserByNickname,
+  updateUserByIsReviewed,
+  getUserByFirstMajorId,
+  getUserByUserId,
+  getUserByFirebaseId,
 };
