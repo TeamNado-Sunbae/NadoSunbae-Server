@@ -8,7 +8,7 @@ const getUserByNickname = async (client, nickname) => {
       WHERE nickname = $1
       `,
     [nickname],
-    );
+  );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
@@ -46,7 +46,20 @@ const createUser = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getUserByFirebaseId = async (client, firebaseId) => {
+  const { rows } = await client.query(
+    `
+    SELECT * FROM "user" u
+    WHERE firebase_id = $1
+      AND is_deleted = FALSE
+    `,
+    [firebaseId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
-  createUser, 
+  createUser,
   getUserByNickname,
+  getUserByFirebaseId,
 };
