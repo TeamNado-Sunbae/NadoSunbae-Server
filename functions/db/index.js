@@ -6,7 +6,7 @@ module.exports = {
   reviewPostDB: require("./reviewPost"),
   //   classroomPostDB: require("./classroomPost"),
   // postTypeDB: require("./postType"),
-  //   tagDB: require("./tag"),
+  tagDB: require("./tag"),
   //   relationReviewPostTagDB: require("./relationReviewPostTag"),
   likeDB: require("./like"),
   imageDB: require("./image"),
