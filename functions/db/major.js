@@ -13,6 +13,16 @@ const getMajorNameByMajorId = async (client, majorId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-module.exports = {
-  getMajorNameByMajorId,
+const getMajorByMajorId = async (client, majorId) => {
+  const { rows } = await client.query(
+    `
+    SELECT major_name, homepage, subject_table FROM "major" m
+    WHERE m.id = $1
+    AND is_deleted = false
+    `,
+    [majorId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
 };
+
+module.exports = { getMajorByMajorId, getMajorNameByMajorId, };
