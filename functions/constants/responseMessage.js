@@ -46,4 +46,7 @@ module.exports = {
 
   // 해당 전공 데이터 조회
   READ_ONE_MAJOR_SUCCESS: "해당 학과 정보 가져오기 성공",
+
+  // 이미지
+  READ_BACKGROUND_IMAGE_SUCCESS: "후기 배경 이미지 리스트 조회 성공",
 };
