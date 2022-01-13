@@ -1,6 +1,7 @@
 module.exports = {
   NULL_VALUE: "필요한 값이 없습니다",
   OUT_OF_VALUE: "파라미터 값이 잘못되었습니다",
+  NO_RELATION: "존재하지 않는 릴레이션입니다.",
 
   // 회원가입
   CREATE_USER: "회원 가입 성공",
@@ -43,6 +44,7 @@ module.exports = {
 
   // 인증
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
+  FORBIDDEN_ACCESS: "사용 권한이 없습니다.",
 
   // 해당 전공 데이터 조회
   READ_ONE_MAJOR_SUCCESS: "해당 학과 정보 가져오기 성공",
