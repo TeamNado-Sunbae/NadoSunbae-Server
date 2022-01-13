@@ -49,4 +49,7 @@ module.exports = {
 
   // 해당 전공 데이터 조회
   READ_ONE_MAJOR_SUCCESS: "해당 학과 정보 가져오기 성공",
+
+  // 필터값 오류
+  INCORRECT_FILTER: "필터값이 잘못되었습니다.",
 };
