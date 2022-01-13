@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
     const backgroundImages = await imageDB.getReviewPostBackgroundImages(client);
     if (!backgroundImages) {
       return res
-        .status(statusCode.BAD_REQUEST)
+        .status(statusCode.NO_CONTENT)
         .send(util.fail(statusCode.NO_CONTENT, responseMessage.NULL_VALUE));
     }
 
