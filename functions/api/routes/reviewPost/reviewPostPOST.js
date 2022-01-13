@@ -75,21 +75,18 @@ module.exports = async (req, res) => {
     // curriculum, recommendLecture, nonRecommendLecture, career, tip 중 정보를 작성한 항목은 태그 검색되도록 relationReviewPostTag 생성
     let content = [curriculum, career, recommendLecture, nonRecommendLecture, tip];
     let tagName = [CURRICULUM, CAREER, RECOMMEND_LECTURE, NON_RECOMMEND_LECTURE, TIP];
-    let tagByTagName = [];
-    let j = 0;
+    let tagByTagName;
+    let relationReviewPostTag;
+
     for (let i = 0; i < tagName.length; i++) {
       if (content[i]) {
-        tagByTagName[j] = await tagDB.getTagByTagName(client, tagName[i]);
-        j++;
+        tagByTagName = await tagDB.getTagByTagName(client, tagName[i]);
+        relationReviewPostTag = await relationReviewPostTagDB.createRelationReviewPostTag(
+          client,
+          reviewPost.id,
+          tagByTagName.id,
+        );
       }
-    }
-
-    for (let i = 0; i < tagByTagName.length; i++) {
-      await relationReviewPostTagDB.createRelationReviewPostTag(
-        client,
-        reviewPost.id,
-        tagByTagName[i].id,
-      );
     }
 
     // reviewPost를 작성한 writer는 isReviewed를 true로 업데이트
@@ -99,14 +96,13 @@ module.exports = async (req, res) => {
     let contentList = [];
     content = [prosCons, curriculum, career, recommendLecture, nonRecommendLecture, tip];
     tagName = [PROS_CONS, CURRICULUM, CAREER, RECOMMEND_LECTURE, NON_RECOMMEND_LECTURE, TIP];
-    j = 0;
+
     for (let i = 0; i < tagName.length; i++) {
       if (content[i]) {
-        contentList[j] = {
+        contentList.push({
           title: tagName[i],
           content: content[i],
-        };
-        j++;
+        });
       }
     }
 
