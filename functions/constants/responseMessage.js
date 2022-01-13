@@ -55,4 +55,7 @@ module.exports = {
 
   // 데이터 없음
   NO_CONTENT: "찾는 데이터가 없습니다.",
+
+  // 신고 성공
+  REPORT_SUCCESS: "신고 성공",
 };
