@@ -7,6 +7,7 @@ const getLikeCountByPostId = async (client, postId, postTypeId) => {
         SELECT count(*) AS like_count FROM "like"
         WHERE post_id = $1 
         AND post_type_id = $2
+        AND is_liked = true
         `,
     [postId, postTypeId],
   );
