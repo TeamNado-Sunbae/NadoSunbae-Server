@@ -19,7 +19,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const majorData = await majorDB.getDataByMajorId(client, majorId);
+    const majorData = await majorDB.getMajorByMajorId(client, majorId);
     if (!majorData) {
       return res
         .status(statusCode.BAD_REQUEST)
