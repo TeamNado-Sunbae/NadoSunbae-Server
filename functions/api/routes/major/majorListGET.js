@@ -25,8 +25,12 @@ module.exports = async (req, res) => {
       majorList = await majorDB.getMajorsByUniversityId(client, universityId, true, true);
     } else if (filter === "firstMajor") {
       majorList = await majorDB.getMajorsByUniversityId(client, universityId, true, false);
-    } else {
+    } else if (filter === "secondMajor") {
       majorList = await majorDB.getMajorsByUniversityId(client, universityId, false, true);
+    } else {
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.NO_CONTENT, responseMessage.NULL_VALUE));
     }
 
     if (!majorList) {
