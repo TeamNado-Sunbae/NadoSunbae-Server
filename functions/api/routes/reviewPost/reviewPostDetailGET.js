@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
     // 빌려온 connection을 사용해 우리가 db/[파일].js에서 미리 정의한 SQL 쿼리문을 날려줍니다.
     let post = await reviewPostDB.getReviewPostByPostId(client, postId);
     let likeCount = await likeDB.getLikeCountByPostId(client, postId, 1);
-    let isLiked = await likeDB.getLikeByPostId(client, postId, 1, 1); // 마지막 1 나중에 req.user.id로 넣기!!!
+    let Like = await likeDB.getLikeByPostId(client, postId, 1, 1); // 마지막 1 나중에 req.user.id로 넣기!!!
     const writerId = post.writerId;
     let writer = await userDB.getUserByUserId(client, writerId);
     const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
@@ -46,20 +46,20 @@ module.exports = async (req, res) => {
       post.tip,
     ];
     let tagName = [
+      reviewPostContent.PROS_CONS,
       reviewPostContent.CURRICULUM,
       reviewPostContent.CAREER,
       reviewPostContent.RECOMMEND_LECTURE,
       reviewPostContent.NON_RECOMMEND_LECTURE,
       reviewPostContent.TIP,
     ];
-    let j = 0;
+
     for (let i = 0; i < tagName.length; i++) {
       if (content[i]) {
-        contentList[j] = {
+        contentList.push({
           title: tagName[i],
           content: content[i],
-        };
-        j++;
+        });
       }
     }
 
@@ -86,8 +86,16 @@ module.exports = async (req, res) => {
       isReviewd: writer.isReviewed,
     };
 
+    if (!Like) {
+      const like = {
+        isLiked: false,
+        likeCount: likeCount.likeCount,
+      };
+      return like;
+    }
+
     const like = {
-      isLiked: isLiked.isLiked,
+      isLiked: Like.isLiked,
       likeCount: likeCount.likeCount,
     };
 
