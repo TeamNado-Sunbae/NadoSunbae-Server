@@ -46,4 +46,7 @@ module.exports = {
 
   // 전공 목록 조회
   READ_ALL_MAJORS_SUCCESS: "해당 학교의 학과 목록 조회 성공",
+
+  // 해당 전공 데이터 조회
+  READ_ONE_MAJOR_SUCCESS: "해당 학과 정보 가져오기 성공",
 };
