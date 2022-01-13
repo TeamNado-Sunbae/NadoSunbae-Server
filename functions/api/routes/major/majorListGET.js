@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
   const { universityId } = req.params;
   const { filter } = req.query;
 
-  if ((!universityId && universityId !== 0) || !filter) {
+  if (!universityId || !filter) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
