@@ -43,4 +43,7 @@ module.exports = {
 
   // 인증
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
+
+  // 해당 전공 데이터 조회
+  READ_ONE_MAJOR_SUCCESS: "해당 학과 정보 가져오기 성공",
 };
