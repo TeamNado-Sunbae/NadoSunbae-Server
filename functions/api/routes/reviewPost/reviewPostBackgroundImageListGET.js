@@ -13,9 +13,11 @@ module.exports = async (req, res) => {
 
     const backgroundImages = await imageDB.getReviewPostBackgroundImages(client);
     if (!backgroundImages) {
-      return res
-        .status(statusCode.NO_CONTENT)
-        .send(util.fail(statusCode.NO_CONTENT, responseMessage.NULL_VALUE));
+      return res.status(statusCode.NO_CONTENT).send(
+        util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, {
+          backgroundImageList: backgroundImages,
+        }),
+      );
     }
 
     res.status(statusCode.OK).send(
