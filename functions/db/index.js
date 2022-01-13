@@ -10,5 +10,5 @@ module.exports = {
   relationReviewPostTagDB: require("./relationReviewPostTag"),
   //   likeDB: require("./like"),
   imageDB: require("./image"),
-  //   commentDB: require("./comment"),
+  commentDB: require("./comment"),
 };
