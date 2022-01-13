@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reviewPostDB } = require("../../../db");
+const { imageDB } = require("../../../db");
 
 module.exports = async (req, res) => {
   let client;
@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const backgroundImages = await reviewPostDB.getReviewPostBackgroundImages(client);
+    const backgroundImages = await imageDB.getReviewPostBackgroundImages(client);
     if (!backgroundImages) {
       return res
         .status(statusCode.BAD_REQUEST)
