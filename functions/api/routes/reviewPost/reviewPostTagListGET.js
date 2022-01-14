@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let tagList = await tagDB.getTagList(client);
+    const tagList = await tagDB.getTagList(client);
 
     const data = { tagList: tagList };
 
