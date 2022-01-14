@@ -53,4 +53,7 @@ const createReviewPost = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-module.exports = { getReviewPostByPostId, createReviewPost, };
+module.exports = {
+  createReviewPost,
+  getReviewPostByPostId,
+};

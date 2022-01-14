@@ -23,4 +23,7 @@ const getTagByTagName = async (client, tagName) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-module.exports = { getTagList, getTagByTagName };
+module.exports = {
+  getTagByTagName,
+  getTagList,
+};
