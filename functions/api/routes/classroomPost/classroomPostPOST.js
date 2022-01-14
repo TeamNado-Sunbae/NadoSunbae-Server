@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
   if (writer.isReviewed == false) {
     return res
       .status(statusCode.FORBIDDEN)
-      .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWD_FALSE));
+      .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
   }
 
   let client;
