@@ -6,7 +6,7 @@ const getReviewPostBackgroundImages = async (client) => {
     `
     SELECT id as image_id, image_url FROM "image" i
     WHERE id
-    BETWEEN 6 AND 10
+    BETWEEN 6 AND 12
     `,
   );
   return convertSnakeToCamel.keysToCamel(rows);
