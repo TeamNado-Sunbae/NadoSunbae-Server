@@ -19,7 +19,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 유저 신고 횟수 정보 업데이트
+    // 댓글 신고 횟수 정보 업데이트
     const reportedComment = await commentDB.updateCommentByReport(client, commentId);
 
     if (!reportedComment) {
