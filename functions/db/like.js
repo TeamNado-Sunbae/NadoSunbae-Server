@@ -34,7 +34,7 @@ const createLikeByPostId = async (client, postId, postTypeId, userId) => {
     (post_id, post_type_id, user_id, is_liked)
     VALUES
     ($1, $2, $3, true)
-    RETURNING *
+    RETURNING post_id, is_liked
     `,
     [postId, postTypeId, userId],
   );
@@ -45,7 +45,7 @@ const updateLikeByPostId = async (client, postId, postTypeId, userId) => {
   const { rows } = await client.query(
     `
     UPDATE "like"
-    SET is_liked = CASE
+    SET updated_at = now(), is_liked = CASE
     WHEN is_liked = true THEN false
     ELSE true
     END
