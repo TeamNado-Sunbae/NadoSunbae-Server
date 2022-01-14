@@ -12,6 +12,13 @@ module.exports = async (req, res) => {
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
 
+  // 후기 미작성자는 정보글 상세조회 불가
+  if (req.user.isReviewed === false) {
+    return res
+      .status(statusCode.FORBIDDEN)
+      .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
+  }
+
   let client;
 
   try {
