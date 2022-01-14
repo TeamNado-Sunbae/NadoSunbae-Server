@@ -33,6 +33,9 @@ module.exports = {
   DELETE_ONE_POST_SUCCESS: "포스트 삭제 성공",
   NO_POST: "존재하지 않는 포스트입니다.",
 
+  // 태그
+  READ_ALL_TAGS_SUCCESS: "후기 내용 태그 리스트 조회 성공",
+
   // 서버 내 오류
   INTERNAL_SERVER_ERROR: "서버 내 오류",
 
@@ -50,6 +53,9 @@ module.exports = {
 
   // 해당 전공 데이터 조회
   READ_ONE_MAJOR_SUCCESS: "해당 학과 정보 가져오기 성공",
+
+  // 이미지
+  READ_BACKGROUND_IMAGE_SUCCESS: "후기 배경 이미지 리스트 조회 성공",
 
   // 필터값 오류
   INCORRECT_FILTER: "필터값이 잘못되었습니다.",
