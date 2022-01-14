@@ -33,6 +33,9 @@ module.exports = {
   DELETE_ONE_POST_SUCCESS: "포스트 삭제 성공",
   NO_POST: "존재하지 않는 포스트입니다.",
 
+  // 댓글
+  CREATE_COMMENT_SUCCESS: "댓글 추가 성공",
+
   // 서버 내 오류
   INTERNAL_SERVER_ERROR: "서버 내 오류",
 
