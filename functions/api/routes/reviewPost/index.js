@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.post("/", checkUser, require("./reviewPostPOST"));
 router.get("/:postId", checkUser, require("./reviewPostDetailGET"));
-router.get("/tag/list", require("./reviewPostTagListGET"));
+router.get("/tag/list", checkUser, require("./reviewPostTagListGET"));
 router.get("/background-image/list", checkUser, require("./reviewPostBackgroundImageListGET"));
 
 module.exports = router;
