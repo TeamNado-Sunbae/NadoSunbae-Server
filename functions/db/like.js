@@ -27,7 +27,41 @@ const getLikeByPostId = async (client, postId, postTypeId, userId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const createLikeByPostId = async (client, postId, postTypeId, userId) => {
+  const { rows } = await client.query(
+    `
+    INSERT INTO "like"
+    (post_id, post_type_id, user_id, is_liked)
+    VALUES
+    ($1, $2, $3, true)
+    RETURNING *
+    `,
+    [postId, postTypeId, userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+const updateLikeByPostId = async (client, postId, postTypeId, userId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE "like"
+    SET is_liked = CASE
+    WHEN is_liked = true THEN false
+    ELSE true
+    END
+    WHERE post_id = $1
+    AND post_type_id = $2
+    AND user_id = $3
+    RETURNING post_id, is_liked
+    `,
+    [postId, postTypeId, userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   getLikeCountByPostId,
   getLikeByPostId,
+  createLikeByPostId,
+  updateLikeByPostId,
 };
