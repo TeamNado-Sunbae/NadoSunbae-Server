@@ -3,11 +3,11 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, majorDB } = require("../../../db");
+const { classroomPostDB, majorDB } = require("../../../db");
 
 module.exports = async (req, res) => {
   const { majorId, answererId, postTypeId, title, content } = req.body;
-  const writerId = req.user.id;
+  let writer = req.user;
 
   if (!majorId || !answererId || !postTypeId || !title || !content) {
     return res
@@ -22,18 +22,15 @@ module.exports = async (req, res) => {
     let post = await classroomPostDB.createPost(
       client,
       majorId,
-      writerId,
+      writer.id,
       answererId,
       postTypeId,
       title,
       content,
     );
 
-    const userId = post.writerId;
-    let writer = await userDB.getUserByUserId(client, userId);
     const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
     const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
-    console.log(firstMajorName);
 
     post = {
       postId: post.id,
