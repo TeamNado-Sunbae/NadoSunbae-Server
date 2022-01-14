@@ -17,6 +17,12 @@ module.exports = async (req, res) => {
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
   }
 
+  if (req.user.isReviewed === false) {
+    return res
+      .status(statusCode.FORBIDDEN)
+      .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
+  }
+
   let client;
 
   // 에러 트래킹을 위해 try / catch문을 사용합니다.
