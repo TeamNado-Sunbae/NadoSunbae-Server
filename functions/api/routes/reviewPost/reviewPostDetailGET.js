@@ -26,16 +26,30 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // 빌려온 connection을 사용해 우리가 db/[파일].js에서 미리 정의한 SQL 쿼리문을 날려줍니다.
+
+    // 후기글 정보 가져오기
     let post = await reviewPostDB.getReviewPostByPostId(client, postId);
+    // 현재 뷰어의 좋아요 정보 가져오기 (후기글의 postTypeId는 1 )
     let likeCount = await likeDB.getLikeCountByPostId(client, postId, 1);
-    let Like = await likeDB.getLikeByPostId(client, postId, 1, 1); // 마지막 1 나중에 req.user.id로 넣기!!!
+    let likeData = await likeDB.getLikeByPostId(client, postId, 1, req.user.id);
+    let isLiked;
+    if (!likeData) {
+      isLiked = false;
+    } else {
+      isLiked = likeData.isLiked;
+    }
+    console.log(isLiked);
+    // 후기글 작성자 정보 가져오기
     const writerId = post.writerId;
     let writer = await userDB.getUserByUserId(client, writerId);
     const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
     const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
+
+    // 후기글 배경 이미지 가져오기
     const imageId = post.backgroundImageId;
     let imageUrl = await imageDB.getImageUrlByImageId(client, imageId);
 
+    // 후기글 내용 리스트로 보여주기
     let contentList = [];
     let content = [
       post.prosCons,
@@ -77,6 +91,7 @@ module.exports = async (req, res) => {
 
     writer = {
       writerId: writer.id,
+      profileImageId: writer.profileImageId,
       nickname: writer.nickname,
       firstMajorName: firstMajorName.majorName,
       firstMajorStart: writer.firstMajorStart,
@@ -86,16 +101,8 @@ module.exports = async (req, res) => {
       isReviewd: writer.isReviewed,
     };
 
-    if (!Like) {
-      const like = {
-        isLiked: false,
-        likeCount: likeCount.likeCount,
-      };
-      return like;
-    }
-
     const like = {
-      isLiked: Like.isLiked,
+      isLiked: isLiked,
       likeCount: likeCount.likeCount,
     };
 
