@@ -44,7 +44,7 @@ module.exports = async (req, res) => {
     } else {
       isLiked = likeData.isLiked;
     }
-    console.log(isLiked);
+
     // 후기글 작성자 정보 가져오기
     const writerId = post.writerId;
     let writer = await userDB.getUserByUserId(client, writerId);
