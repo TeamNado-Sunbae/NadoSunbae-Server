@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
     if (!majorList) {
       return res
         .status(statusCode.NO_CONTENT)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NULL_VALUE, majorList));
+        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, majorList));
     }
 
     res
