@@ -33,6 +33,9 @@ module.exports = {
   DELETE_ONE_POST_SUCCESS: "포스트 삭제 성공",
   NO_POST: "존재하지 않는 포스트입니다.",
 
+  // 태그
+  READ_ALL_TAGS_SUCCESS: "후기 내용 태그 리스트 조회 성공",
+
   // 서버 내 오류
   INTERNAL_SERVER_ERROR: "서버 내 오류",
 
@@ -43,6 +46,7 @@ module.exports = {
 
   // 인증
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
+  IS_REVIEWED_FALSE: "후기글 미등록자입니다.",
 
   // 전공 목록 조회
   READ_ALL_MAJORS_SUCCESS: "해당 학교의 학과 목록 조회 성공",
