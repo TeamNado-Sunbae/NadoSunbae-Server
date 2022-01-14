@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
   }
 
-  if (postTypeId == 4) {
+  if (postTypeId === 4) {
     if (!answererId) {
       return res
         .status(statusCode.BAD_REQUEST)
@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
     }
   }
 
-  if (writer.isReviewed == false) {
+  if (writer.isReviewed === false) {
     return res
       .status(statusCode.FORBIDDEN)
       .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
