@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, likeDB, commentDB, postTypeDB } = require("../../../db");
+const { classroomPostDB, userDB, likeDB, commentDB } = require("../../../db");
 
 module.exports = async (req, res) => {
   const { postTypeId, majorId } = req.params;
@@ -28,10 +28,10 @@ module.exports = async (req, res) => {
     );
 
     // 해당 과에 정보 또는 질문 글이 없을 경우
-    if (!classroomPostList) {
+    if (classroomPostList.length === 0) {
       return res
         .status(statusCode.OK)
-        .send(util.success(statusCode.OK, responseMessage.NO_POST, classroomPostList));
+        .send(util.success(statusCode.OK, responseMessage.NO_CONTENT, classroomPostList));
     }
 
     classroomPostList = await Promise.all(
