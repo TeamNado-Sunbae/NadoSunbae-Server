@@ -30,14 +30,6 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 해당 글이 있는지 확인
-    const reviewPost = await reviewPostDB.getReviewPostByPostId(client, postId);
-    if (!reviewPost) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
-    }
-
     // 403 error는 클라에서 확인
 
     let updatedReviewPost = await reviewPostDB.updateReviewPost(
