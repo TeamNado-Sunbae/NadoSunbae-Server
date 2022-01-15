@@ -22,11 +22,11 @@ module.exports = async (req, res) => {
 
     let majorList;
     if (filter === "all") {
-      majorList = await majorDB.getMajorsByUniversityId(client, universityId, true, true);
+      majorList = await majorDB.getAllMajorsByUniversityId(client, universityId);
     } else if (filter === "firstMajor") {
-      majorList = await majorDB.getMajorsByUniversityId(client, universityId, true, false);
+      majorList = await majorDB.getFirstMajorsByUniversityId(client, universityId);
     } else if (filter === "secondMajor") {
-      majorList = await majorDB.getMajorsByUniversityId(client, universityId, false, true);
+      majorList = await majorDB.getSecondMajorsByUniversityId(client, universityId);
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
