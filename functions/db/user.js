@@ -91,6 +91,7 @@ const updateUserByReport = async (client, userId) => {
     UPDATE "user"
     SET report_count = report_count + 1, updated_at = now()
     WHERE id = $1
+    AND is_deleted = FALSE
     RETURNING *
     `,
     [userId],
