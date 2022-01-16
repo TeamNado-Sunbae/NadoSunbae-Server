@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
 const createReviewPost = async (
@@ -66,4 +67,8 @@ const getReviewPostByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-module.exports = { createReviewPost, deleteReviewPost, getReviewPostByPostId };
+module.exports = {
+  createReviewPost,
+  deleteReviewPost,
+  getReviewPostByPostId,
+};
