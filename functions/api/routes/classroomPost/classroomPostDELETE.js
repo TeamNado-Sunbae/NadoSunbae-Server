@@ -29,16 +29,6 @@ module.exports = async (req, res) => {
 
     // 게시글 삭제하기
     let deletedPost = await classroomPostDB.deleteClassroomPostByPostId(client, postId);
-    if (!deletedPost) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
-    }
-
-    deletedPost = {
-      postId: deletedPost.id,
-      isDeleted: deletedPost.isDeleted,
-    };
 
     res
       .status(statusCode.OK)
