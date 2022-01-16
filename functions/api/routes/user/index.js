@@ -2,7 +2,7 @@ const express = require("express");
 const { checkUser } = require("../../../middlewares/auth");
 const router = express.Router();
 
-router.post("/comment", checkUser, require("./reportCommentPOST"));
-router.post("/user", checkUser, require("./reportUserPOST"));
+router.get("/:userId", checkUser, require("./userMypageUserGET"));
+router.get("/list/major/:majorId", checkUser, require("./userListMajorGET"));
 
 module.exports = router;
