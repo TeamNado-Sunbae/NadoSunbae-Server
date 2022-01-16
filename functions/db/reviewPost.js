@@ -10,7 +10,7 @@ const getReviewPostByPostId = async (client, postId) => {
         AND is_deleted = false
       `,
     [postId],
-    );
+  );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
@@ -53,7 +53,32 @@ const createReviewPost = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const updatePostByReport = async (client, postId) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM review_post p
+    WHERE id = $1
+       AND is_deleted = FALSE
+    `,
+    [postId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const { rows } = await client.query(
+    `
+    UPDATE review_post p
+    SET report_count = report_count + 1, updated_at = now()
+    WHERE id = $1
+    RETURNING id as post_id, report_count
+    `,
+    [postId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   createReviewPost,
   getReviewPostByPostId,
+  updatePostByReport,
 };
