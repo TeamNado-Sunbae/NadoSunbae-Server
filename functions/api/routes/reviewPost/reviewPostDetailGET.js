@@ -17,6 +17,12 @@ module.exports = async (req, res) => {
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
   }
 
+  if (req.user.isReviewed === false) {
+    return res
+      .status(statusCode.FORBIDDEN)
+      .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
+  }
+  
   let client;
 
   // 에러 트래킹을 위해 try / catch문을 사용합니다.
@@ -26,16 +32,30 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // 빌려온 connection을 사용해 우리가 db/[파일].js에서 미리 정의한 SQL 쿼리문을 날려줍니다.
+
+    // 후기글 정보 가져오기
     let post = await reviewPostDB.getReviewPostByPostId(client, postId);
+    // 현재 뷰어의 좋아요 정보 가져오기 (후기글의 postTypeId는 1 )
     let likeCount = await likeDB.getLikeCountByPostId(client, postId, 1);
-    let isLiked = await likeDB.getLikeByPostId(client, postId, 1, 1); // 마지막 1 나중에 req.user.id로 넣기!!!
+    let likeData = await likeDB.getLikeByPostId(client, postId, 1, req.user.id);
+    let isLiked;
+    if (!likeData) {
+      isLiked = false;
+    } else {
+      isLiked = likeData.isLiked;
+    }
+
+    // 후기글 작성자 정보 가져오기
     const writerId = post.writerId;
     let writer = await userDB.getUserByUserId(client, writerId);
     const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
     const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
+
+    // 후기글 배경 이미지 가져오기
     const imageId = post.backgroundImageId;
     let imageUrl = await imageDB.getImageUrlByImageId(client, imageId);
 
+    // 후기글 내용 리스트로 보여주기
     let contentList = [];
     let content = [
       post.prosCons,
@@ -46,20 +66,20 @@ module.exports = async (req, res) => {
       post.tip,
     ];
     let tagName = [
+      reviewPostContent.PROS_CONS,
       reviewPostContent.CURRICULUM,
       reviewPostContent.CAREER,
       reviewPostContent.RECOMMEND_LECTURE,
       reviewPostContent.NON_RECOMMEND_LECTURE,
       reviewPostContent.TIP,
     ];
-    let j = 0;
+
     for (let i = 0; i < tagName.length; i++) {
       if (content[i]) {
-        contentList[j] = {
+        contentList.push({
           title: tagName[i],
           content: content[i],
-        };
-        j++;
+        });
       }
     }
 
@@ -77,6 +97,7 @@ module.exports = async (req, res) => {
 
     writer = {
       writerId: writer.id,
+      profileImageId: writer.profileImageId,
       nickname: writer.nickname,
       firstMajorName: firstMajorName.majorName,
       firstMajorStart: writer.firstMajorStart,
@@ -87,7 +108,7 @@ module.exports = async (req, res) => {
     };
 
     const like = {
-      isLiked: isLiked.isLiked,
+      isLiked: isLiked,
       likeCount: likeCount.likeCount,
     };
 

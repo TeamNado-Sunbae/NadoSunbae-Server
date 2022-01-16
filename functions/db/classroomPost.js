@@ -1,6 +1,18 @@
 const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
+const getClassroomPostByPostId = async (client, postId) => {
+  const { rows } = await client.query(
+    `
+      SELECT * FROM classroom_post
+      WHERE id = $1
+      AND is_deleted = false
+      `,
+    [postId],
+    );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const createPost = async (client, majorId, writerId, answererId, postTypeId, title, content) => {
   const { rows } = await client.query(
     `
@@ -16,5 +28,6 @@ const createPost = async (client, majorId, writerId, answererId, postTypeId, tit
 };
 
 module.exports = {
+  getClassroomPostByPostId,
   createPost,
 };
