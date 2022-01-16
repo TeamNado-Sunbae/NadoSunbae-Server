@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
   const { postTypeId, majorId } = req.params;
   const { sort } = req.query;
 
-  if (!postTypeId || !majorId) {
+  if (!postTypeId || !majorId || !sort) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
