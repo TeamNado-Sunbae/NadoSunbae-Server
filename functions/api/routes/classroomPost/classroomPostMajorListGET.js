@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
   }
 
-  if (postTypeId !== 2 || postTypeId !== 3 || postTypeId !== 4) {
+  if (postTypeId < 2 || postTypeId > 4) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_POSTTYPEID));
@@ -60,7 +60,7 @@ module.exports = async (req, res) => {
           createdAt: classroomPost.createdAt,
           writer: writer,
           likeCount: likeCount.likeCount,
-          commentCount: commentCount.count,
+          commentCount: commentCount.commentCount,
         };
       }),
     );
