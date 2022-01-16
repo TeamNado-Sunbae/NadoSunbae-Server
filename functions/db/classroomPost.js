@@ -1,4 +1,3 @@
-const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
 const deleteClassroomPostByPostId = async (client, postId) => {
@@ -11,10 +10,21 @@ const deleteClassroomPostByPostId = async (client, postId) => {
       `,
     [postId],
   );
-
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getClassroomPostListByUserId = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+      SELECT * FROM classroom_post
+      WHERE answerer_id = $1
+      AND is_deleted = false
+          `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+  
 const getClassroomPostByPostId = async (client, postId) => {
   const { rows } = await client.query(
     `
@@ -43,6 +53,7 @@ const createPost = async (client, majorId, writerId, answererId, postTypeId, tit
 
 module.exports = {
   deleteClassroomPostByPostId,
+  getClassroomPostListByUserId,
   getClassroomPostByPostId,
   createPost,
 };

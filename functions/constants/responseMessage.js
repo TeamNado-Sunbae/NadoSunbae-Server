@@ -1,6 +1,6 @@
 module.exports = {
   NULL_VALUE: "필요한 값이 없습니다",
-  OUT_OF_VALUE: "파라미터 값이 잘못되었습니다",
+  OUT_OF_VALUE: "요청한 값이 잘못되었습니다",
 
   // 회원가입
   CREATE_USER: "회원 가입 성공",
@@ -56,6 +56,7 @@ module.exports = {
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
   FORBIDDEN_ACCESS: "사용 권한이 없습니다.",
   IS_REVIEWED_FALSE: "후기글 미등록자입니다.",
+  FORBIDDEN_ACCESS: "사용 권한이 없습니다.",
 
   // 전공 목록 조회
   READ_ALL_MAJORS_SUCCESS: "해당 학교의 학과 목록 조회 성공",
@@ -72,4 +73,10 @@ module.exports = {
 
   // 데이터 없음
   NO_CONTENT: "찾는 데이터가 없습니다.",
+
+  // 좋아요
+  UPDATE_LIKE_SUCCESS: "포스트 좋아요 업데이트 성공",
+  
+  // 신고 성공
+  REPORT_SUCCESS: "신고 성공",
 };
