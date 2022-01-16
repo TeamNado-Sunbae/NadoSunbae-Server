@@ -19,7 +19,8 @@ const updateCommentByReport = async (client, commentId) => {
     `
       UPDATE "comment"
       SET report_count = report_count + 1, updated_at = now()
-      WHERE id = $1
+      WHERE id = $1     
+      AND is_deleted = FALSE
       RETURNING *
       `,
     [commentId],

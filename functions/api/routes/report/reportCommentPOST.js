@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     if (!reportedComment) {
       return res
         .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
     }
 
     const reportCount = reportedComment.reportCount;
