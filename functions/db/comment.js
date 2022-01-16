@@ -42,6 +42,7 @@ const deleteCommentByCommentId = async (client, commentId) => {
     UPDATE comment
     SET is_deleted = TRUE, updated_at = now()
     WHERE id = $1
+    AND is_deleted = false
     RETURNING id as comment_id, is_deleted
     `,
     [commentId],
