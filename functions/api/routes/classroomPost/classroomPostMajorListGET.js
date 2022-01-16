@@ -16,6 +16,12 @@ module.exports = async (req, res) => {
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
   }
 
+  if (postTypeId !== 2 || postTypeId !== 3 || postTypeId !== 4) {
+    return res
+      .status(statusCode.BAD_REQUEST)
+      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_POSTTYPEID));
+  }
+
   let client;
 
   try {
