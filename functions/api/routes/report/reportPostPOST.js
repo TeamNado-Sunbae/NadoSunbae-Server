@@ -23,10 +23,14 @@ module.exports = async (req, res) => {
 
     if (postTypeId === 1) {
       // 신고한 게시글이 후기글일 때
-      updatePost = await reviewPostDB.updatePostByReport(client, postId);
+      updatePost = await reviewPostDB.updateReviewPostByReport(client, postId);
+    } else if (postTypeId === 2 || postTypeId === 3 || postTypeId === 4) {
+      // 신고한 게시글이 과방글일 때 (postTypeId도 같이 넘기기)
+      updatePost = await classroomPostDB.updateClassroomPostByReport(client, postId, postTypeId);
     } else {
-      // 신고한 게시글이 과방글일 때 (이때는 postTypeId도 같이 넘겨줘야 함)
-      updatePost = await classroomPostDB.updatePostByReport(client, postId, postTypeId);
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
     }
 
     if (!updatePost) {
