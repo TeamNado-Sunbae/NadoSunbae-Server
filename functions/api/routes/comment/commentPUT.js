@@ -4,6 +4,7 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { commentDB, userDB, majorDB } = require("../../../db");
+const { response } = require("express");
 
 module.exports = async (req, res) => {
   const { commentId } = req.params;
@@ -21,6 +22,11 @@ module.exports = async (req, res) => {
 
     // 로그인 한 유저가 댓글 작성자가 아니면 403 error 반환
     const comment = await commentDB.getCommentByCommentId(client, commentId);
+    if (!comment) {
+      return res
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
+    }
 
     if (comment.writerId !== req.user.id) {
       return res
