@@ -135,6 +135,18 @@ const getUserByFirebaseId = async (client, firebaseId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getUsersByMajorId = async (client, majorId) => {
+  const { rows } = await client.query(
+    `
+    SELECT * FROM "user" u
+    WHERE (u.first_major_id = $1 OR u.second_major_id = $1)
+    AND is_deleted = false
+        `,
+    [majorId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createUser,
   getUserByNickname,
@@ -143,4 +155,5 @@ module.exports = {
   getUserByFirstMajorId,
   getUserByUserId,
   getUserByFirebaseId,
+  getUsersByMajorId,
 };
