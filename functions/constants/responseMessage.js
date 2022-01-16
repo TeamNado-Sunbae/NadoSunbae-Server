@@ -59,6 +59,7 @@ module.exports = {
 
   // 필터값 오류
   INCORRECT_FILTER: "필터값이 잘못되었습니다.",
+  INCORRECT_SORT: "정렬값이 잘못되었습니다.",
 
   // 데이터 없음
   NO_CONTENT: "찾는 데이터가 없습니다.",
