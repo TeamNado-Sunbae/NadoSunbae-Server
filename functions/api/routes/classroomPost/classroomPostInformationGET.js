@@ -25,7 +25,11 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     let classroomPost = await classroomPostDB.getClassroomPostByPostId(client, postId);
-
+    if (!classroomPost) {
+      return res
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
+    }
     // post 정보
     const post = {
       postId: classroomPost.id,
