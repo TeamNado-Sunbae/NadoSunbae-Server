@@ -9,7 +9,7 @@ const getClassroomPostByPostId = async (client, postId) => {
       AND is_deleted = false
       `,
     [postId],
-    );
+  );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
@@ -27,7 +27,33 @@ const createPost = async (client, majorId, writerId, answererId, postTypeId, tit
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const updatePostByReport = async (client, postId, postTypeId) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM classroom_post p
+    WHERE id = $1
+       AND post_type_id = $2
+       AND is_deleted = FALSE
+    `,
+    [postId, postTypeId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const { rows } = await client.query(
+    `
+    UPDATE classroom_post p
+    SET report_count = report_count + 1, updated_at = now()
+    WHERE id = $1
+    RETURNING id as post_id, report_count
+    `,
+    [postId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   getClassroomPostByPostId,
   createPost,
+  updatePostByReport,
 };
