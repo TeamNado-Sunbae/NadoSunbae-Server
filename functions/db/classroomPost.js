@@ -27,7 +27,7 @@ const createPost = async (client, majorId, writerId, answererId, postTypeId, tit
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const updatePostByReport = async (client, postId, postTypeId) => {
+const updateClassroomPostByReport = async (client, postId, postTypeId) => {
   const { rows: existingRows } = await client.query(
     `
     SELECT * FROM classroom_post p
@@ -45,6 +45,7 @@ const updatePostByReport = async (client, postId, postTypeId) => {
     UPDATE classroom_post p
     SET report_count = report_count + 1, updated_at = now()
     WHERE id = $1
+    AND is_deleted = FALSE
     RETURNING id as post_id, report_count
     `,
     [postId],
@@ -55,5 +56,5 @@ const updatePostByReport = async (client, postId, postTypeId) => {
 module.exports = {
   getClassroomPostByPostId,
   createPost,
-  updatePostByReport,
+  updateClassroomPostByReport,
 };
