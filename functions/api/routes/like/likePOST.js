@@ -25,13 +25,13 @@ module.exports = async (req, res) => {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
+    }
+
+    const likeData = await likeDB.getLikeByPostId(client, postId, postTypeId, user.id);
+    if (!likeData) {
+      postLike = await likeDB.createLikeByPostId(client, postId, postTypeId, user.id);
     } else {
-      const postData = await likeDB.getLikeByPostId(client, postId, postTypeId, user.id);
-      if (!postData) {
-        postLike = await likeDB.createLikeByPostId(client, postId, postTypeId, user.id);
-      } else {
-        postLike = await likeDB.updateLikeByPostId(client, postId, postTypeId, user.id);
-      }
+      postLike = await likeDB.updateLikeByPostId(client, postId, postTypeId, user.id);
     }
 
     res
