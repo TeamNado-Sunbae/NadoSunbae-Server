@@ -33,6 +33,14 @@ module.exports = {
   DELETE_ONE_POST_SUCCESS: "포스트 삭제 성공",
   NO_POST: "존재하지 않는 포스트입니다.",
 
+  // 코멘트
+  CREATE_ONE_COMMENT_SUCCESS: "코멘트 추가 성공",
+  READ_ONE_COMMENT_SUCCESS: "코멘트 조회 성공",
+  READ_ALL_COMMENTS_SUCCESS: "모든 코멘트 조회 성공",
+  UPDATE_ONE_COMMENT_SUCCESS: "코멘트 수정 성공",
+  DELETE_ONE_COMMENT_SUCCESS: "코멘트 삭제 성공",
+  NO_COMMENT: "존재하지 않는 코멘트입니다.",
+
   // 서버 내 오류
   INTERNAL_SERVER_ERROR: "서버 내 오류",
 
