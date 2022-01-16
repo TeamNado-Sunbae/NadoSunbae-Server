@@ -72,6 +72,33 @@ const updateUserByIsReviewed = async (client, isReviewed, userId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const updateUserByReport = async (client, userId) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM "user"
+    WHERE id = $1
+    AND is_deleted = FALSE
+    `,
+    [userId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const data = _.merge({}, convertSnakeToCamel.keysToCamel(existingRows[0]));
+
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET report_count = report_count + 1, updated_at = now()
+    WHERE id = $1
+    AND is_deleted = FALSE
+    RETURNING *
+    `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const getUserByFirstMajorId = async (client, majorId) => {
   const { rows } = await client.query(
     `
@@ -124,6 +151,7 @@ module.exports = {
   createUser,
   getUserByNickname,
   updateUserByIsReviewed,
+  updateUserByReport,
   getUserByFirstMajorId,
   getUserByUserId,
   getUserByFirebaseId,
