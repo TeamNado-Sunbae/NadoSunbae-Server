@@ -36,7 +36,7 @@ const getMajorByMajorId = async (client, majorId) => {
     `,
     [majorId],
   );
-  return convertSnakeToCamel.keysToCamel(rows);
+  return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
 module.exports = { getMajorByMajorId, getMajorNameByMajorId, getMajorsByUniversityId };
