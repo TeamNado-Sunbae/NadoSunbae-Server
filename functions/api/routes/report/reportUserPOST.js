@@ -20,6 +20,11 @@ module.exports = async (req, res) => {
 
     // 유저 신고 횟수 정보 업데이트
     const reportedUser = await userDB.updateUserByReport(client, userId);
+    if (!reportedUser) {
+      return res
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
+    }
 
     const reportCount = reportedUser.reportCount;
 
