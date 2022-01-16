@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
 
     // 삭제하려는 유저와 게시글의 작성자가 같은지 확인
     let post = await classroomPostDB.getClassroomPostByPostId(client, postId);
-    console.log(post);
+
     if (!post) {
       return res
         .status(statusCode.NOT_FOUND)
