@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
       .status(statusCode.FORBIDDEN)
       .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
   }
-
+  
   let client;
 
   // 에러 트래킹을 위해 try / catch문을 사용합니다.
