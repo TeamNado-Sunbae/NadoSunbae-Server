@@ -3,12 +3,13 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { majorDB } = require("../../../db");
+const { likeDB } = require("../../../db");
 
 module.exports = async (req, res) => {
-  const { majorId } = req.params;
+  const { postId, postTypeId } = req.body;
+  let user = req.user;
 
-  if (!majorId) {
+  if (!postId || !postTypeId) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -19,16 +20,23 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const majorData = await majorDB.getMajorByMajorId(client, majorId);
-    if (!majorData) {
+    let postLike;
+    if (postTypeId === 0 || postTypeId >= 5) {
       return res
-        .status(statusCode.NO_CONTENT)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, majorData));
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
+    }
+
+    const likeData = await likeDB.getLikeByPostId(client, postId, postTypeId, user.id);
+    if (!likeData) {
+      postLike = await likeDB.createLikeByPostId(client, postId, postTypeId, user.id);
+    } else {
+      postLike = await likeDB.updateLikeByPostId(client, postId, postTypeId, user.id);
     }
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ONE_MAJOR_SUCCESS, majorData));
+      .send(util.success(statusCode.OK, responseMessage.UPDATE_LIKE_SUCCESS, postLike));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

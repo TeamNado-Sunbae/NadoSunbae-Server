@@ -1,6 +1,6 @@
 module.exports = {
   NULL_VALUE: "필요한 값이 없습니다",
-  OUT_OF_VALUE: "파라미터 값이 잘못되었습니다",
+  OUT_OF_VALUE: "요청한 값이 잘못되었습니다",
   NO_RELATION: "존재하지 않는 릴레이션입니다.",
 
   // 회원가입
@@ -34,6 +34,17 @@ module.exports = {
   DELETE_ONE_POST_SUCCESS: "포스트 삭제 성공",
   NO_POST: "존재하지 않는 포스트입니다.",
 
+  // 코멘트
+  CREATE_ONE_COMMENT_SUCCESS: "코멘트 추가 성공",
+  READ_ONE_COMMENT_SUCCESS: "코멘트 조회 성공",
+  READ_ALL_COMMENTS_SUCCESS: "모든 코멘트 조회 성공",
+  UPDATE_ONE_COMMENT_SUCCESS: "코멘트 수정 성공",
+  DELETE_ONE_COMMENT_SUCCESS: "코멘트 삭제 성공",
+  NO_COMMENT: "존재하지 않는 코멘트입니다.",
+
+  // 태그
+  READ_ALL_TAGS_SUCCESS: "후기 내용 태그 리스트 조회 성공",
+
   // 서버 내 오류
   INTERNAL_SERVER_ERROR: "서버 내 오류",
 
@@ -45,7 +56,27 @@ module.exports = {
   // 인증
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
   FORBIDDEN_ACCESS: "사용 권한이 없습니다.",
+  IS_REVIEWED_FALSE: "후기글 미등록자입니다.",
+
+  // 전공 목록 조회
+  READ_ALL_MAJORS_SUCCESS: "해당 학교의 학과 목록 조회 성공",
 
   // 해당 전공 데이터 조회
   READ_ONE_MAJOR_SUCCESS: "해당 학과 정보 가져오기 성공",
+
+  // 이미지
+  READ_BACKGROUND_IMAGE_SUCCESS: "후기 배경 이미지 리스트 조회 성공",
+
+  // 필터값 오류
+  INCORRECT_FILTER: "필터값이 잘못되었습니다.",
+  INCORRECT_SORT: "정렬값이 잘못되었습니다.",
+
+  // 데이터 없음
+  NO_CONTENT: "찾는 데이터가 없습니다.",
+
+  // 좋아요
+  UPDATE_LIKE_SUCCESS: "포스트 좋아요 업데이트 성공",
+
+  // 신고 성공
+  REPORT_SUCCESS: "신고 성공",
 };

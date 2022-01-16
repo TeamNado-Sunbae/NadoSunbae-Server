@@ -3,32 +3,34 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { majorDB } = require("../../../db");
+const { userDB } = require("../../../db");
 
 module.exports = async (req, res) => {
-  const { majorId } = req.params;
+  const { userId } = req.body;
 
-  if (!majorId) {
+  if (!userId)
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-  }
 
   let client;
 
   try {
     client = await db.connect(req);
 
-    const majorData = await majorDB.getMajorByMajorId(client, majorId);
-    if (!majorData) {
+    // 유저 신고 횟수 정보 업데이트
+    const reportedUser = await userDB.updateUserByReport(client, userId);
+    if (!reportedUser) {
       return res
-        .status(statusCode.NO_CONTENT)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, majorData));
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
     }
+
+    const reportCount = reportedUser.reportCount;
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ONE_MAJOR_SUCCESS, majorData));
+      .send(util.success(statusCode.OK, responseMessage.REPORT_SUCCESS, { userId, reportCount }));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

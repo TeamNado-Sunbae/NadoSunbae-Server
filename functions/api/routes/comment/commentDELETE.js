@@ -3,12 +3,12 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { majorDB } = require("../../../db");
+const { commentDB } = require("../../../db");
 
 module.exports = async (req, res) => {
-  const { majorId } = req.params;
+  const { commentId } = req.params;
 
-  if (!majorId) {
+  if (!commentId) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -19,16 +19,26 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const majorData = await majorDB.getMajorByMajorId(client, majorId);
-    if (!majorData) {
+    const comment = await commentDB.getCommentByCommentId(client, commentId);
+    if (!comment) {
       return res
-        .status(statusCode.NO_CONTENT)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, majorData));
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
     }
+
+    if (comment.writerId !== req.user.id) {
+      return res
+        .status(statusCode.FORBIDDEN)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.FORBIDDEN_ACCESS));
+    }
+
+    let deletedComment = await commentDB.deleteCommentByCommentId(client, commentId);
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ONE_MAJOR_SUCCESS, majorData));
+      .send(
+        util.success(statusCode.OK, responseMessage.DELETE_ONE_COMMENT_SUCCESS, deletedComment),
+      );
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

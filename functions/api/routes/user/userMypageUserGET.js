@@ -3,12 +3,12 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { majorDB } = require("../../../db");
+const { userDB, majorDB } = require("../../../db");
 
 module.exports = async (req, res) => {
-  const { majorId } = req.params;
+  const { userId } = req.params;
 
-  if (!majorId) {
+  if (!userId) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -18,17 +18,31 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
+    let user = await userDB.getUserByUserId(client, userId);
 
-    const majorData = await majorDB.getMajorByMajorId(client, majorId);
-    if (!majorData) {
+    if (!user) {
       return res
-        .status(statusCode.NO_CONTENT)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, majorData));
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
     }
+
+    const firstMajorName = await majorDB.getMajorNameByMajorId(client, user.firstMajorId);
+    const secondMajorName = await majorDB.getMajorNameByMajorId(client, user.secondMajorId);
+
+    user = {
+      userId: user.id,
+      profileImageId: user.profileImageId,
+      nickname: user.nickname,
+      firstMajorName: firstMajorName.majorName,
+      firstMajorStart: user.firstMajorStart,
+      secondMajorName: secondMajorName.majorName,
+      secondMajorStart: user.secondMajorStart,
+      isOnQuestion: user.isOnQuestion,
+    };
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ONE_MAJOR_SUCCESS, majorData));
+      .send(util.success(statusCode.OK, responseMessage.READ_ONE_USER_SUCCESS, user));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
