@@ -13,8 +13,6 @@ const updateCommentByReport = async (client, commentId) => {
 
   if (existingRows.length === 0) return false;
 
-  const data = _.merge({}, convertSnakeToCamel.keysToCamel(existingRows[0]));
-
   const { rows } = await client.query(
     `
       UPDATE "comment"
