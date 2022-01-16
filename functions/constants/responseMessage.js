@@ -33,13 +33,13 @@ module.exports = {
   DELETE_ONE_POST_SUCCESS: "포스트 삭제 성공",
   NO_POST: "존재하지 않는 포스트입니다.",
 
-  // 코멘트
-  CREATE_ONE_COMMENT_SUCCESS: "코멘트 추가 성공",
-  READ_ONE_COMMENT_SUCCESS: "코멘트 조회 성공",
-  READ_ALL_COMMENTS_SUCCESS: "모든 코멘트 조회 성공",
-  UPDATE_ONE_COMMENT_SUCCESS: "코멘트 수정 성공",
-  DELETE_ONE_COMMENT_SUCCESS: "코멘트 삭제 성공",
-  NO_COMMENT: "존재하지 않는 코멘트입니다.",
+  // 댓글
+  CREATE_ONE_COMMENT_SUCCESS: "댓글 추가 성공",
+  READ_ONE_COMMENT_SUCCESS: "댓글 조회 성공",
+  READ_ALL_COMMENTS_SUCCESS: "모든 댓글 조회 성공",
+  UPDATE_ONE_COMMENT_SUCCESS: "댓글 수정 성공",
+  DELETE_ONE_COMMENT_SUCCESS: "댓글 삭제 성공",
+  NO_COMMENT: "존재하지 않는 댓글입니다.",
 
   // 태그
   READ_ALL_TAGS_SUCCESS: "후기 내용 태그 리스트 조회 성공",
