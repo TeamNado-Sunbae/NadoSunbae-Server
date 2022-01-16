@@ -45,7 +45,7 @@ const deleteCommentByPostId = async (client, postId) => {
       `,
     [postId],
   );
-  return convertSnakeToCamel.keysToCamel(rows[0]);
+  return convertSnakeToCamel.keysToCamel(rows);
 };
 
 module.exports = {
