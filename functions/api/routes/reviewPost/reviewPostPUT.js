@@ -19,18 +19,24 @@ module.exports = async (req, res) => {
     tip,
   } = req.body;
 
-  // 필수로 받아야하는 데이터들
-  if (!postId || !backgroundImageId || !oneLineReview || !prosCons)
+  if (!postId) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+  }
 
   let client;
 
   try {
     client = await db.connect(req);
 
-    // 403 error는 클라에서 확인
+    // 해당 글이 있는지 확인
+    const reviewPost = await reviewPostDB.getReviewPostByPostId(client, postId);
+    if (!reviewPost) {
+      return res
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
+    }
 
     let updatedReviewPost = await reviewPostDB.updateReviewPost(
       client,
@@ -99,7 +105,7 @@ module.exports = async (req, res) => {
     if (!likeStatus) {
       likeStatus = false;
     } else {
-      likeStatus = true;
+      likeStatus = likeStatus.isLiked;
     }
 
     const backgroundImage = await imageDB.getImageUrlByImageId(

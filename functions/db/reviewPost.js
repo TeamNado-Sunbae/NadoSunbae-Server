@@ -95,6 +95,7 @@ const updateReviewPost = async (
     recommend_lecture = $7, non_recommend_lecture = $8,
     tip = $9, updated_at = now()
     WHERE id = $1
+    AND is_deleted = false
     RETURNING *
       `,
     [
