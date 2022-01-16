@@ -135,8 +135,8 @@ const getUserByFirebaseId = async (client, firebaseId) => {
 };
 
 module.exports = {
-  getUserByNickname,
   createUser,
+  getUserByNickname,
   updateUserByIsReviewed,
   updateUserByReport,
   getUserByFirstMajorId,
