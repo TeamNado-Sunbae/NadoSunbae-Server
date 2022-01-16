@@ -6,6 +6,6 @@ router.use("/user/mypage", require("./user"));
 router.use("/review-post", require("./reviewPost"));
 router.use("/classroom-post", require("./classroomPost"));
 router.use("/major", require("./major"));
-router.use("/user", require("./user"));
+router.use("/user/mypage", require("./user"));
 
 module.exports = router;
