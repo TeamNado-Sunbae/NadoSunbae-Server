@@ -23,13 +23,14 @@ module.exports = async (req, res) => {
     // 1대 1 질문글인 경우
     // 원글 작성자와 답변자만 댓글 등록 가능
     const postData = await classroomPostDB.getClassroomPostByPostId(client, postId);
+    console.log(postData);
     if (!postData) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
     if (postData.postTypeId === 4) {
-      if ((postData.writerId && postData.answererId) !== commentWriterId) {
+      if (postData.writerId !== commentWriterId && postData.answererId !== commentWriterId) {
         return res
           .status(statusCode.FORBIDDEN)
           .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
