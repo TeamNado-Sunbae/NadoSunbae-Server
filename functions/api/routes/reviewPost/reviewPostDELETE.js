@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reviewPostDB, relationReviewPostTagDB } = require("../../../db");
+const { reviewPostDB, relationReviewPostTagDB, userDB } = require("../../../db");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
@@ -46,6 +46,17 @@ module.exports = async (req, res) => {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_RELATION));
+    }
+
+    // 후기글을 삭제 후, 해당 user가 작성한 다른 후기글이 없다면 isReviewed false로
+    const reviewPostByUser = await reviewPostDB.getReviewPostByUserId(client, req.user.id);
+    if (!reviewPostByUser) {
+      const updatedUser = await userDB.updateUserByIsReviewed(client, false, req.user.id);
+      if (!updatedUser) {
+        return res
+          .status(statusCode.NOT_FOUND)
+          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
+      }
     }
 
     // response로 보낼 isDeleted

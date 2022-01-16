@@ -66,4 +66,22 @@ const getReviewPostByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-module.exports = { createReviewPost, deleteReviewPost, getReviewPostByPostId };
+const getReviewPostByUserId = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+      SELECT * 
+      FROM review_post
+      WHERE writer_id = $1
+        AND is_deleted = false
+      `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+module.exports = {
+  createReviewPost,
+  deleteReviewPost,
+  getReviewPostByPostId,
+  getReviewPostByUserId,
+};
