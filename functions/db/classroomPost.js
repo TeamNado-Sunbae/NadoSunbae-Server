@@ -1,13 +1,37 @@
-const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
+
+const deleteClassroomPostByPostId = async (client, postId) => {
+  const { rows } = await client.query(
+    `
+      UPDATE classroom_post p
+      SET is_deleted = TRUE, updated_at = now()
+      WHERE id = $1
+      RETURNING id as post_id, is_deleted
+      `,
+    [postId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+const getClassroomPostListByUserId = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+      SELECT * FROM classroom_post
+      WHERE answerer_id = $1
+      AND is_deleted = false
+          `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
 
 const getClassroomPostByPostId = async (client, postId) => {
   const { rows } = await client.query(
     `
-      SELECT * FROM classroom_post
-      WHERE id = $1
-      AND is_deleted = false
-      `,
+    SELECT * FROM classroom_post 
+    WHERE id = $1
+      AND is_deleted = FALSE
+    `,
     [postId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
@@ -41,6 +65,8 @@ const getClassroomPostListByMajorId = async (client, majorId, postTypeId) => {
 };
 
 module.exports = {
+  deleteClassroomPostByPostId,
+  getClassroomPostListByUserId,
   getClassroomPostByPostId,
   createPost,
   getClassroomPostListByMajorId,
