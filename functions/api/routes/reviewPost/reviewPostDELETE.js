@@ -21,6 +21,11 @@ module.exports = async (req, res) => {
 
     // 로그인 한 유저가 reviewPost의 작성자가 아니면 403 error
     const reviewPost = await reviewPostDB.getReviewPostByPostId(client, postId);
+    if (!reviewPost) {
+      return res
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
+    }
 
     if (reviewPost.writerId !== req.user.id) {
       return res
