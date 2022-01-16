@@ -7,7 +7,7 @@ const deleteClassroomPostByPostId = async (client, postId) => {
       UPDATE classroom_post p
       SET is_deleted = TRUE, updated_at = now()
       WHERE id = $1
-      RETURNING *
+      RETURNING id as post_id, is_deleted
       `,
     [postId],
   );
