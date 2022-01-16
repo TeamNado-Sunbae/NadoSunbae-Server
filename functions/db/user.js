@@ -121,8 +121,8 @@ const getUsersByMajorId = async (client, majorId) => {
 };
 
 module.exports = {
-  getUserByNickname,
   createUser,
+  getUserByNickname,
   updateUserByIsReviewed,
   getUserByFirstMajorId,
   getUserByUserId,

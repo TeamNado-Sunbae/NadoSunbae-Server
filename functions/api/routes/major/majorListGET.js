@@ -6,9 +6,10 @@ const db = require("../../../db/db");
 const { majorDB } = require("../../../db");
 
 module.exports = async (req, res) => {
-  const { majorId } = req.params;
+  const { universityId } = req.params;
+  const { filter } = req.query;
 
-  if (!majorId) {
+  if (!universityId || !filter) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -19,16 +20,28 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const majorData = await majorDB.getMajorByMajorId(client, majorId);
-    if (!majorData) {
+    let majorList;
+    if (filter === "all") {
+      majorList = await majorDB.getMajorsByUniversityId(client, universityId, true, true);
+    } else if (filter === "firstMajor") {
+      majorList = await majorDB.getMajorsByUniversityId(client, universityId, true, false);
+    } else if (filter === "secondMajor") {
+      majorList = await majorDB.getMajorsByUniversityId(client, universityId, false, true);
+    } else {
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
+    }
+
+    if (!majorList) {
       return res
         .status(statusCode.NO_CONTENT)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, majorData));
+        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, majorList));
     }
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ONE_MAJOR_SUCCESS, majorData));
+      .send(util.success(statusCode.OK, responseMessage.READ_ALL_MAJORS_SUCCESS, majorList));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
