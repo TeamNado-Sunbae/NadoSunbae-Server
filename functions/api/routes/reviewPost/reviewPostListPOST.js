@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
   const { sort } = req.query;
   const { majorId, writerFilter, tagFilter } = req.body;
 
-  if (!majorId || !writerFilter || !tagFilter) {
+  if (!majorId || !writerFilter || !tagFilter || !sort) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
