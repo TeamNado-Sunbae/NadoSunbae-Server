@@ -66,4 +66,7 @@ module.exports = {
 
   // 좋아요
   UPDATE_LIKE_SUCCESS: "포스트 좋아요 업데이트 성공",
+  
+  // 신고 성공
+  REPORT_SUCCESS: "신고 성공",
 };
