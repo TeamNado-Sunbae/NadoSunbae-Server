@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
-    let post = await classroomPostDB.createPost(
+    let post = await classroomPostDB.createClassroomPost(
       client,
       majorId,
       writer.id,

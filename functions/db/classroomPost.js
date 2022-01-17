@@ -118,11 +118,11 @@ const getClassroomPostListByMajorId = async (client, majorId, postTypeId) => {
 };
 
 module.exports = {
+  createClassroomPost,
   deleteClassroomPostByPostId,
   getClassroomPostListByUserId,
   getClassroomPostListByMajorId,
   getClassroomPostByPostId,
   updateClassroomPost,
-  createClassroomPost,
   updateClassroomPostByReport,
 };
