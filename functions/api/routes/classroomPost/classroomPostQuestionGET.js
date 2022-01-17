@@ -37,19 +37,30 @@ module.exports = async (req, res) => {
     // post 좋아요 정보
 
     // postType을 알아야 함
-    const informationPostTypeId = await postTypeDB.getPostTypeIdByPostTypeName(
+    const questionToEveryonePostTypeId = await postTypeDB.getPostTypeIdByPostTypeName(
       client,
-      "information",
+      "questionToEveryone",
+    );
+
+    const questionToPersonPostTypeId = await postTypeDB.getPostTypeIdByPostTypeName(
+      client,
+      "questionToPerson",
     );
 
     // 로그인 유저가 좋아요한 상태인지
     const requestUser = req.user;
-    let like = await likeDB.getLikeByPostId(
-      client,
-      classroomPost.id,
-      informationPostTypeId.id,
-      requestUser.id,
-    );
+
+    // 1:1 질문인지, 전체 질문인지
+    let postTypeId;
+
+    // answererId 없을 때는 전체 질문
+    if (!classroomPost.answererId) {
+      postTypeId = questionToEveryonePostTypeId;
+    } else {
+      postTypeId = questionToPersonPostTypeId;
+    }
+
+    let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, requestUser.id);
     let isLiked;
     if (!like) {
       isLiked = false;
@@ -58,11 +69,7 @@ module.exports = async (req, res) => {
     }
 
     // post 좋아요 개수
-    const likeCount = await likeDB.getLikeCountByPostId(
-      client,
-      classroomPost.id,
-      informationPostTypeId.id,
-    );
+    const likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
 
     like = {
       isLiked: isLiked,
