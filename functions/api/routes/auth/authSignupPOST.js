@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
   let client;
 
   try {
-    const client = await db.connect();
+    client = await db.connect();
 
     // Firebase Authentication을 통해 유저 생성
     const userFirebase = await admin
@@ -75,10 +75,14 @@ module.exports = async (req, res) => {
     // RDS DB에 유저 생성
     const firebaseId = userFirebase.uid;
 
+    // 유저 프로필 이미지 난수 생성
+    const profileImageId = Math.floor(Math.random() * 5) + 1;
+
     let user = await userDB.createUser(
       client,
       email,
       nickname,
+      profileImageId,
       universityId,
       firstMajorId,
       firstMajorStart,
