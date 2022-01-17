@@ -148,8 +148,7 @@ module.exports = async (req, res) => {
 
     // 없어져야하는 후기 - 태그 릴레이션 삭제
     let deleteTagList = originalTagList.filter((x) => !newTagList.includes(x));
-    console.log(deleteTagList);
-    if (deleteTagList !== 0) {
+    if (deleteTagList.length !== 0) {
       // 차집합이 없으면
       const deletedRelation = await relationReviewPostTagDB.deleteRelationReviewPostTag(
         client,
