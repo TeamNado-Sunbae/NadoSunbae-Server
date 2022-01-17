@@ -14,6 +14,18 @@ const createRelationReviewPostTag = async (client, postId, tagId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getTagListByReviewPostId = async (client, postId) => {
+  const { rows } = await client.query(
+    `
+    SELECT DISTINCT tag_id from "relation_review_post_tag"
+    WHERE post_id = $1
+    AND is_deleted = false
+     `,
+    [postId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 const getTagListByPostId = async (client, postId) => {
   const { rows } = await client.query(
     `
@@ -29,6 +41,21 @@ const getTagListByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+const deleteRelationReviewPostTag = async (client, postId, tagList) => {
+  const { rows } = await client.query(
+    `
+    UPDATE "relation_review_post_tag"
+    SET is_deleted = true, updated_at = now()
+    WHERE post_id = $1
+    AND tag_id IN (${tagList.join()})
+    AND is_deleted = false
+        RETURNING *
+    `,
+    [postId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const deleteRelationReviewPostTag = async (client, postId) => {
   const { rows } = await client.query(
     `
@@ -39,8 +66,13 @@ const deleteRelationReviewPostTag = async (client, postId) => {
     `,
     [postId],
   );
-
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-module.exports = { createRelationReviewPostTag, deleteRelationReviewPostTag, getTagListByPostId };
+module.exports = {
+  createRelationReviewPostTag,
+  getTagListByReviewPostId,
+  deleteRelationReviewPostTag,
+  deleteRelationReviewPostTag,
+  getTagListByPostId,
+};
