@@ -15,9 +15,9 @@ const {
 const {
   PROS_CONS,
   CURRICULUM,
-  CAREER,
   RECOMMEND_LECTURE,
   NON_RECOMMEND_LECTURE,
+  CAREER,
   TIP,
 } = require("../../../constants/reviewPostContent");
 
@@ -28,9 +28,9 @@ module.exports = async (req, res) => {
     oneLineReview,
     prosCons,
     curriculum,
-    career,
     recommendLecture,
     nonRecommendLecture,
+    career,
     tip,
   } = req.body;
 
@@ -66,15 +66,15 @@ module.exports = async (req, res) => {
       oneLineReview,
       prosCons,
       curriculum,
-      career,
       recommendLecture,
       nonRecommendLecture,
+      career,
       tip,
     );
 
     // curriculum, recommendLecture, nonRecommendLecture, career, tip 중 정보를 작성한 항목은 태그 검색되도록 relationReviewPostTag 생성
-    let content = [curriculum, career, recommendLecture, nonRecommendLecture, tip];
-    let tagName = [CURRICULUM, CAREER, RECOMMEND_LECTURE, NON_RECOMMEND_LECTURE, TIP];
+    let content = [curriculum, recommendLecture, nonRecommendLecture, career, tip];
+    let tagName = [CURRICULUM, RECOMMEND_LECTURE, NON_RECOMMEND_LECTURE, CAREER, TIP];
     let tagByTagName;
     let relationReviewPostTag;
 
@@ -94,8 +94,8 @@ module.exports = async (req, res) => {
 
     // post, writer, like, backgroundImage 객체로 묶어서 보냄
     let contentList = [];
-    content = [prosCons, curriculum, career, recommendLecture, nonRecommendLecture, tip];
-    tagName = [PROS_CONS, CURRICULUM, CAREER, RECOMMEND_LECTURE, NON_RECOMMEND_LECTURE, TIP];
+    content = [prosCons, curriculum, recommendLecture, nonRecommendLecture, career, tip];
+    tagName = [PROS_CONS, CURRICULUM, RECOMMEND_LECTURE, NON_RECOMMEND_LECTURE, CAREER, TIP];
 
     for (let i = 0; i < tagName.length; i++) {
       if (content[i]) {
