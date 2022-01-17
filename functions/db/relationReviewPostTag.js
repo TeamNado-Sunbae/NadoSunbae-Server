@@ -41,7 +41,7 @@ const getTagListByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const deleteRelationReviewPostTag = async (client, postId, tagList) => {
+const deleteRelationReviewPostTagByTagList = async (client, postId, tagList) => {
   const { rows } = await client.query(
     `
     UPDATE "relation_review_post_tag"
@@ -73,6 +73,6 @@ module.exports = {
   createRelationReviewPostTag,
   getTagListByReviewPostId,
   deleteRelationReviewPostTag,
-  deleteRelationReviewPostTag,
+  deleteRelationReviewPostTagByTagList,
   getTagListByPostId,
 };

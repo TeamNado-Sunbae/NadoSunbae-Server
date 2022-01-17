@@ -149,7 +149,7 @@ module.exports = async (req, res) => {
     let deleteTagList = originalTagList.filter((x) => !newTagList.includes(x));
     // 차집합이 있으면
     if (deleteTagList.length !== 0) {
-      const deletedRelation = await relationReviewPostTagDB.deleteRelationReviewPostTag(
+      const deletedRelation = await relationReviewPostTagDB.deleteRelationReviewPostTagByTagList(
         client,
         postId,
         deleteTagList,
