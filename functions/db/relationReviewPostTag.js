@@ -22,6 +22,7 @@ const getTagListByPostId = async (client, postId) => {
     on t.id = relation_review_post_tag.tag_id
     WHERE post_id = $1
     AND relation_review_post_tag.is_deleted = false
+    AND t.is_deleted = false
     `,
     [postId],
   );

@@ -10,6 +10,7 @@ const getRiviewPostListByMajorId = async (client, majorId, tagFilter) => {
     WHERE major_id = $1
     AND rrpt.tag_id IN (${tagFilter.join()})
     AND review_post.is_deleted = false
+    AND rrpt.is_deleted = false
       `,
     [majorId],
   );
@@ -26,6 +27,7 @@ const getRiviewPostListByWriterFilter = async (client, majorId, isFirstMajor, ta
     AND is_first_major = $2
     AND rrpt.tag_id IN (${tagFilter.join()})
     AND review_post.is_deleted = false
+    AND rrpt.is_deleted = false
       `,
     [majorId, isFirstMajor],
   );
