@@ -13,9 +13,9 @@ module.exports = async (req, res) => {
     oneLineReview,
     prosCons,
     curriculum,
-    career,
     recommendLecture,
     nonRecommendLecture,
+    career,
     tip,
   } = req.body;
 
@@ -45,9 +45,9 @@ module.exports = async (req, res) => {
       oneLineReview,
       prosCons,
       curriculum,
-      career,
       recommendLecture,
       nonRecommendLecture,
+      career,
       tip,
     );
 
@@ -59,17 +59,17 @@ module.exports = async (req, res) => {
     const content = [
       updatedReviewPost.prosCons,
       updatedReviewPost.curriculum,
-      updatedReviewPost.career,
       updatedReviewPost.recommendLecture,
       updatedReviewPost.nonRecommendLecture,
+      updatedReviewPost.career,
       updatedReviewPost.tip,
     ];
     const tagName = [
       reviewPostContent.PROS_CONS,
       reviewPostContent.CURRICULUM,
-      reviewPostContent.CAREER,
       reviewPostContent.RECOMMEND_LECTURE,
       reviewPostContent.NON_RECOMMEND_LECTURE,
+      reviewPostContent.CAREER,
       reviewPostContent.TIP,
     ];
 
