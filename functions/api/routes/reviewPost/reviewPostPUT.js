@@ -3,8 +3,16 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reviewPostDB, userDB, majorDB, imageDB, likeDB } = require("../../../db");
+const {
+  reviewPostDB,
+  userDB,
+  majorDB,
+  imageDB,
+  likeDB,
+  relationReviewPostTagDB,
+} = require("../../../db");
 const reviewPostContent = require("../../../constants/reviewPostContent");
+const { getTagByTagName } = require("../../../db/tag");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
@@ -59,17 +67,17 @@ module.exports = async (req, res) => {
     const content = [
       updatedReviewPost.prosCons,
       updatedReviewPost.curriculum,
-      updatedReviewPost.career,
       updatedReviewPost.recommendLecture,
       updatedReviewPost.nonRecommendLecture,
+      updatedReviewPost.career,
       updatedReviewPost.tip,
     ];
     const tagName = [
       reviewPostContent.PROS_CONS,
       reviewPostContent.CURRICULUM,
-      reviewPostContent.CAREER,
       reviewPostContent.RECOMMEND_LECTURE,
       reviewPostContent.NON_RECOMMEND_LECTURE,
+      reviewPostContent.CAREER,
       reviewPostContent.TIP,
     ];
 
@@ -119,6 +127,18 @@ module.exports = async (req, res) => {
       like: { isLiked: likeStatus, likeCount: likeCount.likeCount },
       backgroundImage: { imageId: backgroundImageId, imageUrl: backgroundImage.imageUrl },
     };
+
+    await relationReviewPostTagDB.deleteRelationReviewPostTag(client, postId);
+
+    await Promise.all(
+      contentList.map(async (content) => {
+        tagName.map(async (tag, index) => {
+          if (index !== 0 && content.title === tag) {
+            relationReviewPostTagDB.createRelationReviewPostTag(client, postId, index);
+          }
+        });
+      }),
+    );
 
     res
       .status(statusCode.OK)

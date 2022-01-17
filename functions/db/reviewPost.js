@@ -100,14 +100,14 @@ const updateReviewPost = async (
       `,
     [
       postId,
-      backgroundImageId,
-      oneLineReview,
-      prosCons,
-      curriculum,
-      career,
-      recommendLecture,
-      nonRecommendLecture,
-      tip,
+      data.backgroundImageId,
+      data.oneLineReview,
+      data.prosCons,
+      data.curriculum,
+      data.career,
+      data.recommendLecture,
+      data.nonRecommendLecture,
+      data.tip,
     ],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
