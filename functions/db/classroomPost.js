@@ -1,7 +1,15 @@
 const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const createPost = async (client, majorId, writerId, answererId, postTypeId, title, content) => {
+const createClassroomPost = async (
+  client,
+  majorId,
+  writerId,
+  answererId,
+  postTypeId,
+  title,
+  content,
+) => {
   const { rows } = await client.query(
     `
     INSERT INTO classroom_post
@@ -16,5 +24,5 @@ const createPost = async (client, majorId, writerId, answererId, postTypeId, tit
 };
 
 module.exports = {
-  createPost,
+  createClassroomPost,
 };
