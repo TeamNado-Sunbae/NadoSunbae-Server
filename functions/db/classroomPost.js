@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
 const deleteClassroomPostByPostId = async (client, postId) => {
@@ -24,7 +25,7 @@ const getClassroomPostListByUserId = async (client, userId) => {
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
-  
+
 const getClassroomPostByPostId = async (client, postId) => {
   const { rows } = await client.query(
     `
@@ -51,9 +52,36 @@ const createPost = async (client, majorId, writerId, answererId, postTypeId, tit
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const updateClassroomPost = async (client, title, content, postId) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM classroom_post p
+    WHERE id = $1
+       AND is_deleted = FALSE
+    `,
+    [postId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const data = _.merge({}, convertSnakeToCamel.keysToCamel(existingRows[0]), { title, content });
+
+  const { rows } = await client.query(
+    `
+    UPDATE classroom_post p
+    SET title = $1, content = $2, updated_at = now()
+    WHERE id = $3
+    RETURNING * 
+    `,
+    [data.title, data.content, postId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   deleteClassroomPostByPostId,
   getClassroomPostListByUserId,
   getClassroomPostByPostId,
   createPost,
+  updateClassroomPost,
 };

@@ -99,7 +99,6 @@ const deleteCommentByCommentId = async (client, commentId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-
 module.exports = {
   deleteCommentByPostId,
   getCommentCountByPostId,
