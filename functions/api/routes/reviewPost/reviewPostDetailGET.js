@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
       .status(statusCode.FORBIDDEN)
       .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
   }
-  
+
   let client;
 
   // 에러 트래킹을 위해 try / catch문을 사용합니다.
@@ -60,17 +60,17 @@ module.exports = async (req, res) => {
     let content = [
       post.prosCons,
       post.curriculum,
-      post.career,
       post.recommendLecture,
       post.nonRecommendLecture,
+      post.career,
       post.tip,
     ];
     let tagName = [
       reviewPostContent.PROS_CONS,
       reviewPostContent.CURRICULUM,
-      reviewPostContent.CAREER,
       reviewPostContent.RECOMMEND_LECTURE,
       reviewPostContent.NON_RECOMMEND_LECTURE,
+      reviewPostContent.CAREER,
       reviewPostContent.TIP,
     ];
 

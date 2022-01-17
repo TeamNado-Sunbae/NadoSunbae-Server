@@ -29,4 +29,18 @@ const getTagListByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-module.exports = { createRelationReviewPostTag, getTagListByPostId };
+const deleteRelationReviewPostTag = async (client, postId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE relation_review_post_tag
+    SET is_deleted = TRUE, updated_at = now()
+    WHERE post_id = $1
+    RETURNING *
+    `,
+    [postId],
+  );
+
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+module.exports = { createRelationReviewPostTag, deleteRelationReviewPostTag, getTagListByPostId };
