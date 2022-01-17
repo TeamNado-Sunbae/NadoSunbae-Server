@@ -12,7 +12,6 @@ const {
   relationReviewPostTagDB,
 } = require("../../../db");
 const reviewPostContent = require("../../../constants/reviewPostContent");
-const { getTagByTagName } = require("../../../db/tag");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
