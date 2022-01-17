@@ -21,9 +21,9 @@ module.exports = async (req, res) => {
     oneLineReview,
     prosCons,
     curriculum,
-    career,
     recommendLecture,
     nonRecommendLecture,
+    career,
     tip,
   } = req.body;
 
@@ -53,9 +53,9 @@ module.exports = async (req, res) => {
       oneLineReview,
       prosCons,
       curriculum,
-      career,
       recommendLecture,
       nonRecommendLecture,
+      career,
       tip,
     );
 
