@@ -3,13 +3,12 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { majorDB } = require("../../../db");
+const { classroomPostDB, reviewPostDB } = require("../../../db");
 
 module.exports = async (req, res) => {
-  const { universityId } = req.params;
-  const { filter } = req.query;
+  const { postId, postTypeId } = req.body;
 
-  if (!universityId || !filter) {
+  if (!postId || !postTypeId) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -20,28 +19,29 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let majorList;
-    if (filter === "all") {
-      majorList = await majorDB.getAllMajorsByUniversityId(client, universityId);
-    } else if (filter === "firstMajor") {
-      majorList = await majorDB.getFirstMajorsByUniversityId(client, universityId);
-    } else if (filter === "secondMajor") {
-      majorList = await majorDB.getSecondMajorsByUniversityId(client, universityId);
+    let updatePost;
+
+    if (postTypeId === 1) {
+      // 신고한 게시글이 후기글일 때
+      updatePost = await reviewPostDB.updateReviewPostByReport(client, postId);
+    } else if (postTypeId === 2 || postTypeId === 3 || postTypeId === 4) {
+      // 신고한 게시글이 과방글일 때 (postTypeId도 같이 넘기기)
+      updatePost = await classroomPostDB.updateClassroomPostByReport(client, postId, postTypeId);
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
     }
 
-    if (!majorList) {
+    if (!updatePost) {
       return res
-        .status(statusCode.NO_CONTENT)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, majorList));
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ALL_MAJORS_SUCCESS, majorList));
+      .send(util.success(statusCode.OK, responseMessage.REPORT_SUCCESS, updatePost));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
