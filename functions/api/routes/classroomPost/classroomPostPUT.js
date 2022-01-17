@@ -9,13 +9,7 @@ module.exports = async (req, res) => {
   const { postId } = req.params;
   const { title, content } = req.body;
 
-  if (!postId) {
-    return res
-      .status(statusCode.BAD_REQUEST)
-      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-  }
-
-  if (!title || !content) {
+  if (!postId || !title || !content) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -91,63 +85,16 @@ module.exports = async (req, res) => {
       likeStatus = likeStatus.isLiked;
     }
 
-    // post 댓글 정보
-
-    // post 댓글 개수
-    const commentCount = await commentDB.getCommentCountByPostId(client, postId);
-
-    // post 댓글 리스트 - 삭제 댓글 포함
-    let commentList = await commentDB.getCommentListByPostId(client, postId);
-
-    commentList = await Promise.all(
-      commentList.map(async (comment) => {
-        let commentWriter = await userDB.getUserByUserId(client, comment.writerId);
-        const firstMajorName = await majorDB.getMajorNameByMajorId(
-          client,
-          commentWriter.firstMajorId,
-        );
-        const secondMajorName = await majorDB.getMajorNameByMajorId(
-          client,
-          commentWriter.secondMajorId,
-        );
-
-        commentWriter = {
-          writerId: commentWriter.id,
-          profileImageId: commentWriter.profileImageId,
-          nickname: commentWriter.nickname,
-          firstMajorName: firstMajorName.majorName,
-          firstMajorStart: commentWriter.firstMajorStart,
-          secondMajorName: secondMajorName.majorName,
-          secondMajorStart: commentWriter.secondMajorStart,
-          isPostWriter: commentWriter.id === classroomPost.writerId,
-        };
-
-        return {
-          commentId: comment.id,
-          content: comment.content,
-          createdAt: comment.createdAt,
-          isDeleted: comment.isDeleted,
-          writer: commentWriter,
-        };
-      }),
-    );
-
     updatedClassroomPost = {
       post: post,
       writer: writer,
       like: { isLiked: likeStatus, likeCount: likeCount.likeCount },
-      commentCount: commentCount.commentCount,
-      commentList: commentList,
     };
 
     res
       .status(statusCode.OK)
       .send(
-        util.success(
-          statusCode.OK,
-          responseMessage.UPDATE_ONE_COMMENT_SUCCESS,
-          updatedClassroomPost,
-        ),
+        util.success(statusCode.OK, responseMessage.UPDATE_ONE_POST_SUCCESS, updatedClassroomPost),
       );
   } catch (error) {
     functions.logger.error(
