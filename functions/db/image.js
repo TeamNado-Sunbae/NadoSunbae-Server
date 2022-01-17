@@ -15,9 +15,10 @@ const getReviewPostBackgroundImages = async (client) => {
 const getImageUrlByImageId = async (client, imageId) => {
   const { rows } = await client.query(
     `
-        SELECT image_url FROM image
+        SELECT image_url
+        FROM image
         WHERE id = $1
-        AND is_deleted = false
+          AND is_deleted = false
         `,
     [imageId],
   );
