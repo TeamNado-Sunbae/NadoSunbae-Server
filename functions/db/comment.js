@@ -1,6 +1,20 @@
 const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
+const createComment = async (client, postId, writerId, content) => {
+  const { rows } = await client.query(
+    `
+      INSERT INTO comment
+      (post_id,writer_id ,content)
+      VALUES
+      ($1, $2, $3)
+      RETURNING *
+      `,
+    [postId, writerId, content],
+      );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const updateComment = async (client, commentId, content) => {
   const { rows: existingRows } = await client.query(
     `
@@ -128,11 +142,12 @@ const deleteCommentByCommentId = async (client, commentId) => {
 };
 
 module.exports = {
-  updateComment,
-  updateCommentByReport,
+  createComment,
   getCommentCountByPostId,
   getCommentListByPostId,
   getCommentByCommentId,
+  updateCommentByReport,
+  updateComment,
   deleteCommentByCommentId,
   deleteCommentByPostId,
 };
