@@ -55,9 +55,9 @@ module.exports = async (req, res) => {
 
     // answererId 없을 때는 전체 질문
     if (!classroomPost.answererId) {
-      postTypeId = questionToEveryonePostTypeId;
+      postTypeId = questionToEveryonePostTypeId.id;
     } else {
-      postTypeId = questionToPersonPostTypeId;
+      postTypeId = questionToPersonPostTypeId.id;
     }
 
     let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, requestUser.id);
