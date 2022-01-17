@@ -24,7 +24,7 @@ const getClassroomPostListByUserId = async (client, userId) => {
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
-  
+
 const getClassroomPostByPostId = async (client, postId) => {
   const { rows } = await client.query(
     `
@@ -51,9 +51,23 @@ const createPost = async (client, majorId, writerId, answererId, postTypeId, tit
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getClassroomPostListByMajorId = async (client, majorId, postTypeId) => {
+  const { rows } = await client.query(
+    `
+  SELECT * FROM "classroom_post" c
+  WHERE major_id = $1
+  AND post_type_id = $2
+  AND is_deleted = false
+  `,
+    [majorId, postTypeId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   deleteClassroomPostByPostId,
   getClassroomPostListByUserId,
   getClassroomPostByPostId,
   createPost,
+  getClassroomPostListByMajorId,
 };

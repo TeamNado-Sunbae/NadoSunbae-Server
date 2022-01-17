@@ -33,6 +33,7 @@ module.exports = {
   UPDATE_ONE_POST_SUCCESS: "포스트 수정 성공",
   DELETE_ONE_POST_SUCCESS: "포스트 삭제 성공",
   NO_POST: "존재하지 않는 포스트입니다.",
+  INCORRECT_POSTTYPEID: "올바르지 않은 포스트 타입 아이디입니다.",
 
   // 댓글
   CREATE_ONE_COMMENT_SUCCESS: "댓글 추가 성공",
