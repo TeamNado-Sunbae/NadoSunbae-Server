@@ -128,22 +128,51 @@ module.exports = async (req, res) => {
       backgroundImage: { imageId: backgroundImageId, imageUrl: backgroundImage.imageUrl },
     };
 
-    await relationReviewPostTagDB.deleteRelationReviewPostTag(client, postId);
-
-    await Promise.all(
-      contentList.map(async (content) => {
-        tagName.map(async (tag, index) => {
-          if (index !== 0 && content.title === tag) {
-            relationReviewPostTagDB.createRelationReviewPostTag(client, postId, index);
-          }
-        });
-      }),
+    // 현재 릴레이션 태그
+    const originalTagListData = await relationReviewPostTagDB.getTagListByReviewPostId(
+      client,
+      postId,
     );
+    let originalTagList = [];
+    originalTagListData.map((tag) => {
+      originalTagList.push(tag.tagId);
+    });
+
+    // 새롭게 필요한 릴레이션 태그
+    let newTagList = [];
+    for (let i = 1; i < tagName.length; i++) {
+      if (content[i]) {
+        newTagList.push(i);
+      }
+    }
+
+    // 없어져야하는 후기 - 태그 릴레이션 삭제
+    let deleteTagList = originalTagList.filter((x) => !newTagList.includes(x));
+    console.log(deleteTagList);
+    if (deleteTagList !== 0) {
+      // 차집합이 없으면
+      const deletedRelation = await relationReviewPostTagDB.deleteRelationReviewPostTag(
+        client,
+        postId,
+        deleteTagList,
+      );
+      if (!deletedRelation) {
+        return res
+          .status(statusCode.NOT_FOUND)
+          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_RELATION_POST_TAG));
+      }
+    }
+
+    // 새롭게 만들어야하는 후기 - 태그 릴레이션 추가
+    let createTagList = newTagList.filter((x) => !originalTagList.includes(x));
+    createTagList.map(async (tag) => {
+      await relationReviewPostTagDB.createRelationReviewPostTag(client, postId, tag);
+    });
 
     res
       .status(statusCode.OK)
       .send(
-        util.success(statusCode.OK, responseMessage.UPDATE_ONE_COMMENT_SUCCESS, updatedReviewPost),
+        util.success(statusCode.OK, responseMessage.UPDATE_ONE_POST_SUCCESS, updatedReviewPost),
       );
   } catch (error) {
     functions.logger.error(

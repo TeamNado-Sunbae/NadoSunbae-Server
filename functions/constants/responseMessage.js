@@ -43,6 +43,7 @@ module.exports = {
 
   // 태그
   READ_ALL_TAGS_SUCCESS: "후기 내용 태그 리스트 조회 성공",
+  NO_RELATION_POST_TAG: "존재하지 않는 후기 태그 관계입니다.",
 
   // 서버 내 오류
   INTERNAL_SERVER_ERROR: "서버 내 오류",
