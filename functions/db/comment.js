@@ -1,6 +1,48 @@
 const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
+const createComment = async (client, postId, writerId, content) => {
+  const { rows } = await client.query(
+    `
+      INSERT INTO comment
+      (post_id,writer_id ,content)
+      VALUES
+      ($1, $2, $3)
+      RETURNING *
+      `,
+    [postId, writerId, content],
+      );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+const updateComment = async (client, commentId, content) => {
+  const { rows: existingRows } = await client.query(
+    `
+      SELECT * FROM comment
+      WHERE id = $1
+      AND is_deleted = FALSE
+      `,
+    [commentId],
+  );
+
+  if (existingRows.length === 0) return false;
+  const data = _.merge({}, convertSnakeToCamel.keysToCamel(existingRows[0]), {
+    content,
+  });
+
+  const { rows } = await client.query(
+    `
+      UPDATE comment
+      SET content = $1, updated_at = now()
+      WHERE id = $2
+      AND is_deleted = FALSE
+      RETURNING * 
+      `,
+    [data.content, commentId],
+    );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const updateCommentByReport = async (client, commentId) => {
   const { rows: existingRows } = await client.query(
     `
@@ -76,10 +118,10 @@ const deleteCommentByPostId = async (client, postId) => {
 const getCommentByCommentId = async (client, commentId) => {
   const { rows } = await client.query(
     `
-    SELECT * FROM "comment" c
-    WHERE id = $1
-    AND is_deleted = false
-    `,
+      SELECT * FROM comment
+      WHERE id = $1
+      AND is_deleted = FALSE
+      `,
     [commentId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
@@ -100,10 +142,12 @@ const deleteCommentByCommentId = async (client, commentId) => {
 };
 
 module.exports = {
-  deleteCommentByPostId,
+  createComment,
   getCommentCountByPostId,
   getCommentListByPostId,
   getCommentByCommentId,
-  deleteCommentByCommentId,
   updateCommentByReport,
+  updateComment,
+  deleteCommentByCommentId,
+  deleteCommentByPostId,
 };
