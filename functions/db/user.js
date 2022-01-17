@@ -16,6 +16,7 @@ const createUser = async (
   client,
   email,
   nickname,
+  profileImageId,
   universityId,
   firstMajorId,
   firstMajorStart,
@@ -26,15 +27,16 @@ const createUser = async (
   const { rows } = await client.query(
     `
       INSERT INTO "user"
-      (email, nickname, university_id, first_major_id, first_major_start, second_major_id, second_major_start, firebase_id)
+      (email, nickname, profile_image_id ,university_id, first_major_id, first_major_start, second_major_id, second_major_start, firebase_id)
       VALUES
-      ($1, $2, $3, $4, $5, $6, $7, $8)
+      ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
       `,
 
     [
       email,
       nickname,
+      profileImageId,
       universityId,
       firstMajorId,
       firstMajorStart,
