@@ -6,6 +6,7 @@ const getUserByNickname = async (client, nickname) => {
     `
       SELECT id, nickname FROM "user"
       WHERE nickname = $1
+      AND is_deleted = false
       `,
     [nickname],
   );
