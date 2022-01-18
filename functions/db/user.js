@@ -17,6 +17,7 @@ const getUserByEmail = async (client, email) => {
     `
       SELECT id, email FROM "user"
       WHERE email = $1
+      AND is_deleted = false
       `,
     [email],
   );
