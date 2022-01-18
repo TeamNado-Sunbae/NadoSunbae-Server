@@ -12,23 +12,22 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const userData = await userDB.getUserByUserId(client, user.id);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, userData.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, userData.secondMajorId);
+    const firstMajorName = await majorDB.getMajorNameByMajorId(client, user.firstMajorId);
+    const secondMajorName = await majorDB.getMajorNameByMajorId(client, user.secondMajorId);
     user = {
-      userId: userData.id,
-      email: userData.email,
-      universityId: userData.universityId,
-      firstMajorId: userData.firstMajorId,
+      userId: user.id,
+      email: user.email,
+      universityId: user.universityId,
+      firstMajorId: user.firstMajorId,
       firstMajorName: firstMajorName.majorName,
-      secondMajorId: userData.secondMajorId,
+      secondMajorId: user.secondMajorId,
       secondMajorName: secondMajorName.majorName,
-      isReviewed: userData.isReviewed,
+      isReviewed: user.isReviewed,
     };
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.LOGIN_SUCCESS, user));
+      .send(util.success(statusCode.OK, responseMessage.LOGIN_SUCCESS, { user: user }));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
