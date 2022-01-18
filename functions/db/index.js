@@ -11,4 +11,5 @@ module.exports = {
   likeDB: require("./like"),
   imageDB: require("./image"),
   commentDB: require("./comment"),
+  notificationDB: require("./notification"),
 };

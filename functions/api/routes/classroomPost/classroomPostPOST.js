@@ -3,7 +3,10 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, majorDB } = require("../../../db");
+const { classroomPostDB, majorDB, userDB, notificationDB } = require("../../../db");
+const notificationType = require("../../../constants/notificationType");
+const postType = require("../../../constants/postType");
+const admin = require("firebase-admin");
 
 module.exports = async (req, res) => {
   const { majorId, answererId, postTypeId, title, content } = req.body;
@@ -51,6 +54,8 @@ module.exports = async (req, res) => {
       title: post.title,
       content: post.content,
       createdAt: post.createdAt,
+      answererId: post.answererId,
+      postTypeId: post.postTypeId,
     };
 
     writer = {
@@ -62,6 +67,57 @@ module.exports = async (req, res) => {
       secondMajorName: secondMajorName.majorName,
       secondMajorStart: writer.secondMajorStart,
     };
+
+    // 푸시 알림 전송을 위한 case 설정
+    // [ case 1: 마이페이지에 1:1 질문글이 올라온 경우 ]
+
+    // 1:1 질문글인 경우에만 알림 전송
+    if (post.postTypeId === postType.QUESTION_TO_PERSON && post.answererId) {
+      // 푸시 알림 제목은 나도선배 통일
+      const notificationTitle = "나도선배";
+
+      // receiver는 게시글의 answerer, sender는 게시글 작성자
+      let receiver = await userDB.getUserByUserId(client, post.answererId);
+      let sender = await userDB.getUserByUserId(client, writer.writerId);
+      let notificationContent = `마이페이지에 ${sender.nickname}님이 1:1 질문을 남겼습니다.`;
+
+      if (receiver.id !== sender.id) {
+        // DB에 알림 저장
+        const notification = await notificationDB.createNotification(
+          client,
+          sender.id,
+          receiver.id,
+          post.postId,
+          notificationType.QUESTION_TO_PERSON_ALARM,
+          post.title,
+        );
+
+        // 디바이스로 보낼 푸시 알림 메시지
+
+        // 메세지 내용
+        const message = {
+          notification: {
+            title: notificationTitle,
+            body: notificationContent,
+          },
+          data: {
+            postId: `${post.postId}`,
+          },
+          token: receiver.deviceToken,
+        };
+
+        // 메세지 전송
+        admin
+          .messaging()
+          .send(message)
+          .then(function (response) {
+            console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response);
+          })
+          .catch(function (error) {
+            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
+          });
+      }
+    }
 
     res
       .status(statusCode.OK)

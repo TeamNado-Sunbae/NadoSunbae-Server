@@ -9,5 +9,6 @@ router.use("/major", require("./major"));
 router.use("/comment", require("./comment"));
 router.use("/like", require("./like"));
 router.use("/report", require("./report"));
+router.use("/notification", require("./notification"));
 
 module.exports = router;

@@ -83,4 +83,11 @@ module.exports = {
 
   // 신고 성공
   REPORT_SUCCESS: "신고 성공",
+
+  // 알림
+  PUSH_ALARM_SEND_SUCCESS: "푸시 알림 전송 성공",
+  PUSH_ALARM_SEND_FAIL: "푸시 알림 전송 실패",
+  READ_ALL_NOTIFICATIONS_SUCCESS: "모든 알림 조회 성공",
+  READ_ONE_NOTIFICATION_SUCCESS: "알림 읽기 성공",
+  NO_NOTIFICATION: "존재하지 않는 알림입니다.",
 };
