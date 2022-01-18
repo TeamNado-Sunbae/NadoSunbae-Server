@@ -37,12 +37,12 @@ module.exports = async (req, res) => {
           .json(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
       } else if (userFirebase.error.code === "auth/invalid-email") {
         return res
-          .status(statusCode.NOT_FOUND)
-          .json(util.fail(statusCode.NOT_FOUND, responseMessage.INVALID_EMAIL));
+          .status(statusCode.BAD_REQUEST)
+          .json(util.fail(statusCode.BAD_REQUEST, responseMessage.INVALID_EMAIL));
       } else if (userFirebase.error.code === "auth/wrong-password") {
         return res
-          .status(statusCode.NOT_FOUND)
-          .json(util.fail(statusCode.NOT_FOUND, responseMessage.MISS_MATCH_PW));
+          .status(statusCode.BAD_REQUEST)
+          .json(util.fail(statusCode.BAD_REQUEST, responseMessage.MISS_MATCH_PW));
       } else {
         return res
           .status(statusCode.INTERNAL_SERVER_ERROR)
