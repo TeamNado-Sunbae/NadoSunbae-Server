@@ -11,9 +11,9 @@ const createNotification = async (
   const { rows } = await client.query(
     `
       INSERT INTO notification
-      (user_id, post_id, notification_type, content)
+      (sender_id, receiver_id, post_id, notification_type, content)
       VALUES
-      ($1, $2, $3, $4)
+      ($1, $2, $3, $4, $5)
       RETURNING *
       `,
     [senderId, receiverId, postId, notificationType, content],
