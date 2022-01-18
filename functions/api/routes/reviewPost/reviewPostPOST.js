@@ -118,6 +118,7 @@ module.exports = async (req, res) => {
     const writer = {
       writerId: updatedUser.id,
       nickname: updatedUser.nickname,
+      profileImageId: updatedUser.profileImageId,
       firstMajorName: firstMajorName.majorName,
       firstMajorStart: updatedUser.firstMajorStart,
       secondMajorName: secondMajorName.majorName,
