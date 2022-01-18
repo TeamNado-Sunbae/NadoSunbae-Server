@@ -51,14 +51,12 @@ module.exports = async (req, res) => {
     // response로 보낼 isDeleted
     const isDeleted = deletedNotification.isDeleted;
 
-    res
-      .status(statusCode.OK)
-      .send(
-        util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, {
-          notificationId,
-          isDeleted,
-        }),
-      );
+    res.status(statusCode.OK).send(
+      util.success(statusCode.OK, responseMessage.DELETE_ONE_NOTIFICATION_SUCCESS, {
+        notificationId,
+        isDeleted,
+      }),
+    );
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

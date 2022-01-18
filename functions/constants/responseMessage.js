@@ -89,5 +89,6 @@ module.exports = {
   PUSH_ALARM_SEND_FAIL: "푸시 알림 전송 실패",
   READ_ALL_NOTIFICATIONS_SUCCESS: "모든 알림 조회 성공",
   READ_ONE_NOTIFICATION_SUCCESS: "알림 읽기 성공",
+  DELETE_ONE_NOTIFICATION_SUCCESS: "알림 삭제 성공",
   NO_NOTIFICATION: "존재하지 않는 알림입니다.",
 };
