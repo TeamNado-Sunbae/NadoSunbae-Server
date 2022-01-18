@@ -12,6 +12,17 @@ const getUserByNickname = async (client, nickname) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getUserByEmail = async (client, email) => {
+  const { rows } = await client.query(
+    `
+      SELECT id, email FROM "user"
+      WHERE email = $1
+      `,
+    [email],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const createUser = async (
   client,
   email,
@@ -152,6 +163,7 @@ const getUsersByMajorId = async (client, majorId) => {
 module.exports = {
   createUser,
   getUserByNickname,
+  getUserByEmail,
   updateUserByIsReviewed,
   updateUserByReport,
   getUserByFirstMajorId,
