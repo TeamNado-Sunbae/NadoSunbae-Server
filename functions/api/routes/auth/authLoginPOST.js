@@ -62,7 +62,9 @@ module.exports = async (req, res) => {
       userId: userData.id,
       email: userData.email,
       universityId: userData.universityId,
+      firstMajorId: userData.firstMajorId,
       firstMajorName: firstMajorName.majorName,
+      secondMajorId: userData.secondMajorId,
       secondMajorName: secondMajorName.majorName,
       isReviewed: userData.isReviewed,
     };
