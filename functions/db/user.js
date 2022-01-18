@@ -99,8 +99,6 @@ const updateUserByReport = async (client, userId) => {
 
   if (existingRows.length === 0) return false;
 
-  const data = _.merge({}, convertSnakeToCamel.keysToCamel(existingRows[0]));
-
   const { rows } = await client.query(
     `
     UPDATE "user"
@@ -162,6 +160,31 @@ const getUsersByMajorId = async (client, majorId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+const updatedUserByDeviceToken = async (client, userId, deviceToken) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM "user"
+    WHERE id = $1
+    AND is_deleted = FALSE
+    `,
+    [userId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET device_token = $2, updated_at = now()
+    WHERE id = $1
+    AND is_deleted = FALSE
+    RETURNING *
+    `,
+    [userId, deviceToken],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   createUser,
   getUserByNickname,
@@ -172,4 +195,5 @@ module.exports = {
   getUserByUserId,
   getUserByFirebaseId,
   getUsersByMajorId,
+  updatedUserByDeviceToken,
 };
