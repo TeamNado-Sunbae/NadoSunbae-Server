@@ -10,9 +10,9 @@ const { firebaseAuth } = require("../../../config/firebaseClient");
 
 const jwtHandlers = require("../../../lib/jwtHandlers");
 module.exports = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, deviceToken } = req.body;
 
-  if (!email || !password) {
+  if (!email || !password || !deviceToken) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -68,6 +68,20 @@ module.exports = async (req, res) => {
     };
 
     const { accesstoken } = jwtHandlers.sign(userData);
+
+    // deviceToken 저장
+    const updatedUserByDeviceToken = await userDB.updatedUserByDeviceToken(
+      client,
+      userData.id,
+      deviceToken,
+    );
+    if (!updatedUserByDeviceToken) {
+      return res
+        .status(statusCode.INTERNAL_SERVER_ERROR)
+        .send(
+          util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_DEVICE_TOKEN_FAIL),
+        );
+    }
 
     res
       .status(statusCode.OK)
