@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
     }
 
     // 알림 삭제
-    let deletedNotification = await notificationDB.deleteNotificationByNotificationId(
+    const deletedNotification = await notificationDB.deleteNotificationByNotificationId(
       client,
       notificationId,
     );
@@ -53,7 +53,7 @@ module.exports = async (req, res) => {
 
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.DELETE_ONE_NOTIFICATION_SUCCESS, {
-        notificationId,
+        notificationId: deletedNotification.id,
         isDeleted,
       }),
     );
