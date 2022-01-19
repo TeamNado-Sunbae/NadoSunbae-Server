@@ -7,7 +7,8 @@ const db = require("../../../db/db");
 const { reviewPostDB, userDB, likeDB, majorDB, relationReviewPostTagDB } = require("../../../db");
 
 module.exports = async (req, res) => {
-  const { majorId, writerFilter, tagFilter, sort } = req.body;
+  const { sort } = req.query;
+  const { majorId, writerFilter, tagFilter } = req.body;
 
   if (!majorId || !writerFilter || !tagFilter || !sort) {
     return res
