@@ -2,16 +2,21 @@
  
 <div>  
  <img width="100" alt="Frame 115" src="https://user-images.githubusercontent.com/58043306/148918367-20e69972-aeed-43c9-bcaf-c301483e15f5.png">
-
 </div>
+
 
 ### 제2전공생을 위한 학과 후기, 전공 정보 공유 플랫폼 "나도선배"
 
 > 아는 선배 없어도 괜찮아. 우리 같이 서로의 선배가 되어주자! <br>
-> <strong>나도선배</strong>는 후기와 과방을 통해 인적 네트워크를 제공합니다.
+> <strong>나도선배</strong>는 후기와 과방 탭을 통해 인적 네트워크를 제공합니다.
 
 > SOPT 29th APPJAM <br>
 > 프로젝트 기간: 2021.12.18 ~ 2022.01.22
+<br>
+
+### 🌲 Menu Tree 
+![menuTree](https://user-images.githubusercontent.com/58043306/150113629-9e7c325b-d7b6-429d-9134-11a9d2de4c0c.png)
+<br>
 <br>
 
 ### 📋 IA  
@@ -25,7 +30,8 @@
 <br>
 
 ### 🦴 ERD
-<img width="1424" alt="nadosunbaeERD" src="https://user-images.githubusercontent.com/58043306/149092387-44833862-ce60-45ff-85ad-c610cd91fac7.png">
+* post_id는 reviewPost의 id와 classroomPost의 id를 참조
+![erd](https://user-images.githubusercontent.com/58043306/150111542-4330f68c-255a-4330-a8c9-12fd6695168c.png)
 <br>
 
 ### 📌 Branch Strategy
@@ -56,7 +62,7 @@
 
 ### 📌 Commit Convention
 
-**[태그] 내용** 의 형태로 작성 <br>
+* **[태그] 내용** 의 형태로 작성 <br>
 ex) [FEAT] implement postGET
 
 <details>
@@ -195,7 +201,10 @@ ex) [FEAT] implement postGET
                |
                |- 📁 constants_
                |               |- 📋 jwt.js
+               |               |- 📋 notificationType.js
+               |               |- 📋 postType.js
                |               |- 📋 responseMessage.js
+               |               |- 📋 reviewPostContent.js
                |               |- 📋 statusCode.js
                |
                |- 📁 db_ 
@@ -213,12 +222,58 @@ ex) [FEAT] implement postGET
 ```
 <br>
 
+### ⚙️ Dependencies Module
+```
+{
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "eslint .",
+    "serve": "cross-env NODE_ENV=development firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "cross-env NODE_ENV=production firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "16"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dayjs": "^1.10.7",
+    "dotenv": "^10.0.0",
+    "eslint-config-prettier": "^8.3.0",
+    "express": "^4.17.2",
+    "firebase": "^9.6.2",
+    "firebase-admin": "^9.8.0",
+    "firebase-functions": "^3.14.1",
+    "floor": "^0.0.0",
+    "helmet": "^5.0.1",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.21",
+    "math-random": "^2.0.1",
+    "pg": "^8.7.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.6.0",
+    "eslint-config-google": "^0.14.0",
+    "firebase-functions-test": "^0.2.0"
+  },
+  "private": true
+}
+
+```
+<br>
+
 ### 🧩 Role
 | Name | Role |
 | :---: | :-----: |
-| juhyeon | DB 설계, API 명세서 작성, README 작성 |
-| eunji | DB 설계, API 명세서 작성 |
-| seol | DB 설계, API 명세서 작성, 초기 세팅 |
+| juhyeon | DB 설계, API 명세서 작성, API 구현, README 작성 |
+| eunji | DB 설계, API 명세서 작성, API 구현 |
+| seol | DB 설계, API 명세서 작성, 초기 세팅, API 구현 |
 <br>
 
 ### 💻 Current Progress
@@ -230,34 +285,37 @@ ex) [FEAT] implement postGET
 | :-----: | :---: | :---: |
 | 회원가입 | `김은지` | v |
 | 닉네임 중복 확인 | `설지원` | v |
-| 학교 메일 인증 | `` |  |
-| 로그인 | `변주현` |  |
-| 선택한 학과의 홈페이지와 이수과목 일람표 조회 | `변주현` |  |
+| 이메일 중복 확인 | `변주현` | v |
+| 로그인 | `변주현` | v |
+| 액세스 토큰으로 로그인 | `변주현` | v |
+| 선택한 학과의 홈페이지와 이수과목 일람표 조회 | `변주현` | v |
 | 해당 학교의 학과들 목록 조회 | `변주현` | v |
-| 후기글 전체 목록 조회 및 정렬 | `변주현` |  |
+| 후기글 전체 목록 조회 및 정렬 | `변주현` | v |
 | 후기글 상세 조회 | `김은지` | v |
-| 후기글 등록 | `설지원` |  |
-| 후기글 수정 | `변주현` |  |
-| 후기글 삭제 | `설지원` |  |
-| 특정 유저의 전공 목록 조회 | `설지원` |  |
-| 후기 내용 필터 목록 조회 | `김은지` |  |
-| 후기 배경 이미지 목록 조회 | `변주현` |  |
-| 선택한 학과 user 구성원 목록 조회 | `설지원` |  |
-| 전체 질문, 정보글 전체 목록 조회 및 정렬 | `변주현` |  |
-| 1:1 질문, 전체 질문, 정보글 상세 조회 | `설지원` |  |
-| 1:1 질문, 전체 질문, 정보글 등록 | `김은지` |  |
-| 1:1 질문, 전체 질문, 정보글 수정 | `김은지` |  |
-| 1:1 질문, 전체 질문, 정보글 삭제 | `김은지` |  |
-| 1:1 질문, 전체 질문, 정보글에 댓글 등록 | `김은지` |  |
-| 1:1 질문, 전체 질문, 정보글에 있는 특정 댓글 수정 | `설지원` |  |
-| 1:1 질문, 전체 질문, 정보글에 있는 특정 댓글 삭제 | `변주현` |  |
-| 게시글(후기, 1:1 질문, 전체 질문, 정보글) 좋아요/좋아요취소 | `변주현` |  |
-| (마이페이지) 특정 user 정보 조회 | `김은지` |  |
-| (마이페이지) 내게 온 1:1 질문글 리스트 조회 | `설지원` |  |
-| (마이페이지) 알림 설정 정보 조회 | `` |  |
-| 게시글(후기, 1:1 질문, 전체 질문, 정보글) 신고 | `김은지` |  |
-| 댓글 신고 | `변주현` |  |
-| 유저 신고 | `설지원` |  |
+| 후기글 등록 | `설지원` | v |
+| 후기글 수정 | `변주현` | v |
+| 후기글 삭제 | `설지원` | v |
+| 후기 내용 필터 목록 조회 | `김은지` | v |
+| 후기 배경 이미지 목록 조회 | `변주현` | v |
+| 선택한 학과 user 구성원 목록 조회 | `설지원` | v |
+| 전체 질문, 정보글 전체 목록 조회 및 정렬 | `변주현` | v |
+| 정보글 상세 조회 | `설지원` | v |
+| 1:1 질문, 전체 질문 상세 조회 | `설지원` | v |
+| 1:1 질문, 전체 질문, 정보글 등록 | `김은지` | v |
+| 1:1 질문, 전체 질문, 정보글 수정 | `김은지` | v |
+| 1:1 질문, 전체 질문, 정보글 삭제 | `김은지` | v |
+| 1:1 질문, 전체 질문, 정보글에 댓글 등록 | `김은지` | v |
+| 1:1 질문, 전체 질문, 정보글에 있는 특정 댓글 수정 | `설지원` | v |
+| 1:1 질문, 전체 질문, 정보글에 있는 특정 댓글 삭제 | `변주현` | v |
+| 게시글(후기, 1:1 질문, 전체 질문, 정보글) 좋아요/좋아요취소 | `변주현` | v |
+| (마이페이지) 특정 user 정보 조회 | `김은지` | v |
+| (마이페이지) 내게 온 1:1 질문글 리스트 조회 | `설지원` | v |
+| 게시글(후기, 1:1 질문, 전체 질문, 정보글) 신고 | `김은지` | v |
+| 댓글 신고 | `변주현` | v |
+| 유저 신고 | `설지원` | v |
+| 전체 알림 리스트 조회 | `설지원, 김은지` | v |
+| 특정 알림 읽음 처리 | `설지원, 김은지` | v |
+| 특정 알림 삭제 | `설지원, 김은지` | v |
  
 </div>
 </details>
