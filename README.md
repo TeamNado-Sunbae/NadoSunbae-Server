@@ -20,7 +20,7 @@
 <br>
 
 ### 📋 IA  
-![nadosunbaeIA](https://user-images.githubusercontent.com/58043306/148923393-80a1f7ce-e6d2-4f48-87ea-4fbdcd843a70.jpeg)
+![nadosunbaeIA수정본](https://user-images.githubusercontent.com/58043306/150135580-ceca346c-fe48-4724-a83f-c395bef71db3.jpg)
 <br>
 <br>
 
