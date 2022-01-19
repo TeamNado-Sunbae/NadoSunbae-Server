@@ -1,35 +1,19 @@
 const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const getRiviewPostListByMajorId = async (client, majorId, tagFilter) => {
+const getRiviewPostListByFilters = async (client, majorId, writerFilter, tagFilter) => {
   const { rows } = await client.query(
     `
     SELECT DISTINCT ON (review_post.id) *
     FROM review_post
     left join relation_review_post_tag rrpt on review_post.id = rrpt.post_id
     WHERE major_id = $1
+    AND is_first_major IN (${writerFilter.join()})
     AND rrpt.tag_id IN (${tagFilter.join()})
     AND review_post.is_deleted = false
     AND rrpt.is_deleted = false
       `,
     [majorId],
-  );
-  return convertSnakeToCamel.keysToCamel(rows);
-};
-
-const getRiviewPostListByWriterFilter = async (client, majorId, isFirstMajor, tagFilter) => {
-  const { rows } = await client.query(
-    `
-    SELECT DISTINCT ON (review_post.id) *
-    FROM review_post
-    left join relation_review_post_tag rrpt on review_post.id = rrpt.post_id
-    WHERE major_id = $1
-    AND is_first_major = $2
-    AND rrpt.tag_id IN (${tagFilter.join()})
-    AND review_post.is_deleted = false
-    AND rrpt.is_deleted = false
-      `,
-    [majorId, isFirstMajor],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -198,8 +182,7 @@ const updateReviewPost = async (
 };
 
 module.exports = {
-  getRiviewPostListByMajorId,
-  getRiviewPostListByWriterFilter,
+  getRiviewPostListByFilters,
   getReviewPostByPostId,
   createReviewPost,
   deleteReviewPost,

@@ -23,21 +23,26 @@ module.exports = async (req, res) => {
     let reviewPostList;
     if (writerFilter === 1) {
       // 전체 목록 조회
-      reviewPostList = await reviewPostDB.getRiviewPostListByMajorId(client, majorId, tagFilter);
-    } else if (writerFilter === 2) {
-      // 본전공 필터만 선택
-      reviewPostList = await reviewPostDB.getRiviewPostListByWriterFilter(
+      reviewPostList = await reviewPostDB.getRiviewPostListByFilters(
         client,
         majorId,
-        true,
+        [true, false],
+        tagFilter,
+      );
+    } else if (writerFilter === 2) {
+      // 본전공 필터만 선택
+      reviewPostList = await reviewPostDB.getRiviewPostListByFilters(
+        client,
+        majorId,
+        [true],
         tagFilter,
       );
     } else if (writerFilter === 3) {
       // 제 2전공 필터만 선택
-      reviewPostList = await reviewPostDB.getRiviewPostListByWriterFilter(
+      reviewPostList = await reviewPostDB.getRiviewPostListByFilters(
         client,
         majorId,
-        false,
+        [false],
         tagFilter,
       );
     } else {
