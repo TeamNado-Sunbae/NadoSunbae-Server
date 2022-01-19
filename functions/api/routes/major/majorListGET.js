@@ -21,12 +21,28 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     let majorList;
+
     if (filter === "all") {
-      majorList = await majorDB.getAllMajorsByUniversityId(client, universityId);
+      majorList = await majorDB.getMajorListByUniversityId(
+        client,
+        universityId,
+        [true, false],
+        [true, false],
+      );
     } else if (filter === "firstMajor") {
-      majorList = await majorDB.getFirstMajorsByUniversityId(client, universityId);
+      majorList = await majorDB.getMajorListByUniversityId(
+        client,
+        universityId,
+        [true],
+        [true, false],
+      );
     } else if (filter === "secondMajor") {
-      majorList = await majorDB.getSecondMajorsByUniversityId(client, universityId);
+      majorList = await majorDB.getMajorListByUniversityId(
+        client,
+        universityId,
+        [true, false],
+        [true],
+      );
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
