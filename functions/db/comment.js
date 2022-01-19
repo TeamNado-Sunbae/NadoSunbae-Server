@@ -11,7 +11,7 @@ const createComment = async (client, postId, writerId, content) => {
       RETURNING *
       `,
     [postId, writerId, content],
-      );
+  );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
@@ -39,7 +39,7 @@ const updateComment = async (client, commentId, content) => {
       RETURNING * 
       `,
     [data.content, commentId],
-    );
+  );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
@@ -85,6 +85,7 @@ const getCommentListByPostId = async (client, postId) => {
     `
       SELECT * FROM comment
       WHERE post_id = $1
+      ORDER BY created_at
       `,
     [postId],
   );
