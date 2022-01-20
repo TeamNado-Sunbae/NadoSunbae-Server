@@ -27,13 +27,7 @@ module.exports = async (req, res) => {
     tip,
   } = req.body;
 
-  if (!postId) {
-    return res
-      .status(statusCode.BAD_REQUEST)
-      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-  }
-
-  if (!backgroundImageId || !oneLineReview || !prosCons) {
+  if (!postId || !backgroundImageId || !oneLineReview || !prosCons) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
