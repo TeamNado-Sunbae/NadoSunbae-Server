@@ -27,6 +27,7 @@ const getNotificationListByReceiverId = async (client, receiverId) => {
   SELECT * FROM notification
   WHERE receiver_id = $1
   AND is_deleted = false
+  ORDER BY created_at desc
   `,
     [receiverId],
   );
