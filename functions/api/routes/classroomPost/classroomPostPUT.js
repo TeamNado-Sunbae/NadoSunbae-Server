@@ -89,7 +89,7 @@ module.exports = async (req, res) => {
     updatedClassroomPost = {
       post: post,
       writer: writer,
-      like: { isLiked: likeStatus, likeCount: likeCount.likeCount },
+      like: { isLiked: likeStatus, likeCount: Number(likeCount.likeCount) },
     };
 
     res
