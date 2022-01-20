@@ -26,7 +26,7 @@ exports.pushAlarms = async function (receiverTokens, alarmMessage, nickname) {
       title: "나도선배",
       body: alarmMessage + nickname + "님이 답글을 남겼습니다.",
     },
-    token: receiverTokens,
+    tokens: receiverTokens,
   };
 
   admin

@@ -7,9 +7,6 @@ const alarmMessage = require("../../../constants/alarmMessage");
 const notificationType = require("../../../constants/notificationType");
 const db = require("../../../db/db");
 const { commentDB, userDB, majorDB, classroomPostDB, notificationDB } = require("../../../db");
-const notificationType = require("../../../constants/notificationType");
-const postType = require("../../../constants/postType");
-const admin = require("firebase-admin");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -119,6 +116,7 @@ module.exports = async (req, res) => {
 
     // 알람을 받을 댓글 작성자들
     let receivers = await userDB.getUserListByCommentWriterId(client, commentWriterList);
+    console.log(receivers);
 
     // case2-1.내가 쓴 댓글이 있는 타인의 정보글에 답변이 달린 경우
     const receiverTokens = [];
@@ -134,7 +132,7 @@ module.exports = async (req, res) => {
             receiver.id,
             comment.content,
           );
-          return receiverTokens.push(receiver.deviceToken);
+          receiverTokens.push(receiver.deviceToken);
         }),
       );
 
@@ -154,7 +152,7 @@ module.exports = async (req, res) => {
             receiver.id,
             comment.content,
           );
-          return receiverTokens.push(receiver.deviceToken);
+          receiverTokens.push(receiver.deviceToken);
         }),
       );
 
