@@ -114,7 +114,7 @@ module.exports = async (req, res) => {
 
     const like = {
       isLiked: isLiked,
-      likeCount: likeCount.likeCount,
+      likeCount: Number(likeCount.likeCount),
     };
 
     // 성공적으로 post를 가져왔다면, response를 보내줍니다.
