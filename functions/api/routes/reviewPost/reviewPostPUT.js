@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
     tip,
   } = req.body;
 
-  if (!postId) {
+  if (!postId || !backgroundImageId || !oneLineReview || !prosCons) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -124,7 +124,7 @@ module.exports = async (req, res) => {
     updatedReviewPost = {
       post: post,
       writer: writer,
-      like: { isLiked: likeStatus, likeCount: likeCount.likeCount },
+      like: { isLiked: likeStatus, likeCount: Number(likeCount.likeCount) },
       backgroundImage: { imageId: backgroundImageId, imageUrl: backgroundImage.imageUrl },
     };
 
