@@ -5,6 +5,7 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { userDB, reviewPostDB, imageDB, majorDB, likeDB } = require("../../../db");
 const reviewPostContent = require("../../../constants/reviewPostContent");
+const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
@@ -135,6 +136,11 @@ module.exports = async (req, res) => {
       `[CONTENT] ${error}`,
     );
     console.log(error);
+
+    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
+      req.originalUrl
+    } ${error} ${JSON.stringify(error)}`;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
 
     // 그리고 역시 response 객체를 보내줍니다.
     res

@@ -3,46 +3,47 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
+const { userDB, majorDB, likeDB } = require("../../../db");
 
 module.exports = async (req, res) => {
-  const { userId } = req.body;
-
-  if (!userId)
-    return res
-      .status(statusCode.BAD_REQUEST)
-      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-
   let client;
 
   try {
     client = await db.connect(req);
+    let user = await userDB.getUserByUserId(client, req.user.id);
 
-    // 유저 신고 횟수 정보 업데이트
-    const reportedUser = await userDB.updateUserByReport(client, userId);
-    if (!reportedUser) {
+    if (!user) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
     }
 
-    const reportCount = reportedUser.reportCount;
+    const firstMajorName = await majorDB.getMajorNameByMajorId(client, user.firstMajorId);
+    const secondMajorName = await majorDB.getMajorNameByMajorId(client, user.secondMajorId);
+
+    const likeCount = await likeDB.getLikeCountByUserId(client, user.id);
+
+    user = {
+      userId: user.id,
+      profileImageId: user.profileImageId,
+      nickname: user.nickname,
+      firstMajorName: firstMajorName.majorName,
+      firstMajorStart: user.firstMajorStart,
+      secondMajorName: secondMajorName.majorName,
+      secondMajorStart: user.secondMajorStart,
+      isOnQuestion: user.isOnQuestion,
+      likeCount: likeCount.likeCount,
+    };
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.REPORT_SUCCESS, { userId, reportCount }));
+      .send(util.success(statusCode.OK, responseMessage.READ_ONE_USER_SUCCESS, user));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
       `[CONTENT] ${error}`,
     );
     console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
