@@ -86,14 +86,14 @@ module.exports = async (req, res) => {
 
     like = {
       isLiked: isLiked,
-      likeCount: Number(likeCount.likeCount),
+      likeCount: likeCount.likeCount,
     };
 
     // post 댓글 정보
 
     // post 댓글 개수
     let commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
-    commentCount = Number(commentCount.commentCount);
+    commentCount = commentCount.commentCount;
 
     // post 댓글 리스트 - 삭제 댓글 포함
     let commentList = await commentDB.getCommentListByPostId(client, classroomPost.id);

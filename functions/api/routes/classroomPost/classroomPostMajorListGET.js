@@ -60,8 +60,8 @@ module.exports = async (req, res) => {
           content: classroomPost.content,
           createdAt: classroomPost.createdAt,
           writer: writer,
-          likeCount: Number(likeCount.likeCount),
-          commentCount: Number(commentCount.commentCount),
+          likeCount: likeCount.likeCount,
+          commentCount: commentCount.commentCount,
         };
       }),
     );

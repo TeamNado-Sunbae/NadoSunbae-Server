@@ -79,7 +79,7 @@ module.exports = async (req, res) => {
           createdAt: reviewPost.createdAt,
           writer: writer,
           tagList: tagList,
-          likeCount: Number(likeCount.likeCount),
+          likeCount: likeCount.likeCount,
         };
       }),
     );

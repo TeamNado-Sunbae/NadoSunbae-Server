@@ -74,7 +74,7 @@ module.exports = async (req, res) => {
 
     like = {
       isLiked: isLiked,
-      likeCount: Number(likeCount.likeCount),
+      likeCount: likeCount.likeCount,
     };
 
     // post 작성자 정보

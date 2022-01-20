@@ -124,7 +124,7 @@ module.exports = async (req, res) => {
     updatedReviewPost = {
       post: post,
       writer: writer,
-      like: { isLiked: likeStatus, likeCount: Number(likeCount.likeCount) },
+      like: { isLiked: likeStatus, likeCount: likeCount.likeCount },
       backgroundImage: { imageId: backgroundImageId, imageUrl: backgroundImage.imageUrl },
     };
 
