@@ -6,8 +6,8 @@ const db = require("../../../db/db");
 const { classroomPostDB, majorDB, userDB, notificationDB } = require("../../../db");
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
-const admin = require("firebase-admin");
 const slackAPI = require("../../../middlewares/slackAPI");
+const notificationHandlers = require("../../../lib/notificationHandlers");
 
 module.exports = async (req, res) => {
   const { majorId, answererId, postTypeId, title, content } = req.body;
@@ -94,29 +94,7 @@ module.exports = async (req, res) => {
         );
 
         // 디바이스로 보낼 푸시 알림 메시지
-
-        // 메세지 내용
-        const message = {
-          notification: {
-            title: notificationTitle,
-            body: notificationContent,
-          },
-          data: {
-            postId: `${post.postId}`,
-          },
-          token: receiver.deviceToken,
-        };
-
-        // 메세지 전송
-        admin
-          .messaging()
-          .send(message)
-          .then(function (response) {
-            console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response);
-          })
-          .catch(function (error) {
-            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
-          });
+        notificationHandlers.sendUnicast(receiver.token, notificationTitle, notificationContent);
       }
     }
 
