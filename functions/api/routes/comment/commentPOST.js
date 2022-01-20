@@ -7,6 +7,7 @@ const { commentDB, userDB, majorDB, classroomPostDB, notificationDB } = require(
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const admin = require("firebase-admin");
+const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
   const { postId, content } = req.body;
@@ -312,6 +313,11 @@ module.exports = async (req, res) => {
       `[CONTENT] ${error}`,
     );
     console.log(error);
+
+    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
+      req.originalUrl
+    } ${error} ${JSON.stringify(error)}`;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
