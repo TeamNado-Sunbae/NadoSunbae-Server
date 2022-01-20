@@ -6,6 +6,7 @@ const getTagList = async (client) => {
     `
       SELECT id as tag_id, tag_name FROM tag
       WHERE is_deleted = FALSE
+      ORDER BY id
       `,
   );
   return convertSnakeToCamel.keysToCamel(rows);

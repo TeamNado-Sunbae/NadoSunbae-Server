@@ -55,6 +55,7 @@ module.exports = {
   TOKEN_EXPIRED: "토큰이 만료되었습니다.",
   TOKEN_INVALID: "토큰이 유효하지 않습니다.",
   TOKEN_EMPTY: "토큰이 없습니다.",
+  UPDATE_DEVICE_TOKEN_FAIL: "디바이스 토큰 업데이트 실패",
 
   // 인증
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
@@ -82,4 +83,12 @@ module.exports = {
 
   // 신고 성공
   REPORT_SUCCESS: "신고 성공",
+
+  // 알림
+  PUSH_ALARM_SEND_SUCCESS: "푸시 알림 전송 성공",
+  PUSH_ALARM_SEND_FAIL: "푸시 알림 전송 실패",
+  READ_ALL_NOTIFICATIONS_SUCCESS: "모든 알림 조회 성공",
+  READ_ONE_NOTIFICATION_SUCCESS: "알림 읽기 성공",
+  DELETE_ONE_NOTIFICATION_SUCCESS: "알림 삭제 성공",
+  NO_NOTIFICATION: "존재하지 않는 알림입니다.",
 };

@@ -3,58 +3,70 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, commentDB } = require("../../../db");
+const { notificationDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { postId } = req.params;
+  const { notificationId } = req.params;
 
-  if (!postId)
+  if (!notificationId) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+  }
 
   let client;
 
   try {
     client = await db.connect(req);
 
-    // 삭제하려는 유저와 게시글의 작성자가 같은지 확인
-    let post = await classroomPostDB.getClassroomPostByPostId(client, postId);
-
-    if (!post) {
+    // 로그인 한 유저가 알림 읽는 유저가 아닌 경우 403 error 반환
+    const notification = await notificationDB.getNotificationByNotificationId(
+      client,
+      notificationId,
+    );
+    if (!notification) {
       return res
         .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
     }
-    // 같지 않을 경우 403 FORBIDDEN Error
-    if (post.writerId !== req.user.id) {
+
+    if (notification.receiverId !== req.user.id) {
       return res
         .status(statusCode.FORBIDDEN)
         .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
     }
 
-    // 게시글 삭제
-    let deletedPost = await classroomPostDB.deleteClassroomPostByPostId(client, postId);
-
-    if (!deletedPost) {
+    // 알림 읽으면 isRead 업데이트
+    let updatedNotification = await notificationDB.updateNotificationByIsRead(
+      client,
+      notificationId,
+      true,
+    );
+    if (!updatedNotification) {
       return res
         .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
     }
 
-    // 관련된 댓글 삭제
-    const deletedComment = await commentDB.deleteCommentByPostId(client, postId);
-
-    if (!deletedComment) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
-    }
+    updatedNotification = {
+      notificationId: updatedNotification.id,
+      receiverId: updatedNotification.receiverId,
+      isRead: updatedNotification.isRead,
+      createdAt: updatedNotification.createdAt,
+      updatedAt: updatedNotification.updatedAt,
+      isDeleted: updatedNotification.isDeleted,
+    };
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, deletedPost));
+      .send(
+        util.success(
+          statusCode.OK,
+          responseMessage.READ_ONE_NOTIFICATION_SUCCESS,
+          updatedNotification,
+        ),
+      );
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

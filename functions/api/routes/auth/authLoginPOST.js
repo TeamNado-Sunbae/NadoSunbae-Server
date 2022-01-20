@@ -10,9 +10,9 @@ const { firebaseAuth } = require("../../../config/firebaseClient");
 
 const jwtHandlers = require("../../../lib/jwtHandlers");
 module.exports = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, deviceToken } = req.body;
 
-  if (!email || !password) {
+  if (!email || !password || !deviceToken) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -37,12 +37,12 @@ module.exports = async (req, res) => {
           .json(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
       } else if (userFirebase.error.code === "auth/invalid-email") {
         return res
-          .status(statusCode.NOT_FOUND)
-          .json(util.fail(statusCode.NOT_FOUND, responseMessage.INVALID_EMAIL));
+          .status(statusCode.BAD_REQUEST)
+          .json(util.fail(statusCode.BAD_REQUEST, responseMessage.INVALID_EMAIL));
       } else if (userFirebase.error.code === "auth/wrong-password") {
         return res
-          .status(statusCode.NOT_FOUND)
-          .json(util.fail(statusCode.NOT_FOUND, responseMessage.MISS_MATCH_PW));
+          .status(statusCode.BAD_REQUEST)
+          .json(util.fail(statusCode.BAD_REQUEST, responseMessage.MISS_MATCH_PW));
       } else {
         return res
           .status(statusCode.INTERNAL_SERVER_ERROR)
@@ -62,12 +62,28 @@ module.exports = async (req, res) => {
       userId: userData.id,
       email: userData.email,
       universityId: userData.universityId,
+      firstMajorId: userData.firstMajorId,
       firstMajorName: firstMajorName.majorName,
+      secondMajorId: userData.secondMajorId,
       secondMajorName: secondMajorName.majorName,
       isReviewed: userData.isReviewed,
     };
 
     const { accesstoken } = jwtHandlers.sign(userData);
+
+    // deviceToken 저장
+    const updatedUserByDeviceToken = await userDB.updatedUserByDeviceToken(
+      client,
+      userData.id,
+      deviceToken,
+    );
+    if (!updatedUserByDeviceToken) {
+      return res
+        .status(statusCode.INTERNAL_SERVER_ERROR)
+        .send(
+          util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_DEVICE_TOKEN_FAIL),
+        );
+    }
 
     res
       .status(statusCode.OK)

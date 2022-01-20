@@ -3,13 +3,13 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { commentDB } = require("../../../db");
+const { userDB, majorDB, reviewPostDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { commentId } = req.params;
+  const { userId } = req.params;
 
-  if (!commentId) {
+  if (!userId) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -19,27 +19,35 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
+    let user = await userDB.getUserByUserId(client, userId);
 
-    const comment = await commentDB.getCommentByCommentId(client, commentId);
-    if (!comment) {
+    if (!user) {
       return res
         .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
     }
 
-    if (comment.writerId !== req.user.id) {
-      return res
-        .status(statusCode.FORBIDDEN)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.FORBIDDEN_ACCESS));
-    }
+    const firstMajorName = await majorDB.getMajorNameByMajorId(client, user.firstMajorId);
+    const secondMajorName = await majorDB.getMajorNameByMajorId(client, user.secondMajorId);
 
-    let deletedComment = await commentDB.deleteCommentByCommentId(client, commentId);
+    // 작성한 후기글 개수
+    const reviewPostCount = await reviewPostDB.getReviewPostCountByUserId(client, user.id);
+
+    user = {
+      userId: user.id,
+      profileImageId: user.profileImageId,
+      nickname: user.nickname,
+      firstMajorName: firstMajorName.majorName,
+      firstMajorStart: user.firstMajorStart,
+      secondMajorName: secondMajorName.majorName,
+      secondMajorStart: user.secondMajorStart,
+      isOnQuestion: user.isOnQuestion,
+      reviewPostCount: reviewPostCount.count,
+    };
 
     res
       .status(statusCode.OK)
-      .send(
-        util.success(statusCode.OK, responseMessage.DELETE_ONE_COMMENT_SUCCESS, deletedComment),
-      );
+      .send(util.success(statusCode.OK, responseMessage.READ_ONE_USER_SUCCESS, user));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

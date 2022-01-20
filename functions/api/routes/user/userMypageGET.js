@@ -3,22 +3,15 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, majorDB } = require("../../../db");
+const { userDB, majorDB, likeDB } = require("../../../db");
+const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { userId } = req.params;
-
-  if (!userId) {
-    return res
-      .status(statusCode.BAD_REQUEST)
-      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-  }
-
   let client;
 
   try {
     client = await db.connect(req);
-    let user = await userDB.getUserByUserId(client, userId);
+    let user = await userDB.getUserByUserId(client, req.user.id);
 
     if (!user) {
       return res
@@ -29,6 +22,8 @@ module.exports = async (req, res) => {
     const firstMajorName = await majorDB.getMajorNameByMajorId(client, user.firstMajorId);
     const secondMajorName = await majorDB.getMajorNameByMajorId(client, user.secondMajorId);
 
+    const likeCount = await likeDB.getLikeCountByUserId(client, user.id);
+
     user = {
       userId: user.id,
       profileImageId: user.profileImageId,
@@ -38,6 +33,7 @@ module.exports = async (req, res) => {
       secondMajorName: secondMajorName.majorName,
       secondMajorStart: user.secondMajorStart,
       isOnQuestion: user.isOnQuestion,
+      likeCount: likeCount.likeCount,
     };
 
     res
@@ -49,6 +45,11 @@ module.exports = async (req, res) => {
       `[CONTENT] ${error}`,
     );
     console.log(error);
+
+    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
+      req.originalUrl
+    } ${error} ${JSON.stringify(error)}`;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

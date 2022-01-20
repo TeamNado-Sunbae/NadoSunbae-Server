@@ -20,6 +20,7 @@ const {
   CAREER,
   TIP,
 } = require("../../../constants/reviewPostContent");
+const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
   const {
@@ -118,6 +119,7 @@ module.exports = async (req, res) => {
     const writer = {
       writerId: updatedUser.id,
       nickname: updatedUser.nickname,
+      profileImageId: updatedUser.profileImageId,
       firstMajorName: firstMajorName.majorName,
       firstMajorStart: updatedUser.firstMajorStart,
       secondMajorName: secondMajorName.majorName,
@@ -154,6 +156,11 @@ module.exports = async (req, res) => {
       `[CONTENT] ${error}`,
     );
     console.log(error);
+
+    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
+      req.originalUrl
+    } ${error} ${JSON.stringify(error)}`;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

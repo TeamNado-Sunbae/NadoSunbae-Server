@@ -5,6 +5,7 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { reviewPostDB, userDB, likeDB, majorDB, relationReviewPostTagDB } = require("../../../db");
+const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
   const { sort } = req.query;
@@ -23,10 +24,10 @@ module.exports = async (req, res) => {
     let reviewPostList;
     if (writerFilter === 1) {
       // 전체 목록 조회
-      reviewPostList = await reviewPostDB.getRiviewPostListByMajorId(client, majorId, tagFilter);
+      reviewPostList = await reviewPostDB.getReviewPostListByMajorId(client, majorId, tagFilter);
     } else if (writerFilter === 2) {
       // 본전공 필터만 선택
-      reviewPostList = await reviewPostDB.getRiviewPostListByWriterFilter(
+      reviewPostList = await reviewPostDB.getReviewPostListByWriterFilter(
         client,
         majorId,
         true,
@@ -34,7 +35,7 @@ module.exports = async (req, res) => {
       );
     } else if (writerFilter === 3) {
       // 제 2전공 필터만 선택
-      reviewPostList = await reviewPostDB.getRiviewPostListByWriterFilter(
+      reviewPostList = await reviewPostDB.getReviewPostListByWriterFilter(
         client,
         majorId,
         false,
@@ -69,11 +70,11 @@ module.exports = async (req, res) => {
           secondMajorStart: writer.secondMajorStart,
         };
 
-        const tagList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.id);
-        const likeCount = await likeDB.getLikeCountByPostId(client, reviewPost.id, 1);
+        const tagList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.postId);
+        const likeCount = await likeDB.getLikeCountByPostId(client, reviewPost.postId, 1);
 
         return {
-          postId: reviewPost.id,
+          postId: reviewPost.postId,
           oneLineReview: reviewPost.oneLineReview,
           createdAt: reviewPost.createdAt,
           writer: writer,
@@ -102,6 +103,12 @@ module.exports = async (req, res) => {
       `[CONTENT] ${error}`,
     );
     console.log(error);
+
+    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
+      req.originalUrl
+    } ${error} ${JSON.stringify(error)}`;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
       .send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));

@@ -4,6 +4,7 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { tagDB } = require("../../../db");
+const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
   let client;
@@ -33,6 +34,11 @@ module.exports = async (req, res) => {
       `[CONTENT] ${error}`,
     );
     console.log(error);
+
+    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
+      req.originalUrl
+    } ${error} ${JSON.stringify(error)}`;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
 
     // 그리고 역시 response 객체를 보내줍니다.
     res
