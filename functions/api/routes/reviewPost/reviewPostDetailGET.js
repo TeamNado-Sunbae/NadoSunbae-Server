@@ -36,8 +36,8 @@ module.exports = async (req, res) => {
     let post = await reviewPostDB.getReviewPostByPostId(client, postId);
     if (!post) {
       return res
-        .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NO_POST));
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
     // 현재 뷰어의 좋아요 정보 가져오기 (후기글의 postTypeId는 1 )
     let likeCount = await likeDB.getLikeCountByPostId(client, postId, 1);
