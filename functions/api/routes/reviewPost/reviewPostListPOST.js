@@ -69,11 +69,11 @@ module.exports = async (req, res) => {
           secondMajorStart: writer.secondMajorStart,
         };
 
-        const tagList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.id);
-        const likeCount = await likeDB.getLikeCountByPostId(client, reviewPost.id, 1);
+        const tagList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.postId);
+        const likeCount = await likeDB.getLikeCountByPostId(client, reviewPost.postId, 1);
 
         return {
-          postId: reviewPost.id,
+          postId: reviewPost.postId,
           oneLineReview: reviewPost.oneLineReview,
           createdAt: reviewPost.createdAt,
           writer: writer,
