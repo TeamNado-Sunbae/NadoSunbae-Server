@@ -9,7 +9,6 @@ const reviewPostContent = require("../../../constants/reviewPostContent");
 module.exports = async (req, res) => {
   const { postId } = req.params;
 
-  console.log(postId);
   // 필요한 값이 없을 때 보내주는 response
   if (!postId) {
     return res
