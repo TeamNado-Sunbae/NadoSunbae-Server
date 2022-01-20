@@ -2,21 +2,21 @@ const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
 const createNotification = async (
   client,
-  senderId,
-  receiverId,
   postId,
   notificationType,
+  senderId,
+  receiverId,
   content,
 ) => {
   const { rows } = await client.query(
     `
-      INSERT INTO notification
-      (sender_id, receiver_id, post_id, notification_type, content)
-      VALUES
-      ($1, $2, $3, $4, $5)
-      RETURNING *
-      `,
-    [senderId, receiverId, postId, notificationType, content],
+        INSERT INTO notification
+        (post_id, notification_type, sender_id, receiver_id, content)
+        VALUES
+        ($1, $2, $3, $4, $5)
+        RETURNING *
+        `,
+    [postId, notificationType, senderId, receiverId, content],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };

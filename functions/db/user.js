@@ -185,11 +185,11 @@ const updatedUserByDeviceToken = async (client, userId, deviceToken) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUsersByCommentWriterId = async (client, commentWriterIdList) => {
+const getUserListByCommentWriterId = async (client, CommentWriterList) => {
   const { rows } = await client.query(
     `
       SELECT DISTINCT id, device_token FROM "user"
-      WHERE id IN (${commentWriterIdList.join()})
+      WHERE id IN (${CommentWriterList.join()})
       AND is_deleted = FALSE
       `,
   );
@@ -206,6 +206,6 @@ module.exports = {
   getUserByUserId,
   getUserByFirebaseId,
   getUsersByMajorId,
+  getUserListByCommentWriterId,
   updatedUserByDeviceToken,
-  getUsersByCommentWriterId,
 };

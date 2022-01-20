@@ -1,12 +1,12 @@
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
+const { pushAlarm, pushAlarms } = require("../../../lib/pushAlarm");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
+const alarmMessage = require("../../../constants/alarmMessage");
+const notificationType = require("../../../constants/notificationType");
 const db = require("../../../db/db");
 const { commentDB, userDB, majorDB, classroomPostDB, notificationDB } = require("../../../db");
-const notificationType = require("../../../constants/notificationType");
-const postType = require("../../../constants/postType");
-const admin = require("firebase-admin");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -67,240 +67,96 @@ module.exports = async (req, res) => {
       writer: writer,
     };
 
-    // 푸시 알림 전송을 위한 case 설정
-    // case 1은 마이페이지 관련
+    // 푸시알림 보내기
 
-    // 푸시 알림 제목은 나도선배 통일
-    const notificationTitle = "나도선배";
+    // case1.원글 작성자에게 푸시알림 보내기
 
-    // 댓글이 작성된 게시글
-    const commentPost = await classroomPostDB.getClassroomPostByPostId(client, comment.postId);
+    // 알림을 받을 유저
+    const receiver = await userDB.getUserByUserId(client, postData.writerId);
+    // 알림을 보내는 유저
+    const sender = req.user;
 
-    // [ case 2: 내가 쓴 글에 답글이 달린 경우 - 질문글 ]
+    let notificationTypeId;
 
-    // receiver는 게시글 작성자, sender는 댓글 작성자
-    let receiver = await userDB.getUserByUserId(client, commentPost.writerId);
-    let sender = await userDB.getUserByUserId(client, comment.writer.writerId);
-    let notificationContent = `작성하신 질문글에 ${sender.nickname}님이 답글을 남겼습니다.`;
-
-    if (
-      commentPost.postTypeId === postType.QUESTION_TO_EVERYONE ||
-      commentPost.postTypeId === postType.QUESTION_TO_PERSON
-    ) {
-      if (receiver.id !== sender.id) {
-        // DB에 알림 저장
-        const notification = await notificationDB.createNotification(
-          client,
-          sender.id,
-          receiver.id,
-          comment.postId,
-          notificationType.MY_QUESTION_COMMENT_ALARM,
-          comment.content,
-        );
-
-        // 디바이스로 보낼 푸시 알림 메시지
-
-        // 메세지 내용
-        const message = {
-          notification: {
-            title: notificationTitle,
-            body: notificationContent,
-          },
-          token: receiver.deviceToken,
-        };
-
-        // 메세지 전송
-        admin
-          .messaging()
-          .send(message)
-          .then(function (response) {
-            console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response);
-          })
-          .catch(function (error) {
-            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
-          });
+    // 원글 작성자와 댓글 작성자가 다른 경우에만 푸시알림 전송
+    if (receiver.id !== req.user.id) {
+      // case1-1.정보글일 경우 - 정보글 작성자에게 푸시알림 전송
+      if (postData.postTypeId === 2) {
+        notificationTypeId = notificationType.MY_INFORMATION_COMMENT_ALARM;
+        await pushAlarm(receiver.deviceToken, alarmMessage.MY_INFORMATION_POST, writer.nickname);
+      } else {
+        // case1-2.질문글일 경우 - 질문글 작성자에게 푸시알림 전송
+        notificationTypeId = notificationType.MY_QUESTION_COMMENT_ALARM;
+        await pushAlarm(receiver.deviceToken, alarmMessage.MY_QUESTION_POST, writer.nickname);
       }
+      await notificationDB.createNotification(
+        client,
+        postData.id,
+        notificationTypeId,
+        sender.id,
+        receiver.id,
+        comment.content,
+      );
     }
 
-    // [ case 3: 내가 쓴 글에 답글이 달린 경우 - 정보글 ]
+    /** case2.내가 쓴 댓글이 있는 타인의 글에 답변이 달린 경우
+        댓글 리스트에 있는 댓글 작성자들한테 모두 푸시알림 보내기 (단, 원글이 내가 쓴 글일 경우 & 댓글 리스트에 내가 쓴 댓글이 있는 경우는 제외)
+     **/
 
-    // receiver는 게시글 작성자, sender는 댓글 작성자
-    receiver = await userDB.getUserByUserId(client, commentPost.writerId);
-    sender = await userDB.getUserByUserId(client, comment.writer.writerId);
-    notificationContent = `작성하신 정보글에 ${sender.nickname}님이 답글을 남겼습니다.`;
+    // 댓글 작성자 리스트 가져오기
+    let commentWriterList = await commentDB.getCommentWriter(client, postData.id, sender.id);
 
-    if (commentPost.postTypeId === postType.INFORMATION) {
-      if (receiver.id !== sender.id) {
-        // DB에 알림 저장
-        const notification = await notificationDB.createNotification(
-          client,
-          sender.id,
-          receiver.id,
-          comment.postId,
-          notificationType.MY_INFORMATION_COMMENT_ALARM,
-          comment.content,
-        );
-
-        // 디바이스로 보낼 푸시 알림 메시지
-
-        // 메세지 내용
-        const message = {
-          notification: {
-            title: notificationTitle,
-            body: notificationContent,
-          },
-          token: receiver.deviceToken,
-        };
-
-        // 메세지 전송
-        admin
-          .messaging()
-          .send(message)
-          .then(function (response) {
-            console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response);
-          })
-          .catch(function (error) {
-            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
-          });
-      }
-    }
-
-    // [ case 4: 내가 답글을 쓴 타인 글에 새 답글이 달린 경우 - 질문글 ]
-
-    // 게시글에 달린 댓글 리스트
-    let commentList = await commentDB.getCommentListByPostId(client, comment.postId);
-
-    // 게시글에 달린 댓글 작성자들 아이디 리스트
-    let commentWriterIdList = [];
-    commentList.map((comment) => {
-      commentWriterIdList.push(comment.writerId);
+    // 배열에서 값만 가져오기
+    commentWriterList = commentWriterList.map((commentWriters) => {
+      return commentWriters.writerId;
     });
 
-    // 게시글에 달린 댓글 작성자들 아이디 리스트에서 중복된 작성자는 제거
-    let set = new Set(commentWriterIdList);
-    commentWriterIdList = [...set];
+    // 가져온 리스트에서 중복 값 제거하기
+    commentWriterList = [...new Set(commentWriterList)];
 
-    // receiver는 게시글에 달린 댓글 작성자들, sender는 댓글 작성자
-    let receivers = await userDB.getUsersByCommentWriterId(client, commentWriterIdList);
-    sender = await userDB.getUserByUserId(client, comment.writer.writerId);
-    notificationContent = `답글을 작성하신 질문글에 ${sender.nickname}님이 답글을 남겼습니다.`;
+    // 알람을 받을 댓글 작성자들
+    const receivers = await userDB.getUserListByCommentWriterId(client, commentWriterList);
 
-    if (
-      commentPost.postTypeId === postType.QUESTION_TO_EVERYONE ||
-      commentPost.postTypeId == postType.QUESTION_TO_PERSON
-    ) {
-      const receiverTokens = [];
-
-      // DB에 알림 저장 및 receiverTokens 배열 값 저장
+    // case2-1.내가 쓴 댓글이 있는 타인의 정보글에 답변이 달린 경우
+    const receiverTokens = [];
+    if (postData.postTypeId === 2) {
+      //receiverTokens 배열 값 저장 및 notification 생성
       await Promise.all(
         receivers.map(async (receiver) => {
-          if (receiver.id !== sender.id && receiver.id !== commentPost.writerId) {
-            const notification = await notificationDB.createNotification(
-              client,
-              sender.id,
-              receiver.id,
-              comment.postId,
-              notificationType.OTHER_QUESTION_COMMENT_ALARM,
-              comment.content,
-            );
-            receiverTokens.push(receiver.deviceToken);
-          }
+          await notificationDB.createNotification(
+            client,
+            comment.postId,
+            notificationType.OTHER_INFORMATION_COMMENT_ALARM,
+            sender.id,
+            receiver.id,
+            comment.content,
+          );
+          receiverTokens.push(receiver.deviceToken);
         }),
       );
 
-      // 디바이스로 보낼 푸시 알림 메시지
-
-      // 댓글 리스트에 있는 유저들의 디바이스 토큰 정보 저장
-      // 댓글이 있을 때만 푸시알림 전송, 댓글이 없을 경우 tokens가 빈 배열이라서 오류남.
-
       if (receiverTokens.length !== 0) {
-        // 메세지 내용
-        const message = {
-          notification: {
-            title: notificationTitle,
-            body: notificationContent,
-          },
-          tokens: receiverTokens,
-        };
-
-        // 메세지 전송
-        admin
-          .messaging()
-          .sendMulticast(message)
-          .then((response) => {
-            console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response.successCount);
-          })
-          .catch(function (error) {
-            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
-          });
+        await pushAlarms(receiverTokens, alarmMessage.ANSWER_TO_INFORMATION, writer.nickname);
       }
-    }
-
-    // [ case 5: 내가 답글을 쓴 타인 글에 새 답글이 달린 경우 - 정보글 ]
-
-    // 게시글에 달린 댓글 리스트
-    commentList = await commentDB.getCommentListByPostId(client, comment.postId);
-
-    // 게시글에 달린 댓글 작성자들 아이디 리스트
-    commentWriterIdList = [];
-    commentList.map((comment) => {
-      commentWriterIdList.push(comment.writerId);
-    });
-
-    // 게시글에 달린 댓글 작성자들 아이디 리스트에서 중복된 작성자는 제거
-    set = new Set(commentWriterIdList);
-    commentWriterIdList = [...set];
-
-    // receiver는 게시글에 달린 댓글 작성자들, sender는 댓글 작성자
-    receivers = await userDB.getUsersByCommentWriterId(client, commentWriterIdList);
-    sender = await userDB.getUserByUserId(client, comment.writer.writerId);
-    notificationContent = `답글을 작성하신 정보글에 ${sender.nickname}님이 답글을 남겼습니다.`;
-
-    if (commentPost.postTypeId === postType.INFORMATION) {
-      const receiverTokens = [];
-
-      // DB에 알림 저장 및 receiverTokens 배열 값 저장
+    } else {
+      // case2-2.내가 쓴 댓글이 있는 타인의 질문글에 답변이 달린 경우
+      //receiverTokens 배열 값 저장 및 notification 생성
       await Promise.all(
         receivers.map(async (receiver) => {
-          if (receiver.id !== sender.id && receiver.id !== commentPost.writerId) {
-            const notification = await notificationDB.createNotification(
-              client,
-              sender.id,
-              receiver.id,
-              comment.postId,
-              notificationType.OTHER_INFORMATION_COMMENT_ALARM,
-              comment.content,
-            );
-            receiverTokens.push(receiver.deviceToken);
-          }
+          await notificationDB.createNotification(
+            client,
+            comment.postId,
+            notificationType.OTHER_QUESTION_COMMENT_ALARM,
+            sender.id,
+            receiver.id,
+            comment.content,
+          );
+          receiverTokens.push(receiver.deviceToken);
         }),
       );
 
-      // 디바이스로 보낼 푸시 알림 메시지
-
-      // 댓글 리스트에 있는 유저들의 디바이스 토큰 정보 저장
-      // 댓글이 있을 때만 푸시알림 전송, 댓글이 없을 경우 tokens가 빈 배열이라서 오류남.
-
       if (receiverTokens.length !== 0) {
-        // 메세지 내용
-        const message = {
-          notification: {
-            title: notificationTitle,
-            body: notificationContent,
-          },
-          tokens: receiverTokens,
-        };
-
-        // 메세지 전송
-        admin
-          .messaging()
-          .sendMulticast(message)
-          .then((response) => {
-            console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response.successCount);
-          })
-          .catch(function (error) {
-            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
-          });
+        await pushAlarms(receiverTokens, alarmMessage.ANSWER_TO_QUESTION, writer.nickname);
       }
     }
 

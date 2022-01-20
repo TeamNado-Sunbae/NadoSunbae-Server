@@ -142,6 +142,23 @@ const deleteCommentByCommentId = async (client, commentId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getCommentWriter = async (client, postId, writerId) => {
+  const { rows } = await client.query(
+    `
+    SELECT c.writer_id
+    FROM comment c 
+    LEFT JOIN classroom_post cp
+    ON c.post_id = cp.id
+    WHERE c.post_id = $1
+    AND c.is_deleted = false
+    AND c.writer_id != $2
+    AND c.writer_id != cp.writer_id
+    `,
+    [postId, writerId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createComment,
   getCommentCountByPostId,
@@ -151,4 +168,5 @@ module.exports = {
   updateComment,
   deleteCommentByCommentId,
   deleteCommentByPostId,
+  getCommentWriter,
 };
