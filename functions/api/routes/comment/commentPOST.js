@@ -105,9 +105,6 @@ module.exports = async (req, res) => {
             title: notificationTitle,
             body: notificationContent,
           },
-          data: {
-            postId: `${comment.postId}`,
-          },
           token: receiver.deviceToken,
         };
 
@@ -150,9 +147,6 @@ module.exports = async (req, res) => {
           notification: {
             title: notificationTitle,
             body: notificationContent,
-          },
-          data: {
-            postId: `${comment.postId}`,
           },
           token: receiver.deviceToken,
         };
@@ -225,9 +219,6 @@ module.exports = async (req, res) => {
             title: notificationTitle,
             body: notificationContent,
           },
-          data: {
-            postId: `${comment.postId}`,
-          },
           tokens: receiverTokens,
         };
 
@@ -295,9 +286,6 @@ module.exports = async (req, res) => {
           notification: {
             title: notificationTitle,
             body: notificationContent,
-          },
-          data: {
-            postId: `${comment.postId}`,
           },
           tokens: receiverTokens,
         };
