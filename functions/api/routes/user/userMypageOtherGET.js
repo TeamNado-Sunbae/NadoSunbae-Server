@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, majorDB } = require("../../../db");
+const { userDB, majorDB, reviewPostDB } = require("../../../db");
 
 module.exports = async (req, res) => {
   const { userId } = req.params;
@@ -29,6 +29,9 @@ module.exports = async (req, res) => {
     const firstMajorName = await majorDB.getMajorNameByMajorId(client, user.firstMajorId);
     const secondMajorName = await majorDB.getMajorNameByMajorId(client, user.secondMajorId);
 
+    // 작성한 후기글 개수
+    const reviewPostCount = await reviewPostDB.getReviewPostCountByUserId(client, user.id);
+
     user = {
       userId: user.id,
       profileImageId: user.profileImageId,
@@ -38,6 +41,7 @@ module.exports = async (req, res) => {
       secondMajorName: secondMajorName.majorName,
       secondMajorStart: user.secondMajorStart,
       isOnQuestion: user.isOnQuestion,
+      reviewPostCount: reviewPostCount.count,
     };
 
     res
