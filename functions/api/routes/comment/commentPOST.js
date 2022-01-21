@@ -106,6 +106,18 @@ module.exports = async (req, res) => {
             title: notificationTitle,
             body: notificationContent,
           },
+          android: {
+            notification: {
+              sound: "default",
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: "default",
+              },
+            },
+          },
           token: receiver.deviceToken,
         };
 
@@ -148,6 +160,18 @@ module.exports = async (req, res) => {
           notification: {
             title: notificationTitle,
             body: notificationContent,
+          },
+          android: {
+            notification: {
+              sound: "default",
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: "default",
+              },
+            },
           },
           token: receiver.deviceToken,
         };
@@ -220,6 +244,18 @@ module.exports = async (req, res) => {
             title: notificationTitle,
             body: notificationContent,
           },
+          android: {
+            notification: {
+              sound: "default",
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: "default",
+              },
+            },
+          },
           tokens: receiverTokens,
         };
 
@@ -287,6 +323,18 @@ module.exports = async (req, res) => {
           notification: {
             title: notificationTitle,
             body: notificationContent,
+          },
+          android: {
+            notification: {
+              sound: "default",
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: "default",
+              },
+            },
           },
           tokens: receiverTokens,
         };
