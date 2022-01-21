@@ -101,6 +101,18 @@ module.exports = async (req, res) => {
             title: notificationTitle,
             body: notificationContent,
           },
+          android: {
+            notification: {
+              sound: "default",
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: "default",
+              },
+            },
+          },
           data: {
             postId: `${post.postId}`,
           },
