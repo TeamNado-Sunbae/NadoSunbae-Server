@@ -272,7 +272,7 @@ ex) [FEAT] implement postGET
 | Name | Role |
 | :---: | :-----: |
 | juhyeon | DB 설계, API 명세서 작성, API 구현, README 작성 |
-| eunji | DB 설계, API 명세서 작성, API 구현, 자동 테스트 환경  |
+| eunji | DB 설계, API 명세서 작성, API 구현, 자동 테스트 환경 구축 |
 | seol | DB 설계, API 명세서 작성, 초기 세팅, API 구현 |
 <br>
 
