@@ -69,7 +69,9 @@ module.exports = async (req, res) => {
     if (sort === "recent") {
       classroomPostList = _.sortBy(classroomPostList, "createdAt").reverse();
     } else if (sort === "like") {
-      classroomPostList = _.sortBy(classroomPostList, "likeCount").reverse();
+      classroomPostList = _.sortBy(classroomPostList, (obj) =>
+        parseInt(obj.likeCount, 10),
+      ).reverse();
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
