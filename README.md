@@ -240,6 +240,7 @@ ex) [FEAT] implement postGET
   },
   "main": "index.js",
   "dependencies": {
+    "axios": "^0.25.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dayjs": "^1.10.7",
@@ -264,7 +265,6 @@ ex) [FEAT] implement postGET
   },
   "private": true
 }
-
 ```
 <br>
 
