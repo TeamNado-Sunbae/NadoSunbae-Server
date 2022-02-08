@@ -133,6 +133,7 @@ module.exports = async (req, res) => {
       }),
     );
 
+    // 메세지 리스트 앞에 원글 포함
     messageList.unshift(post);
 
     res.status(statusCode.OK).send(
