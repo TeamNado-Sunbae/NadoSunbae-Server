@@ -14,13 +14,6 @@ module.exports = async (req, res) => {
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
 
-  // 후기 미작성자는 정보글 상세조회 불가
-  if (req.user.isReviewed === false) {
-    return res
-      .status(statusCode.FORBIDDEN)
-      .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
-  }
-
   let client;
 
   try {
@@ -32,9 +25,20 @@ module.exports = async (req, res) => {
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
+
     // questioner, answerer 정보
     const questionerId = classroomPost.writerId;
     const answererId = classroomPost.answererId;
+
+    // 후기 미작성자는
+    if (req.user.isReviewed === false) {
+      // 전체질문이나 1:1 질문 상세조회 불가 - 답변자가 본인인 경우 제외
+      if (!(answererId && answererId === req.user.id)) {
+        return res
+          .status(statusCode.FORBIDDEN)
+          .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
+      }
+    }
 
     // post 좋아요 정보
 
@@ -42,7 +46,7 @@ module.exports = async (req, res) => {
     let postTypeId;
 
     // answererId 없을 때는 전체 질문
-    if (!classroomPost.answererId) {
+    if (!answererId) {
       postTypeId = postType.QUESTION_TO_EVERYONE;
     } else {
       postTypeId = postType.QUESTION_TO_PERSON;
