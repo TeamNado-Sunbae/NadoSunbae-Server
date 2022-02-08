@@ -2,6 +2,7 @@ const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
+const postType = require("../../../constants/postType");
 const db = require("../../../db/db");
 const { classroomPostDB, userDB, majorDB, likeDB, postTypeDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
@@ -37,31 +38,17 @@ module.exports = async (req, res) => {
 
     // post 좋아요 정보
 
-    // postType을 알아야 함
-    const questionToEveryonePostTypeId = await postTypeDB.getPostTypeIdByPostTypeName(
-      client,
-      "questionToEveryone",
-    );
-
-    const questionToPersonPostTypeId = await postTypeDB.getPostTypeIdByPostTypeName(
-      client,
-      "questionToPerson",
-    );
-
-    // 로그인 유저가 좋아요한 상태인지
-    const requestUser = req.user;
-
     // 1:1 질문인지, 전체 질문인지
     let postTypeId;
 
     // answererId 없을 때는 전체 질문
     if (!classroomPost.answererId) {
-      postTypeId = questionToEveryonePostTypeId.id;
+      postTypeId = postType.QUESTION_TO_EVERYONE;
     } else {
-      postTypeId = questionToPersonPostTypeId.id;
+      postTypeId = postType.QUESTION_TO_PERSON;
     }
 
-    let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, requestUser.id);
+    let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, req.user.id);
     let isLiked;
     if (!like) {
       isLiked = false;
