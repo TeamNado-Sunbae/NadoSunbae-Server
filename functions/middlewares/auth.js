@@ -8,10 +8,9 @@ const { userDB } = require("../db");
 const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../constants/jwt");
 
 const checkUser = async (req, res, next) => {
-  // request headers에 accesstoken라는 이름으로 담긴 값(jwt)을 가져옵니다.
-  const { accesstoken } = req.headers;
+  const { accesstoken, refreshtoken } = req.headers;
 
-  // accesstoken이 없을 시의 에러 처리입니다.
+  // accesstoken이 없을 시
   if (!accesstoken)
     return res
       .status(statusCode.BAD_REQUEST)
@@ -21,21 +20,61 @@ const checkUser = async (req, res, next) => {
   try {
     client = await db.connect(req);
 
-    // jwt를 해독하고 인증 절차를 거칩니다.
-    const decodedToken = jwtHandlers.verify(accesstoken);
+    // token 해독
+    let decodedAccessToken = jwtHandlers.verify(accesstoken);
+    let decodedRefreshToken = jwtHandlers.verify(refreshtoken);
 
-    // jwt가 만료되었거나 잘못되었을 시의 에러 처리입니다.
-    if (decodedToken === TOKEN_EXPIRED)
-      return res
-        .status(statusCode.UNAUTHORIZED)
-        .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_EXPIRED));
-    if (decodedToken === TOKEN_INVALID)
+    // 토큰 만료 확인 및 재발급
+    if (decodedAccessToken === TOKEN_EXPIRED) {
+      // access, refresh token 둘 다 만료 (재로그인 필요)
+      if (decodedRefreshToken === TOKEN_EXPIRED) {
+        return res
+          .status(statusCode.UNAUTHORIZED)
+          .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_EXPIRED));
+      }
+      // access token만 만료
+      const userData = await userDB.getUserByRefreshToken(client, refreshtoken);
+      if (userData.id) {
+        // acesstoken 재발급
+        const { accesstoken } = jwtHandlers.sign(userData);
+        return res.status(statusCode.OK).send(
+          util.success(statusCode.OK, responseMessage.UPDATE_TOKEN_SUCCESS, {
+            newAccesstoken: accesstoken,
+          }),
+        );
+      }
+    } else if (decodedAccessToken === TOKEN_INVALID) {
       return res
         .status(statusCode.UNAUTHORIZED)
         .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID));
-
+    }
+    // accesstoken 유효한 경우
+    else {
+      // refreshtoken 만료된 경우
+      if (decodedRefreshToken === TOKEN_EXPIRED) {
+        // refreshtoken 재발급 및 db에 저장
+        const { refreshtoken } = jwtHandlers.refresh();
+        const updatedUserByRefreshToken = await userDB.updateUserByRefreshToken(
+          client,
+          decodedAccessToken.id,
+          refreshtoken,
+        );
+        if (!updatedUserByRefreshToken) {
+          return res
+            .status(statusCode.INTERNAL_SERVER_ERROR)
+            .send(
+              util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_DEVICE_TOKEN_FAIL),
+            );
+        }
+        return res.status(statusCode.OK).send(
+          util.success(statusCode.OK, responseMessage.UPDATE_TOKEN_SUCCESS, {
+            newRefreshtoken: refreshtoken,
+          }),
+        );
+      }
+    }
     // 해독된 jwt에 담긴 id 값이 우리가 DB에서 찾고자 하는 user의 id입니다.
-    const userId = decodedToken.id;
+    const userId = decodedAccessToken.id;
     // 유저id가 없을 시의 에러 처리입니다.
     if (!userId)
       return res
