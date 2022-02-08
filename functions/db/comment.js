@@ -71,7 +71,7 @@ const updateCommentByReport = async (client, commentId) => {
 const getCommentCountByPostId = async (client, postId) => {
   const { rows } = await client.query(
     `
-    SELECT count(*) comment_count FROM comment
+    SELECT cast(count(*) as integer) AS comment_count FROM comment
     WHERE post_id = $1
     AND is_deleted = false
     `,
