@@ -24,9 +24,10 @@ const sign = (user) => {
     firebaseId: user.firebaseId,
   };
 
-  // accesstoken 발급
+  // accesstoken, refreshtoken 발급
   const result = {
     accesstoken: jwt.sign(payload, secretKey, accessTokenOptions),
+    refreshtoken: jwt.sign({}, secretKey, refreshTokenOptions),
   };
   return result;
 };
@@ -55,13 +56,7 @@ const verify = (token) => {
   return decoded;
 };
 
-// refresh token 발급, payload 없음
-const refresh = () => {
-  return jwt.sign({}, secretKey, refreshTokenOptions);
-};
-
 module.exports = {
   sign,
   verify,
-  refresh,
 };
