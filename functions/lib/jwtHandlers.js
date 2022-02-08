@@ -1,4 +1,5 @@
 const functions = require("firebase-functions");
+const { user } = require("firebase-functions/v1/auth");
 const jwt = require("jsonwebtoken");
 const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../constants/jwt");
 
@@ -6,7 +7,7 @@ const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../constants/jwt");
 const secretKey = process.env.JWT_SECRET;
 const accessTokenOptions = {
   algorithm: "HS256",
-  expiresIn: "1h",
+  expiresIn: "1m",
   issuer: "nadoSunbae",
 };
 const refreshTokenOptions = {
@@ -24,18 +25,19 @@ const sign = (user) => {
     firebaseId: user.firebaseId,
   };
 
-  // accesstoken 발급
   const result = {
+    // accesstoken 발급
     accesstoken: jwt.sign(payload, secretKey, accessTokenOptions),
   };
   return result;
 };
 
-// refresh token 발급, payload 없음
 const refresh = () => {
+  // refresh token 발급, payload 없음
   const result = {
-    refreshtoken: jwt.sign({}, secretKey, refreshTokenOptions),
+    refreshtoken: jwt.sign({ id: user.id }, secretKey, refreshTokenOptions),
   };
+  return result;
 };
 
 // JWT를 해독하고, 해독한 JWT가 우리가 만든 JWT가 맞는지 확인합니다 (인증).
@@ -64,6 +66,6 @@ const verify = (token) => {
 
 module.exports = {
   sign,
-  verify,
   refresh,
+  verify,
 };
