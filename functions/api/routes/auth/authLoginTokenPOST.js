@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, majorDB } = require("../../../db");
+const { majorDB } = require("../../../db");
 
 module.exports = async (req, res) => {
   let user = req.user;
