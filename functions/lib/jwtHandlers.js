@@ -24,12 +24,18 @@ const sign = (user) => {
     firebaseId: user.firebaseId,
   };
 
-  // accesstoken, refreshtoken 발급
+  // accesstoken 발급
   const result = {
     accesstoken: jwt.sign(payload, secretKey, accessTokenOptions),
-    refreshtoken: jwt.sign({}, secretKey, refreshTokenOptions),
   };
   return result;
+};
+
+// refresh token 발급, payload 없음
+const refresh = () => {
+  const result = {
+    refreshtoken: jwt.sign({}, secretKey, refreshTokenOptions),
+  };
 };
 
 // JWT를 해독하고, 해독한 JWT가 우리가 만든 JWT가 맞는지 확인합니다 (인증).
@@ -59,4 +65,5 @@ const verify = (token) => {
 module.exports = {
   sign,
   verify,
+  refresh,
 };
