@@ -148,7 +148,7 @@ const getUsersByMajorId = async (client, majorId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const updatedUserByDeviceToken = async (client, userId, deviceToken) => {
+const updateUserByDeviceToken = async (client, userId, deviceToken) => {
   const { rows: existingRows } = await client.query(
     `
     SELECT * FROM "user"
@@ -173,6 +173,31 @@ const updatedUserByDeviceToken = async (client, userId, deviceToken) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const updateUserByRefreshToken = async (client, userId, refreshToken) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM "user"
+    WHERE id = $1
+    AND is_deleted = FALSE
+    `,
+    [userId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET refresh_token = $2, updated_at = now()
+    WHERE id = $1
+    AND is_deleted = FALSE
+    RETURNING *
+    `,
+    [userId, refreshToken],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const getUsersByCommentWriterId = async (client, commentWriterIdList) => {
   const { rows } = await client.query(
     `
@@ -193,6 +218,7 @@ module.exports = {
   getUserByUserId,
   getUserByFirebaseId,
   getUsersByMajorId,
-  updatedUserByDeviceToken,
+  updateUserByDeviceToken,
+  updateUserByRefreshToken,
   getUsersByCommentWriterId,
 };
