@@ -1,7 +1,9 @@
 # 나도선배 NadoSunbae - Server
  
-<div>  
- <img width="100" alt="Frame 115" src="https://user-images.githubusercontent.com/58043306/148918367-20e69972-aeed-43c9-bcaf-c301483e15f5.png">
+<div>
+ 
+![nadosunbae](https://user-images.githubusercontent.com/58043306/150548239-bddd3d54-a790-4cab-bc89-6f52cffa2c2b.png)
+
 </div>
 
 
@@ -30,8 +32,8 @@
 <br>
 
 ### 🦴 ERD
-* post_id는 reviewPost의 id와 classroomPost의 id를 참조
-![erd](https://user-images.githubusercontent.com/58043306/150111542-4330f68c-255a-4330-a8c9-12fd6695168c.png)
+![nadosunbaeERD](https://user-images.githubusercontent.com/58043306/150548482-7346569e-162c-4c1a-b7a8-2f44d2920726.png)
+
 <br>
 
 ### 📌 Branch Strategy
@@ -240,6 +242,7 @@ ex) [FEAT] implement postGET
   },
   "main": "index.js",
   "dependencies": {
+    "axios": "^0.25.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dayjs": "^1.10.7",
@@ -264,7 +267,6 @@ ex) [FEAT] implement postGET
   },
   "private": true
 }
-
 ```
 <br>
 
@@ -272,15 +274,11 @@ ex) [FEAT] implement postGET
 | Name | Role |
 | :---: | :-----: |
 | juhyeon | DB 설계, API 명세서 작성, API 구현, README 작성 |
-| eunji | DB 설계, API 명세서 작성, API 구현 |
+| eunji | DB 설계, API 명세서 작성, API 구현, 자동 테스트 환경 구축 |
 | seol | DB 설계, API 명세서 작성, 초기 세팅, API 구현 |
 <br>
 
 ### 💻 Current Progress
-<details>
-<summary>API 구현 담당 및 완료 여부</summary>
-<div markdown="1">  
-
 | 기능명 | 담당자 | 완료 여부 |
 | :-----: | :---: | :---: |
 | 회원가입 | `김은지` | v |
@@ -309,6 +307,7 @@ ex) [FEAT] implement postGET
 | 1:1 질문, 전체 질문, 정보글에 있는 특정 댓글 삭제 | `변주현` | v |
 | 게시글(후기, 1:1 질문, 전체 질문, 정보글) 좋아요/좋아요취소 | `변주현` | v |
 | (마이페이지) 특정 user 정보 조회 | `김은지` | v |
+| (마이페이지) 현재 user 정보 조회 | `김은지, 설지원` | v |
 | (마이페이지) 내게 온 1:1 질문글 리스트 조회 | `설지원` | v |
 | 게시글(후기, 1:1 질문, 전체 질문, 정보글) 신고 | `김은지` | v |
 | 댓글 신고 | `변주현` | v |
@@ -316,9 +315,6 @@ ex) [FEAT] implement postGET
 | 전체 알림 리스트 조회 | `설지원, 김은지` | v |
 | 특정 알림 읽음 처리 | `설지원, 김은지` | v |
 | 특정 알림 삭제 | `설지원, 김은지` | v |
- 
-</div>
-</details>
 <br>
 
 ### 👩🏻‍💻 Developers   
