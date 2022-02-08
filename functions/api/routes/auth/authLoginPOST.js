@@ -7,8 +7,8 @@ const db = require("../../../db/db");
 const { userDB, majorDB } = require("../../../db");
 
 const { firebaseAuth } = require("../../../config/firebaseClient");
-
 const jwtHandlers = require("../../../lib/jwtHandlers");
+
 module.exports = async (req, res) => {
   const { email, password, deviceToken } = req.body;
 
@@ -69,10 +69,26 @@ module.exports = async (req, res) => {
       isReviewed: userData.isReviewed,
     };
 
+    // 로그인시 토큰 새로 발급
     const { accesstoken } = jwtHandlers.sign(userData);
+    const { refreshtoken } = jwtHandlers.refresh();
+
+    // refreshToken 저장
+    const updatedUserByRefreshToken = await userDB.updateUserByRefreshToken(
+      client,
+      userData.id,
+      refreshtoken,
+    );
+    if (!updatedUserByRefreshToken) {
+      return res
+        .status(statusCode.INTERNAL_SERVER_ERROR)
+        .send(
+          util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_DEVICE_TOKEN_FAIL),
+        );
+    }
 
     // deviceToken 저장
-    const updatedUserByDeviceToken = await userDB.updatedUserByDeviceToken(
+    const updatedUserByDeviceToken = await userDB.updateUserByDeviceToken(
       client,
       userData.id,
       deviceToken,
@@ -85,9 +101,13 @@ module.exports = async (req, res) => {
         );
     }
 
-    res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.LOGIN_SUCCESS, { user, accesstoken }));
+    res.status(statusCode.OK).send(
+      util.success(statusCode.OK, responseMessage.LOGIN_SUCCESS, {
+        user,
+        accesstoken,
+        refreshtoken,
+      }),
+    );
   } catch (error) {
     console.log(error);
     functions.logger.error(
