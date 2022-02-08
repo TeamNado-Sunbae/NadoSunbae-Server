@@ -209,6 +209,18 @@ const getUsersByCommentWriterId = async (client, commentWriterIdList) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+const getUserByRefreshToken = async (client, refreshToken) => {
+  const { rows } = await client.query(
+    `
+    SELECT * FROM "user"
+    WHERE refresh_token = $1
+    AND is_deleted = FALSE
+    `,
+    [refreshToken],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   createUser,
   getUserByNickname,
@@ -221,4 +233,5 @@ module.exports = {
   updateUserByDeviceToken,
   updateUserByRefreshToken,
   getUsersByCommentWriterId,
+  getUserByRefreshToken,
 };
