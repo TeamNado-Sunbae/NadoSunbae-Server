@@ -35,7 +35,7 @@ const sign = (user) => {
 const refresh = () => {
   // refresh token 발급, payload 없음
   const result = {
-    refreshtoken: jwt.sign({ id: user.id }, secretKey, refreshTokenOptions),
+    refreshtoken: jwt.sign({}, secretKey, refreshTokenOptions),
   };
   return result;
 };
