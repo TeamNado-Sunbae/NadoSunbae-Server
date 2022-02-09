@@ -140,7 +140,7 @@ const getReviewPostByUserId = async (client, userId) => {
 const getReviewPostCountByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
-      SELECT count(*) 
+      SELECT cast(count(*) as integer) 
       FROM review_post
       WHERE writer_id = $1
         AND is_deleted = false
