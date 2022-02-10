@@ -56,8 +56,10 @@ module.exports = async (req, res) => {
 
     // 후기글을 삭제 후, 해당 user가 작성한 다른 후기글이 없다면 isReviewed false로
     const reviewPostByUser = await reviewPostDB.getReviewPostByUserId(client, req.user.id);
+    let isReviewed = true;
     if (!reviewPostByUser) {
       const updatedUser = await userDB.updateUserByIsReviewed(client, false, req.user.id);
+      isReviewed = updatedUser.isReviewed;
       if (!updatedUser) {
         return res
           .status(statusCode.NOT_FOUND)
@@ -65,14 +67,16 @@ module.exports = async (req, res) => {
       }
     }
 
-    // response로 보낼 isDeleted
-    const isDeleted = deletedReviewPost.isDeleted;
+    // response로 보낼 isPostDeleted
+    const isPostDeleted = deletedReviewPost.isDeleted;
 
-    res
-      .status(statusCode.OK)
-      .send(
-        util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, { postId, isDeleted }),
-      );
+    res.status(statusCode.OK).send(
+      util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, {
+        postId,
+        isPostDeleted,
+        isReviewed,
+      }),
+    );
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
