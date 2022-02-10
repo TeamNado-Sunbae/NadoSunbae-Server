@@ -109,7 +109,7 @@ module.exports = async (req, res) => {
       secondMajorName: secondMajorName.majorName,
       secondMajorStart: writer.secondMajorStart,
       isOnQuestion: writer.isOnQuestion,
-      isReviewd: writer.isReviewed,
+      isReviewed: writer.isReviewed,
     };
 
     const like = {

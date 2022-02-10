@@ -31,11 +31,6 @@
 <br>
 <br>
 
-### 🦴 ERD
-![nadosunbaeERD](https://user-images.githubusercontent.com/58043306/150548482-7346569e-162c-4c1a-b7a8-2f44d2920726.png)
-
-<br>
-
 ### 📌 Branch Strategy
 
 <details>

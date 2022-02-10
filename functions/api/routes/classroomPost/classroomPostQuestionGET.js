@@ -2,6 +2,7 @@ const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
+const postType = require("../../../constants/postType");
 const db = require("../../../db/db");
 const { classroomPostDB, userDB, majorDB, likeDB, postTypeDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
@@ -12,13 +13,6 @@ module.exports = async (req, res) => {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-
-  // 후기 미작성자는 정보글 상세조회 불가
-  if (req.user.isReviewed === false) {
-    return res
-      .status(statusCode.FORBIDDEN)
-      .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
-  }
 
   let client;
 
@@ -31,37 +25,34 @@ module.exports = async (req, res) => {
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
+
     // questioner, answerer 정보
     const questionerId = classroomPost.writerId;
     const answererId = classroomPost.answererId;
 
+    // 후기 미작성자는
+    if (req.user.isReviewed === false) {
+      // 전체질문이나 1:1 질문 상세조회 불가 - 답변자가 본인인 경우 제외
+      if (!(answererId && answererId === req.user.id)) {
+        return res
+          .status(statusCode.FORBIDDEN)
+          .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
+      }
+    }
+
     // post 좋아요 정보
-
-    // postType을 알아야 함
-    const questionToEveryonePostTypeId = await postTypeDB.getPostTypeIdByPostTypeName(
-      client,
-      "questionToEveryone",
-    );
-
-    const questionToPersonPostTypeId = await postTypeDB.getPostTypeIdByPostTypeName(
-      client,
-      "questionToPerson",
-    );
-
-    // 로그인 유저가 좋아요한 상태인지
-    const requestUser = req.user;
 
     // 1:1 질문인지, 전체 질문인지
     let postTypeId;
 
     // answererId 없을 때는 전체 질문
-    if (!classroomPost.answererId) {
-      postTypeId = questionToEveryonePostTypeId.id;
+    if (!answererId) {
+      postTypeId = postType.QUESTION_TO_EVERYONE;
     } else {
-      postTypeId = questionToPersonPostTypeId.id;
+      postTypeId = postType.QUESTION_TO_PERSON;
     }
 
-    let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, requestUser.id);
+    let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, req.user.id);
     let isLiked;
     if (!like) {
       isLiked = false;
@@ -142,6 +133,7 @@ module.exports = async (req, res) => {
       }),
     );
 
+    // 메세지 리스트 앞에 원글 포함
     messageList.unshift(post);
 
     res.status(statusCode.OK).send(
