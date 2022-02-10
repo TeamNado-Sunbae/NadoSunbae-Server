@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
@@ -22,6 +23,9 @@ module.exports = async (req, res) => {
 
     // get userList
     let userList = await userDB.getUsersByMajorId(client, majorId);
+
+    // userList를 랜덤으로 섞기
+    userList = _.shuffle(userList);
 
     // user의 fist_major_id가 majorId와 같으면 isFirstMajor true,
     // second_major_id가 majorId와 같으면 isFirstMajor false
