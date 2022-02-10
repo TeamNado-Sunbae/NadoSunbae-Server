@@ -51,9 +51,10 @@ module.exports = async (req, res) => {
     }
 
     const {
-      user: { uid: firebaseId },
+      user: { uid: firebaseId, emailVerified: isEmailVerified },
     } = userFirebase;
-    // const firebaseId = userFirebase.user.uid; 랑 같음
+    // const firebaseId = userFirebase.user.uid;
+    // const isEmailVerified = userFirebase.user.emailVerified; 와 동일
 
     const userData = await userDB.getUserByFirebaseId(client, firebaseId);
     const firstMajorName = await majorDB.getMajorNameByMajorId(client, userData.firstMajorId);
@@ -67,6 +68,7 @@ module.exports = async (req, res) => {
       secondMajorId: userData.secondMajorId,
       secondMajorName: secondMajorName.majorName,
       isReviewed: userData.isReviewed,
+      isEmailVerified: isEmailVerified,
     };
 
     const { accesstoken } = jwtHandlers.sign(userData);
