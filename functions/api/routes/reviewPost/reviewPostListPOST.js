@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
     let reviewPostList;
     if (writerFilter === 1) {
       // 전체 목록 조회
-      reviewPostList = await reviewPostDB.getRiviewPostListByFilters(
+      reviewPostList = await reviewPostDB.getReviewPostListByFilters(
         client,
         majorId,
         [true, false],
@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
       );
     } else if (writerFilter === 2) {
       // 본전공 필터만 선택
-      reviewPostList = await reviewPostDB.getRiviewPostListByFilters(
+      reviewPostList = await reviewPostDB.getReviewPostListByFilters(
         client,
         majorId,
         [true],
@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
       );
     } else if (writerFilter === 3) {
       // 제 2전공 필터만 선택
-      reviewPostList = await reviewPostDB.getRiviewPostListByFilters(
+      reviewPostList = await reviewPostDB.getReviewPostListByFilters(
         client,
         majorId,
         [false],

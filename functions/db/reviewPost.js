@@ -1,7 +1,7 @@
 const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const getRiviewPostListByFilters = async (client, majorId, writerFilter, tagFilter) => {
+const getReviewPostListByFilters = async (client, majorId, writerFilter, tagFilter) => {
   const { rows } = await client.query(
     `
     SELECT DISTINCT ON (review_post.id) *
@@ -195,7 +195,7 @@ const updateReviewPost = async (
 };
 
 module.exports = {
-  getRiviewPostListByFilters,
+  getReviewPostListByFilters,
   getReviewPostByPostId,
   createReviewPost,
   deleteReviewPost,
