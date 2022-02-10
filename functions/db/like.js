@@ -4,7 +4,7 @@ const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 const getLikeCountByPostId = async (client, postId, postTypeId) => {
   const { rows } = await client.query(
     `
-        SELECT count(*) AS like_count FROM "like"
+        SELECT cast(count(*) as integer) AS like_count FROM "like"
         WHERE post_id = $1 
         AND post_type_id = $2
         AND is_liked = true
@@ -17,7 +17,7 @@ const getLikeCountByPostId = async (client, postId, postTypeId) => {
 const getLikeCountByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
-        SELECT count(*) AS like_count FROM "like"
+        SELECT cast(count(*) as integer) AS like_count FROM "like"
         WHERE user_id = $1
         AND is_liked = true
         `,
