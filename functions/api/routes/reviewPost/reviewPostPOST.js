@@ -20,6 +20,7 @@ const {
   CAREER,
   TIP,
 } = require("../../../constants/reviewPostContent");
+const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
   const {
@@ -46,11 +47,20 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
+    const user = await userDB.getUserByUserId(client, req.user.id);
+
     // majorId에 따라 isFirstMajor 결정
-    const UserByFirstMajorId = await userDB.getUserByFirstMajorId(client, majorId);
-    let isFirstMajor = true;
-    if (UserByFirstMajorId.length === 0) {
+    let isFirstMajor;
+
+    if (user.firstMajorId === majorId) {
+      isFirstMajor = true;
+    } else if (user.secondMajorId === majorId) {
       isFirstMajor = false;
+    } else {
+      // req로 들어온 majorId가 로그인한 유저의 본전공도 아니고 제2전공도 아니면 에러 처리
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
     }
 
     // writerId는 accesstoken을 디코딩하여 받은 id를 사용
@@ -155,6 +165,11 @@ module.exports = async (req, res) => {
       `[CONTENT] ${error}`,
     );
     console.log(error);
+
+    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
+      req.originalUrl
+    } ${error} ${JSON.stringify(error)}`;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

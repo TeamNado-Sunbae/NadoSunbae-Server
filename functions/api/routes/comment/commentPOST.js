@@ -7,6 +7,7 @@ const { commentDB, userDB, majorDB, classroomPostDB, notificationDB } = require(
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const admin = require("firebase-admin");
+const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
   const { postId, content } = req.body;
@@ -105,8 +106,17 @@ module.exports = async (req, res) => {
             title: notificationTitle,
             body: notificationContent,
           },
-          data: {
-            postId: `${comment.postId}`,
+          android: {
+            notification: {
+              sound: "default",
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: "default",
+              },
+            },
           },
           token: receiver.deviceToken,
         };
@@ -151,8 +161,17 @@ module.exports = async (req, res) => {
             title: notificationTitle,
             body: notificationContent,
           },
-          data: {
-            postId: `${comment.postId}`,
+          android: {
+            notification: {
+              sound: "default",
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: "default",
+              },
+            },
           },
           token: receiver.deviceToken,
         };
@@ -216,29 +235,41 @@ module.exports = async (req, res) => {
       // 디바이스로 보낼 푸시 알림 메시지
 
       // 댓글 리스트에 있는 유저들의 디바이스 토큰 정보 저장
+      // 댓글이 있을 때만 푸시알림 전송, 댓글이 없을 경우 tokens가 빈 배열이라서 오류남.
 
-      // 메세지 내용
-      const message = {
-        notification: {
-          title: notificationTitle,
-          body: notificationContent,
-        },
-        data: {
-          postId: `${comment.postId}`,
-        },
-        tokens: receiverTokens,
-      };
+      if (receiverTokens.length !== 0) {
+        // 메세지 내용
+        const message = {
+          notification: {
+            title: notificationTitle,
+            body: notificationContent,
+          },
+          android: {
+            notification: {
+              sound: "default",
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: "default",
+              },
+            },
+          },
+          tokens: receiverTokens,
+        };
 
-      // 메세지 전송
-      admin
-        .messaging()
-        .sendMulticast(message)
-        .then((response) => {
-          console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response.successCount);
-        })
-        .catch(function (error) {
-          console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
-        });
+        // 메세지 전송
+        admin
+          .messaging()
+          .sendMulticast(message)
+          .then((response) => {
+            console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response.successCount);
+          })
+          .catch(function (error) {
+            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
+          });
+      }
     }
 
     // [ case 5: 내가 답글을 쓴 타인 글에 새 답글이 달린 경우 - 정보글 ]
@@ -284,29 +315,41 @@ module.exports = async (req, res) => {
       // 디바이스로 보낼 푸시 알림 메시지
 
       // 댓글 리스트에 있는 유저들의 디바이스 토큰 정보 저장
+      // 댓글이 있을 때만 푸시알림 전송, 댓글이 없을 경우 tokens가 빈 배열이라서 오류남.
 
-      // 메세지 내용
-      const message = {
-        notification: {
-          title: notificationTitle,
-          body: notificationContent,
-        },
-        data: {
-          postId: `${comment.postId}`,
-        },
-        tokens: receiverTokens,
-      };
+      if (receiverTokens.length !== 0) {
+        // 메세지 내용
+        const message = {
+          notification: {
+            title: notificationTitle,
+            body: notificationContent,
+          },
+          android: {
+            notification: {
+              sound: "default",
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: "default",
+              },
+            },
+          },
+          tokens: receiverTokens,
+        };
 
-      // 메세지 전송
-      admin
-        .messaging()
-        .sendMulticast(message)
-        .then((response) => {
-          console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response.successCount);
-        })
-        .catch(function (error) {
-          console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
-        });
+        // 메세지 전송
+        admin
+          .messaging()
+          .sendMulticast(message)
+          .then((response) => {
+            console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response.successCount);
+          })
+          .catch(function (error) {
+            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
+          });
+      }
     }
 
     res
@@ -318,6 +361,11 @@ module.exports = async (req, res) => {
       `[CONTENT] ${error}`,
     );
     console.log(error);
+
+    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
+      req.originalUrl
+    } ${error} ${JSON.stringify(error)}`;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

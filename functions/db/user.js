@@ -112,18 +112,6 @@ const updateUserByReport = async (client, userId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUserByFirstMajorId = async (client, majorId) => {
-  const { rows } = await client.query(
-    `
-      SELECT * FROM "user"
-      WHERE first_major_id = $1
-      AND is_deleted = FALSE
-      `,
-    [majorId],
-  );
-  return convertSnakeToCamel.keysToCamel(rows[0]);
-};
-
 const getUserByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
@@ -202,7 +190,6 @@ module.exports = {
   getUserByEmail,
   updateUserByIsReviewed,
   updateUserByReport,
-  getUserByFirstMajorId,
   getUserByUserId,
   getUserByFirebaseId,
   getUsersByMajorId,

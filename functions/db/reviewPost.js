@@ -121,6 +121,19 @@ const getReviewPostByUserId = async (client, userId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getReviewPostCountByUserId = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+      SELECT count(*) 
+      FROM review_post
+      WHERE writer_id = $1
+        AND is_deleted = false
+      `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const updateReviewPost = async (
   client,
   postId,
@@ -189,4 +202,5 @@ module.exports = {
   updateReviewPost,
   updateReviewPostByReport,
   getReviewPostByUserId,
+  getReviewPostCountByUserId,
 };

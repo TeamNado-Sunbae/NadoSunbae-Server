@@ -5,6 +5,7 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { classroomPostDB, userDB, likeDB, commentDB } = require("../../../db");
+const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
   const { postTypeId, majorId } = req.params;
@@ -68,7 +69,9 @@ module.exports = async (req, res) => {
     if (sort === "recent") {
       classroomPostList = _.sortBy(classroomPostList, "createdAt").reverse();
     } else if (sort === "like") {
-      classroomPostList = _.sortBy(classroomPostList, "likeCount").reverse();
+      classroomPostList = _.sortBy(classroomPostList, (obj) =>
+        parseInt(obj.likeCount, 10),
+      ).reverse();
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
@@ -84,6 +87,12 @@ module.exports = async (req, res) => {
       `[CONTENT] ${error}`,
     );
     console.log(error);
+
+    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
+      req.originalUrl
+    } ${error} ${JSON.stringify(error)}`;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
       .send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
