@@ -7,6 +7,9 @@ const db = require("../../../db/db");
 const { userDB } = require("../../../db");
 
 const jwtHandlers = require("../../../lib/jwtHandlers");
+const { firebaseAuth } = require("../../../config/firebaseClient");
+
+const { getAuth, sendEmailVerification, signInWithEmailAndPassword } = require("firebase/auth");
 
 module.exports = async (req, res) => {
   const {
@@ -45,6 +48,9 @@ module.exports = async (req, res) => {
       .auth()
       .createUser({ email, password, nickname })
       .then((user) => user)
+      // .then((user) => {
+      //   sendEmailVerification(user);
+      // })
       .catch((e) => {
         console.log(e);
         return { err: true, error: e };
@@ -100,6 +106,14 @@ module.exports = async (req, res) => {
     const { accesstoken } = jwtHandlers.sign(user);
 
     console.log(user);
+
+    // 로그인 및 메일 전송
+    await signInWithEmailAndPassword(firebaseAuth, email, password)
+      .then(() => sendEmailVerification(firebaseAuth.currentUser))
+      .catch((e) => {
+        console.log(e);
+        return { err: true, error: e };
+      });
 
     // user + JWT를 response로 전송
     res.status(statusCode.OK).send(
