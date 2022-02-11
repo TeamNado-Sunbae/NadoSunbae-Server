@@ -103,12 +103,13 @@ module.exports = async (req, res) => {
     console.log(user);
 
     // 로그인 및 메일 전송
-    await signInWithEmailAndPassword(firebaseAuth, email, password)
-      .then(() => sendEmailVerification(firebaseAuth.currentUser))
-      .catch((e) => {
-        console.log(e);
-        return { err: true, error: e };
-      });
+    await signInWithEmailAndPassword(firebaseAuth, email, password).then(() =>
+      sendEmailVerification(firebaseAuth.currentUser),
+    );
+    // .catch((e) => {
+    //   console.log(e);
+    //   return { err: true, error: e };
+    // });
 
     // user + JWT를 response로 전송
     res.status(statusCode.OK).send(
