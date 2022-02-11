@@ -5,11 +5,9 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { userDB } = require("../../../db");
-
 const jwtHandlers = require("../../../lib/jwtHandlers");
 const { firebaseAuth } = require("../../../config/firebaseClient");
-
-const { getAuth, sendEmailVerification, signInWithEmailAndPassword } = require("firebase/auth");
+const { sendEmailVerification, signInWithEmailAndPassword } = require("firebase/auth");
 
 module.exports = async (req, res) => {
   const {
@@ -48,9 +46,6 @@ module.exports = async (req, res) => {
       .auth()
       .createUser({ email, password, nickname })
       .then((user) => user)
-      // .then((user) => {
-      //   sendEmailVerification(user);
-      // })
       .catch((e) => {
         console.log(e);
         return { err: true, error: e };
