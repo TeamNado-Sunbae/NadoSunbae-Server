@@ -38,7 +38,15 @@ const getClassroomPostByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const createClassroomPost = async (client, majorId, writerId, answererId, postTypeId, title, content) => {
+const createClassroomPost = async (
+  client,
+  majorId,
+  writerId,
+  answererId,
+  postTypeId,
+  title,
+  content,
+) => {
   const { rows } = await client.query(
     `
     INSERT INTO classroom_post
@@ -102,7 +110,7 @@ const updateClassroomPostByReport = async (client, postId, postTypeId) => {
     [postId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
- };
+};
 
 const getClassroomPostListByMajorId = async (client, majorId, postTypeId) => {
   const { rows } = await client.query(
@@ -117,6 +125,20 @@ const getClassroomPostListByMajorId = async (client, majorId, postTypeId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+const getMyClassroomPostListByPostTypeId = async (client, userId, postTypeId) => {
+  const { rows } = await client.query(
+    `
+    SELECT * FROM "classroom_post" c
+    WHERE writer_id = $1
+    AND post_type_id = $2
+    AND is_deleted = false
+    ORDER BY created_at desc
+  `,
+    [userId, postTypeId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createClassroomPost,
   deleteClassroomPostByPostId,
@@ -125,4 +147,5 @@ module.exports = {
   getClassroomPostByPostId,
   updateClassroomPost,
   updateClassroomPostByReport,
+  getMyClassroomPostListByPostTypeId,
 };

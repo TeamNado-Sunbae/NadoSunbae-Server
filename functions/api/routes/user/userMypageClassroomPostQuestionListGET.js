@@ -8,9 +8,10 @@ const { classroomPostDB, likeDB, userDB, postTypeDB, commentDB } = require("../.
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { postTypeId } = req.params;
+  const { userId } = req.params;
+  const { sort } = req.query;
 
-  if (!postTypeId) {
+  if (!userId || !sort) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -21,11 +22,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeId(
-      client,
-      req.user.id,
-      postTypeId,
-    );
+    let classroomPostList = await classroomPostDB.getClassroomPostListByUserId(client, userId);
 
     // classroomPostList에 작성자 정보와 댓글 개수, 좋아요 개수를 붙임
     classroomPostList = await Promise.all(
@@ -42,7 +39,16 @@ module.exports = async (req, res) => {
         const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
 
         // 좋아요 개수
-        const likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
+        const questionToPersonPostType = await postTypeDB.getPostTypeIdByPostTypeName(
+          client,
+          "questionToPerson",
+        );
+
+        const likeCount = await likeDB.getLikeCountByPostId(
+          client,
+          classroomPost.id,
+          questionToPersonPostType.id,
+        );
 
         return {
           postId: classroomPost.id,
@@ -55,6 +61,18 @@ module.exports = async (req, res) => {
         };
       }),
     );
+
+    if (sort === "recent") {
+      classroomPostList = _.sortBy(classroomPostList, "createdAt").reverse();
+    } else if (sort === "like") {
+      classroomPostList = _.sortBy(classroomPostList, (obj) =>
+        parseInt(obj.likeCount, 10),
+      ).reverse();
+    } else {
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_SORT));
+    }
 
     res
       .status(statusCode.OK)
