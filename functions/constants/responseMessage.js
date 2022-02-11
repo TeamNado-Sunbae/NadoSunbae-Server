@@ -91,4 +91,7 @@ module.exports = {
   READ_ONE_NOTIFICATION_SUCCESS: "알림 읽기 성공",
   DELETE_ONE_NOTIFICATION_SUCCESS: "알림 삭제 성공",
   NO_NOTIFICATION: "존재하지 않는 알림입니다.",
+
+  // 앱 버전
+  READ_APP_VERSION: "최신 앱 버전 조회 성공",
 };
