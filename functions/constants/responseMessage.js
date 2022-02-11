@@ -10,6 +10,7 @@ module.exports = {
   AVAILABLE_MAIL: "사용 가능한 이메일입니다.",
   ALREADY_NICKNAME: "이미 사용중인 닉네임입니다.",
   AVAILABLE_NICKNAME: "사용 가능한 닉네임입니다.",
+  READ_UNIVERSITY_EMAIL_SUCCESS: "해당 학교 이메일 주소 조회 성공",
 
   // 로그인
   LOGIN_SUCCESS: "로그인 성공",
