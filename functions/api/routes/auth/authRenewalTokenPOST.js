@@ -44,7 +44,9 @@ module.exports = async (req, res) => {
           }),
         );
       }
-    } else if (decodedAccessToken === TOKEN_INVALID) {
+    }
+    // 올바르지 않는 액세스 토큰 (만료와 상관없음)
+    else if (decodedAccessToken === TOKEN_INVALID) {
       return res
         .status(statusCode.UNAUTHORIZED)
         .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID));
