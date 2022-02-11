@@ -49,35 +49,16 @@ module.exports = async (req, res) => {
         .status(statusCode.UNAUTHORIZED)
         .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID));
     }
-    // refreshtoken만 만료된 경우
+    // refreshtoken만 만료
     if (decodedRefreshToken === TOKEN_EXPIRED) {
-      // refreshtoken 재발급 및 db에 저장
-      const { refreshtoken } = jwtHandlers.refresh();
-      const updatedUserByRefreshToken = await userDB.updateUserByRefreshToken(
-        client,
-        decodedAccessToken.id,
-        refreshtoken,
-      );
-      if (!updatedUserByRefreshToken) {
-        return res
-          .status(statusCode.INTERNAL_SERVER_ERROR)
-          .send(
-            util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_DEVICE_TOKEN_FAIL),
-          );
-      }
-      return res.status(statusCode.OK).send(
-        util.success(statusCode.OK, responseMessage.UPDATE_TOKEN_SUCCESS, {
-          accesstoken: accesstoken,
-          refreshtoken: refreshtoken,
-        }),
-      );
+      // 재로그인 필요 (여기서 갱신 안함)
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.TOKEN_EXPIRED));
     }
-    res.status(statusCode.OK).send(
-      util.success(statusCode.OK, responseMessage.ALREADY_UPDATED_TOKEN_SUCCESS, {
-        accesstoken: accesstoken,
-        refreshtoken: refreshtoken,
-      }),
-    );
+    res
+      .status(statusCode.BAD_REQUEST)
+      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.ALREADY_UPDATED_TOKEN_SUCCESS));
   } catch (error) {
     console.log(error);
     functions.logger.error(
