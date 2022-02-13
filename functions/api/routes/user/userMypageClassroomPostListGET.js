@@ -8,9 +8,9 @@ const { classroomPostDB, likeDB, userDB, postTypeDB, commentDB, majorDB } = requ
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { postTypeId } = req.params;
+  const { type } = req.query;
 
-  if (!postTypeId) {
+  if (!type) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -21,11 +21,24 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeId(
-      client,
-      req.user.id,
-      postTypeId,
-    );
+    let classroomPostList;
+
+    // 정보글일 경우 postypeId === 2
+    if (type === "information") {
+      classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeId(
+        client,
+        req.user.id,
+        [2],
+      );
+    }
+    // 질문글일 경우 postypeId === 3(전체) or 4(1:1)
+    else if (type === "question") {
+      classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeId(
+        client,
+        req.user.id,
+        [3, 4],
+      );
+    }
 
     classroomPostList = await Promise.all(
       classroomPostList.map(async (classroomPost) => {
@@ -36,7 +49,11 @@ module.exports = async (req, res) => {
         const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
 
         // 좋아요 개수
-        const likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
+        const likeCount = await likeDB.getLikeCountByPostId(
+          client,
+          classroomPost.id,
+          classroomPost.postTypeId,
+        );
 
         return {
           postId: classroomPost.id,

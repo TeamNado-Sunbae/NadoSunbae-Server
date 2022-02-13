@@ -130,11 +130,11 @@ const getMyClassroomPostListByPostTypeId = async (client, userId, postTypeId) =>
     `
     SELECT * FROM "classroom_post" c
     WHERE writer_id = $1
-    AND post_type_id = $2
+    AND post_type_id IN (${postTypeId.join()})
     AND is_deleted = false
     ORDER BY created_at desc
   `,
-    [userId, postTypeId],
+    [userId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
