@@ -70,14 +70,14 @@ module.exports = async (req, res) => {
     };
 
     // 로그인시 토큰 새로 발급
-    const { accesstoken } = jwtHandlers.access(userData);
-    const { refreshtoken } = jwtHandlers.refresh();
+    const { accessToken } = jwtHandlers.access(userData);
+    const { refreshToken } = jwtHandlers.refresh();
 
     // refreshToken 저장
     const updatedUserByRefreshToken = await userDB.updateUserByRefreshToken(
       client,
       userData.id,
-      refreshtoken,
+      refreshToken,
     );
     if (!updatedUserByRefreshToken) {
       return res
@@ -104,8 +104,8 @@ module.exports = async (req, res) => {
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.LOGIN_SUCCESS, {
         user,
-        accesstoken,
-        refreshtoken,
+        accessToken,
+        refreshToken,
       }),
     );
   } catch (error) {
