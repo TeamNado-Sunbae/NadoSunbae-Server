@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     let decodedrefreshToken = jwtHandlers.verify(refreshToken);
 
     // 올바르지 않는 액세스 토큰 (만료와 상관없음)
-    if (decodedaccessToken === TOKEN_INVALID || decodedrefreshToken == TOKEN_EXPIRED) {
+    if (decodedaccessToken === TOKEN_INVALID || decodedrefreshToken == TOKEN_INVALID) {
       return res
         .status(statusCode.UNAUTHORIZED)
         .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID));
@@ -39,24 +39,24 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_EXPIRED));
     }
 
-    // access token만 만료
-    if (decodedaccessToken === TOKEN_EXPIRED) {
-      const userData = await userDB.getUserByrefreshToken(client, refreshToken);
-      if (userData.id) {
-        // acesstoken 재발급
-        const { accessToken } = jwtHandlers.access(userData);
-        return res.status(statusCode.OK).send(
-          util.success(statusCode.OK, responseMessage.UPDATE_TOKEN_SUCCESS, {
-            accessToken: accessToken,
-          }),
-        );
-      }
+    // 둘 다 유효한 토큰인 경우
+    if (decodedaccessToken !== TOKEN_EXPIRED) {
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.ALREADY_UPDATED_TOKEN_SUCCESS));
     }
 
-    // 둘 다 유효한 토큰인 경우
-    res
-      .status(statusCode.BAD_REQUEST)
-      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.ALREADY_UPDATED_TOKEN_SUCCESS));
+    // access token만 만료
+    const userData = await userDB.getUserByrefreshToken(client, refreshToken);
+    if (userData.id) {
+      // acesstoken 재발급
+      const { accessToken } = jwtHandlers.access(userData);
+      return res.status(statusCode.OK).send(
+        util.success(statusCode.OK, responseMessage.UPDATE_TOKEN_SUCCESS, {
+          accessToken: accessToken,
+        }),
+      );
+    }
   } catch (error) {
     console.log(error);
     functions.logger.error(
