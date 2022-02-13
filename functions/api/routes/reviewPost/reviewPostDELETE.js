@@ -67,12 +67,13 @@ module.exports = async (req, res) => {
       }
     }
 
-    // response로 보낼 isPostDeleted
+    // response로 보낼 reviewPostId, isPostDeleted
+    const reviewPostId = deletedReviewPost.id;
     const isPostDeleted = deletedReviewPost.isDeleted;
 
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, {
-        postId,
+        reviewPostId,
         isPostDeleted,
         isReviewed,
       }),
