@@ -70,7 +70,7 @@ module.exports = async (req, res) => {
     };
 
     // 로그인시 토큰 새로 발급
-    const { accesstoken } = jwtHandlers.sign(userData);
+    const { accesstoken } = jwtHandlers.access(userData);
     const { refreshtoken } = jwtHandlers.refresh();
 
     // refreshToken 저장
