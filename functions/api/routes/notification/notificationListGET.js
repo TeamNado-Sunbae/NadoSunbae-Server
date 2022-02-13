@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
           sender: sender,
           postId: notification.postId,
           isQuestionToPerson: isQuestionToPerson,
-          notificationType: notification.notificationType,
+          notificationTypeId: notification.notificationTypeId,
           content: notification.content,
           isRead: notification.isRead,
           isDeleted: notification.isDeleted,

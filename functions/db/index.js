@@ -1,7 +1,7 @@
 // db와 상호작용하는 코드
 module.exports = {
   userDB: require("./user"),
-  //   universityDB: require("./university"),
+  universityDB: require("./university"),
   majorDB: require("./major"),
   reviewPostDB: require("./reviewPost"),
   classroomPostDB: require("./classroomPost"),
