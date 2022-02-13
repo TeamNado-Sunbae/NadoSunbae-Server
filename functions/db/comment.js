@@ -142,7 +142,7 @@ const deleteCommentByCommentId = async (client, commentId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getClassroomPostListByMypageCommentList = async (client, commentWriterId, postTypeId) => {
+const getClassroomPostListByMyCommentList = async (client, commentWriterId, postTypeId) => {
   const { rows } = await client.query(
     `
     SELECT p.id, p.post_type_id, p.writer_id, p.title, p.content, p.created_at
@@ -161,7 +161,7 @@ module.exports = {
   getCommentCountByPostId,
   getCommentListByPostId,
   getCommentByCommentId,
-  getClassroomPostListByMypageCommentList,
+  getClassroomPostListByMyCommentList,
   updateCommentByReport,
   updateComment,
   deleteCommentByCommentId,
