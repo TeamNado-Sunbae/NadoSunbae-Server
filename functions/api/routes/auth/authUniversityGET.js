@@ -1,16 +1,15 @@
-const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, likeDB, userDB, postTypeDB, commentDB } = require("../../../db");
+const { universityDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { postTypeId } = req.params;
+  const { universityId } = req.params;
 
-  if (!postTypeId) {
+  if (!universityId) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -21,35 +20,17 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeId(
-      client,
-      req.user.id,
-      postTypeId,
-    );
-
-    classroomPostList = await Promise.all(
-      classroomPostList.map(async (classroomPost) => {
-        // 댓글 개수
-        const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
-
-        // 좋아요 개수
-        const likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
-
-        return {
-          postId: classroomPost.id,
-          title: classroomPost.title,
-          content: classroomPost.content,
-          createdAt: classroomPost.createdAt,
-          commentCount: commentCount.commentCount,
-          likeCount: likeCount.likeCount,
-        };
-      }),
-    );
+    const universityData = await universityDB.getEmailByUniversityId(client, universityId);
+    if (!universityData) {
+      return res
+        .status(statusCode.NO_CONTENT)
+        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, universityData));
+    }
 
     res
       .status(statusCode.OK)
       .send(
-        util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, { classroomPostList }),
+        util.success(statusCode.OK, responseMessage.READ_UNIVERSITY_EMAIL_SUCCESS, universityData),
       );
   } catch (error) {
     functions.logger.error(

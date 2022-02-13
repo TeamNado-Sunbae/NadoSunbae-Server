@@ -14,5 +14,6 @@ router.get(
   checkUser,
   require("./userMypageClassroomPostListGET"),
 );
+router.get("/app-version/recent", checkUser, require("./userMypageAppVersionGET"));
 
 module.exports = router;
