@@ -17,7 +17,7 @@ const access = (user) => {
 
   const result = {
     // accesstoken 발급
-    accessToken: jwt.sign(payload, secretKey, {
+    accesstoken: jwt.sign(payload, secretKey, {
       algorithm: "HS256",
       expiresIn: "3h",
       issuer: "nadoSunbae",
@@ -27,9 +27,9 @@ const access = (user) => {
 };
 
 const refresh = () => {
-  // refresh token 발급, payload 없음
+  // refreshtoken 발급, payload 없음
   const result = {
-    refreshToken: jwt.sign({}, secretKey, {
+    refreshtoken: jwt.sign({}, secretKey, {
       algorithm: "HS256",
       expiresIn: "14d",
       issuer: "nadoSunbae",

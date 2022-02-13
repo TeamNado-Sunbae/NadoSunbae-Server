@@ -8,10 +8,10 @@ const { userDB } = require("../../../db");
 const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../../../constants/jwt");
 
 module.exports = async (req, res) => {
-  const { accessToken, refreshToken } = req.headers;
+  const { accesstoken, refreshtoken } = req.headers;
 
-  // accessToken 또는 refreshToken이 없을 시
-  if (!accessToken || !refreshToken)
+  // accesstoken 또는 refreshtoken 없을 시
+  if (!accesstoken || !refreshtoken)
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.TOKEN_EMPTY));
@@ -21,11 +21,11 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // token 해독
-    let decodedaccessToken = jwtHandlers.verify(accessToken);
-    let decodedrefreshToken = jwtHandlers.verify(refreshToken);
+    let decodedaccesstoken = jwtHandlers.verify(accesstoken);
+    let decodedrefreshtoken = jwtHandlers.verify(refreshtoken);
 
     // 올바르지 않는 액세스 토큰 (만료와 상관없음)
-    if (decodedaccessToken === TOKEN_INVALID || decodedrefreshToken == TOKEN_INVALID) {
+    if (decodedaccesstoken === TOKEN_INVALID || decodedrefreshtoken == TOKEN_INVALID) {
       return res
         .status(statusCode.UNAUTHORIZED)
         .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID));
@@ -33,27 +33,27 @@ module.exports = async (req, res) => {
 
     // 토큰 만료 확인 및 재발급
     // refresh token 만료 (재로그인 필요)
-    if (decodedrefreshToken === TOKEN_EXPIRED) {
+    if (decodedrefreshtoken === TOKEN_EXPIRED) {
       return res
         .status(statusCode.UNAUTHORIZED)
         .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_EXPIRED));
     }
 
     // 둘 다 유효한 토큰인 경우
-    if (decodedaccessToken !== TOKEN_EXPIRED) {
+    if (decodedaccesstoken !== TOKEN_EXPIRED) {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.ALREADY_UPDATED_TOKEN_SUCCESS));
     }
 
     // access token만 만료
-    const userData = await userDB.getUserByrefreshToken(client, refreshToken);
+    const userData = await userDB.getUserByRefreshToken(client, refreshtoken);
     if (userData.id) {
       // acesstoken 재발급
-      const { accessToken } = jwtHandlers.access(userData);
+      const { accesstoken } = jwtHandlers.access(userData);
       return res.status(statusCode.OK).send(
         util.success(statusCode.OK, responseMessage.UPDATE_TOKEN_SUCCESS, {
-          accessToken: accessToken,
+          accesstoken: accesstoken,
         }),
       );
     }
@@ -61,7 +61,7 @@ module.exports = async (req, res) => {
     console.log(error);
     functions.logger.error(
       `[AUTH ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      accessToken,
+      accesstoken,
     );
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
