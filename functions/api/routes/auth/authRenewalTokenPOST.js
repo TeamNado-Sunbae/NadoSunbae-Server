@@ -21,11 +21,11 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // token 해독
-    let decodedaccesstoken = jwtHandlers.verify(accesstoken);
-    let decodedrefreshtoken = jwtHandlers.verify(refreshtoken);
+    let decodedAccesstoken = jwtHandlers.verify(accesstoken);
+    let decodedRefreshtoken = jwtHandlers.verify(refreshtoken);
 
     // 올바르지 않는 액세스 토큰 (만료와 상관없음)
-    if (decodedaccesstoken === TOKEN_INVALID || decodedrefreshtoken == TOKEN_INVALID) {
+    if (decodedAccesstoken === TOKEN_INVALID || decodedRefreshtoken == TOKEN_INVALID) {
       return res
         .status(statusCode.UNAUTHORIZED)
         .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID));
@@ -33,14 +33,14 @@ module.exports = async (req, res) => {
 
     // 토큰 만료 확인 및 재발급
     // refresh token 만료 (재로그인 필요)
-    if (decodedrefreshtoken === TOKEN_EXPIRED) {
+    if (decodedRefreshtoken === TOKEN_EXPIRED) {
       return res
         .status(statusCode.UNAUTHORIZED)
         .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_EXPIRED));
     }
 
     // 둘 다 유효한 토큰인 경우
-    if (decodedaccesstoken !== TOKEN_EXPIRED) {
+    if (decodedAccesstoken !== TOKEN_EXPIRED) {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.ALREADY_UPDATED_TOKEN_SUCCESS));
