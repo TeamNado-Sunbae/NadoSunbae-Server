@@ -8,11 +8,11 @@ const { userDB } = require("../db");
 const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../constants/jwt");
 
 const checkUser = async (req, res, next) => {
-  // request headers에 accesstoken라는 이름으로 담긴 값(jwt)을 가져옵니다.
-  const { accesstoken } = req.headers;
+  // request headers에 accessToken라는 이름으로 담긴 값(jwt)을 가져옵니다.
+  const { accessToken } = req.headers;
 
-  // accesstoken이 없을 시의 에러 처리입니다.
-  if (!accesstoken)
+  // accessToken이 없을 시의 에러 처리입니다.
+  if (!accessToken)
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.TOKEN_EMPTY));
@@ -22,7 +22,7 @@ const checkUser = async (req, res, next) => {
     client = await db.connect(req);
 
     // jwt를 해독하고 인증 절차를 거칩니다.
-    const decodedToken = jwtHandlers.verify(accesstoken);
+    const decodedToken = jwtHandlers.verify(accessToken);
 
     // jwt가 만료되었거나 잘못되었을 시의 에러 처리입니다.
     if (decodedToken === TOKEN_EXPIRED)
@@ -59,7 +59,7 @@ const checkUser = async (req, res, next) => {
     console.log(error);
     functions.logger.error(
       `[AUTH ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      accesstoken,
+      accessToken,
     );
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
