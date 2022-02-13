@@ -38,7 +38,15 @@ const getClassroomPostByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const createClassroomPost = async (client, majorId, writerId, answererId, postTypeId, title, content) => {
+const createClassroomPost = async (
+  client,
+  majorId,
+  writerId,
+  answererId,
+  postTypeId,
+  title,
+  content,
+) => {
   const { rows } = await client.query(
     `
     INSERT INTO classroom_post
@@ -102,7 +110,7 @@ const updateClassroomPostByReport = async (client, postId, postTypeId) => {
     [postId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
- };
+};
 
 const getClassroomPostListByMajorId = async (client, majorId, postTypeId) => {
   const { rows } = await client.query(
