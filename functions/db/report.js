@@ -21,7 +21,12 @@ const createReport = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getExistingReport = async (client, reportUserId, reportedTargetId, reportedTargetTypeId) => {
+const getReportByReportUser = async (
+  client,
+  reportUserId,
+  reportedTargetId,
+  reportedTargetTypeId,
+) => {
   const { rows } = await client.query(
     `
   SELECT * FROM report
@@ -35,7 +40,61 @@ const getExistingReport = async (client, reportUserId, reportedTargetId, reporte
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getReportListByReportedUser = async (client, reportedUserId) => {
+  const { rows } = await client.query(
+    `
+  SELECT id FROM report
+  WHERE reported_user_id = $1
+  AND is_reported = false
+  AND is_deleted = false
+  `,
+    [reportedUserId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
+const getReportListByReportedTarget = async (client, reportedTargetId, reportedTargetTypeId) => {
+  const { rows } = await client.query(
+    `
+  SELECT id FROM report
+  WHERE reported_target_id = $1
+  AND reported_target_type_id = $2
+  AND is_reported = false
+  AND is_deleted = false
+  `,
+    [reportedTargetId, reportedTargetTypeId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
+const updateReportListByIsReported = async (client, reportIdList, isReported) => {
+  const { rows: existingRows } = await client.query(
+    `
+      SELECT * FROM report
+      WHERE id IN (${reportIdList.join()})
+      AND is_deleted = FALSE
+      `,
+  );
+
+  if (existingRows.length !== reportIdList.length) return false;
+
+  const { rows } = await client.query(
+    `
+      UPDATE report
+      SET is_reported = $1, updated_at = now()
+      WHERE id IN (${reportIdList.join()})
+      AND is_deleted = FALSE
+      RETURNING *
+      `,
+    [isReported],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createReport,
-  getExistingReport,
+  getReportByReportUser,
+  getReportListByReportedUser,
+  getReportListByReportedTarget,
+  updateReportListByIsReported,
 };

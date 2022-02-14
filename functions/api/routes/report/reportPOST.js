@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     const reportUserId = req.user.id;
 
     // 이미 해당 글 or 댓글에 신고한 경우 사유가 달라도 재신고할 수 없음
-    const existingReport = await reportDB.getExistingReport(
+    const existingReport = await reportDB.getReportByReportUser(
       client,
       reportUserId,
       reportedTargetId,
