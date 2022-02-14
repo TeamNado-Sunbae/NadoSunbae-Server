@@ -97,9 +97,6 @@ module.exports = async (req, res) => {
       createdAt: user.createdAt,
     };
 
-    // JWT 발급
-    const { accesstoken } = jwtHandlers.sign(user);
-
     // 로그인 및 메일 전송
     await signInWithEmailAndPassword(firebaseAuth, email, password)
       .then(() => sendEmailVerification(firebaseAuth.currentUser))
