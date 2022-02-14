@@ -1,5 +1,4 @@
 const functions = require("firebase-functions");
-const { user } = require("firebase-functions/v1/auth");
 const jwt = require("jsonwebtoken");
 const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../constants/jwt");
 
