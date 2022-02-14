@@ -101,7 +101,7 @@ const deleteReviewPost = async (client, postId) => {
     UPDATE review_post
     SET is_deleted = TRUE, updated_at = now()
     WHERE id = $1
-    RETURNING *
+    RETURNING id as post_id, is_deleted
     `,
     [postId],
   );
