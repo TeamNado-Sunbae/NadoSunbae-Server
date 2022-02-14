@@ -96,6 +96,8 @@ module.exports = async (req, res) => {
           comment.postId,
           notificationType.MY_QUESTION_COMMENT_ALARM,
           comment.content,
+          comment.commentId,
+          commentPost.postTypeId,
         );
 
         // 디바이스로 보낼 푸시 알림 메시지
@@ -129,7 +131,7 @@ module.exports = async (req, res) => {
             console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response);
           })
           .catch(function (error) {
-            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
+            console.log(responseMessage.PUSH_ALARM_SEND_FAIL, error);
           });
       }
     }
@@ -151,6 +153,8 @@ module.exports = async (req, res) => {
           comment.postId,
           notificationType.MY_INFORMATION_COMMENT_ALARM,
           comment.content,
+          comment.commentId,
+          commentPost.postTypeId,
         );
 
         // 디바이스로 보낼 푸시 알림 메시지
@@ -184,7 +188,7 @@ module.exports = async (req, res) => {
             console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response);
           })
           .catch(function (error) {
-            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
+            console.log(responseMessage.PUSH_ALARM_SEND_FAIL, error);
           });
       }
     }
@@ -226,6 +230,8 @@ module.exports = async (req, res) => {
               comment.postId,
               notificationType.OTHER_QUESTION_COMMENT_ALARM,
               comment.content,
+              comment.commentId,
+              commentPost.postTypeId,
             );
             receiverTokens.push(receiver.deviceToken);
           }
@@ -258,16 +264,28 @@ module.exports = async (req, res) => {
           },
           tokens: receiverTokens,
         };
-
         // 메세지 전송
         admin
           .messaging()
           .sendMulticast(message)
           .then((response) => {
             console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response.successCount);
+            if (response.failureCount > 0) {
+              const failedTokens = [];
+              response.responses.forEach((response, i) => {
+                if (!response.success) {
+                  failedTokens.push(receiverTokens[i]);
+                }
+              });
+              console.log(
+                responseMessage.PUSH_ALARM_SEND_FAIL,
+                response.failureCount,
+                failedTokens,
+              );
+            }
           })
           .catch(function (error) {
-            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
+            console.log(responseMessage.PUSH_ALARM_SEND_FAIL, error);
           });
       }
     }
@@ -306,6 +324,8 @@ module.exports = async (req, res) => {
               comment.postId,
               notificationType.OTHER_INFORMATION_COMMENT_ALARM,
               comment.content,
+              comment.commentId,
+              commentPost.postTypeId,
             );
             receiverTokens.push(receiver.deviceToken);
           }
@@ -345,9 +365,22 @@ module.exports = async (req, res) => {
           .sendMulticast(message)
           .then((response) => {
             console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response.successCount);
+            if (response.failureCount > 0) {
+              const failedTokens = [];
+              response.responses.forEach((response, i) => {
+                if (!response.success) {
+                  failedTokens.push(receiverTokens[i]);
+                }
+              });
+              console.log(
+                responseMessage.PUSH_ALARM_SEND_FAIL,
+                response.failureCount,
+                failedTokens,
+              );
+            }
           })
           .catch(function (error) {
-            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
+            console.log(responseMessage.PUSH_ALARM_SEND_FAIL, error);
           });
       }
     }
