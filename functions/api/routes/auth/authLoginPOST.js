@@ -4,10 +4,11 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const { signInWithEmailAndPassword } = require("firebase/auth");
 const db = require("../../../db/db");
-const { userDB, majorDB } = require("../../../db");
+const { userDB, majorDB, reportDB } = require("../../../db");
 
 const { firebaseAuth } = require("../../../config/firebaseClient");
 const jwtHandlers = require("../../../lib/jwtHandlers");
+const reportPeriodType = require("../../../constants/reportPeriodType");
 
 module.exports = async (req, res) => {
   const { email, password, deviceToken } = req.body;
@@ -59,17 +60,6 @@ module.exports = async (req, res) => {
     const userData = await userDB.getUserByFirebaseId(client, firebaseId);
     const firstMajorName = await majorDB.getMajorNameByMajorId(client, userData.firstMajorId);
     const secondMajorName = await majorDB.getMajorNameByMajorId(client, userData.secondMajorId);
-    const user = {
-      userId: userData.id,
-      email: userData.email,
-      universityId: userData.universityId,
-      firstMajorId: userData.firstMajorId,
-      firstMajorName: firstMajorName.majorName,
-      secondMajorId: userData.secondMajorId,
-      secondMajorName: secondMajorName.majorName,
-      isReviewed: userData.isReviewed,
-      isEmailVerified: isEmailVerified,
-    };
 
     // 로그인시 토큰 새로 발급
     const { accesstoken } = jwtHandlers.access(userData);
@@ -102,6 +92,64 @@ module.exports = async (req, res) => {
           util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_DEVICE_TOKEN_FAIL),
         );
     }
+
+    const today = new Date();
+    // 기본 userData로 초기화
+    let updatedUserByExpiredReport = userData;
+    if (userData.reportCreatedAt) {
+      // 신고기간 만료되었으면
+      if (userData.reportCreatedAt.toLocaleString() <= today.toLocaleString()) {
+        // 신고 테이블에서 유저에게 온 접수된 신고들을 만료시킴
+        const deletedReportList = await reportDB.deleteReportList(client, userData.id);
+
+        // 유저의 신고 시작 기간을 null로 초기화해줌
+        updatedUserByExpiredReport = await userDB.updateUserByExpiredReport(
+          client,
+          userData.id,
+          null,
+        );
+      }
+    }
+
+    // 유저 신고 여부, 신고 기간
+
+    // 유저가 신고 당해 권한 제한된 상태인지
+    let isUserReported;
+    if (updatedUserByExpiredReport.reportCreatedAt) {
+      isUserReported = true;
+    } else {
+      isUserReported = false;
+    }
+
+    // 유저 신고 기간
+    let reportPeriod;
+    if (isUserReported) {
+      if (updatedUserByExpiredReport.reportCount === 1) {
+        reportPeriod = reportPeriodType.FIRST_PERIOD;
+      } else if (updatedUserByExpiredReport.reportCount === 2) {
+        reportPeriod = reportPeriodType.SECOND_PERIOD;
+      } else if (updatedUserByExpiredReport.reportCount === 3) {
+        reportPeriod = reportPeriodType.THIRD_PERIOD;
+      } else if (updatedUserByExpiredReport.reportCount > 3) {
+        reportPeriod = reportPeriodType.FOURTH_PERIOD;
+      }
+    } else {
+      reportPeriod = reportPeriodType.NO_PERIOD;
+    }
+
+    const user = {
+      userId: userData.id,
+      email: userData.email,
+      universityId: userData.universityId,
+      firstMajorId: userData.firstMajorId,
+      firstMajorName: firstMajorName.majorName,
+      secondMajorId: userData.secondMajorId,
+      secondMajorName: secondMajorName.majorName,
+      isReviewed: userData.isReviewed,
+      isEmailVerified: isEmailVerified,
+      isUserReported: isUserReported,
+      reportPeriod: reportPeriod,
+    };
 
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.LOGIN_SUCCESS, {

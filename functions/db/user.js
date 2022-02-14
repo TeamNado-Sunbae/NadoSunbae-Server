@@ -252,6 +252,31 @@ const updateUserByReport = async (client, userId, reportCount, refreshtoken) => 
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const updateUserByExpiredReport = async (client, userId, reportCreatedAt) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM "user"
+    WHERE id = $1
+    AND is_deleted = FALSE
+    `,
+    [userId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET report_created_at = $2, updated_at = now()
+    WHERE id = $1
+    AND is_deleted = FALSE
+    RETURNING *
+    `,
+    [userId, reportCreatedAt],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   createUser,
   getUserByNickname,
@@ -266,4 +291,5 @@ module.exports = {
   updateUserByMypage,
   getUserByRefreshToken,
   updateUserByReport,
+  updateUserByExpiredReport,
 };
