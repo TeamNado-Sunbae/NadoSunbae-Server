@@ -3,12 +3,9 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reportDB } = require("../../../db");
+const { reportDB, reviewPostDB, classroomPostDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const reportType = require("../../../constants/reportType");
-const { getReviewPostByPostId } = require("../../../db/reviewPost");
-const { getClassroomPostByPostId } = require("../../../db/classroomPost");
-const { getCommentByCommentId } = require("../../../db/comment");
 
 module.exports = async (req, res) => {
   const { reportedTargetId, reportedTargetTypeId, reason } = req.body;
@@ -45,7 +42,7 @@ module.exports = async (req, res) => {
     let reportedUserId;
 
     if (reportedTargetTypeId === reportType.REVIEW_POST) {
-      const reviewPost = await getReviewPostByPostId(client, reportedTargetId);
+      const reviewPost = await reviewPostDB.getReviewPostByPostId(client, reportedTargetId);
 
       if (!reviewPost) {
         return res
@@ -55,7 +52,10 @@ module.exports = async (req, res) => {
 
       reportedUserId = reviewPost.writerId;
     } else if (reportedTargetTypeId === reportType.CLASSROOM_POST) {
-      const classroomPost = await getClassroomPostByPostId(client, reportedTargetId);
+      const classroomPost = await classroomPostDB.getClassroomPostByPostId(
+        client,
+        reportedTargetId,
+      );
 
       if (!classroomPost) {
         return res
@@ -65,7 +65,7 @@ module.exports = async (req, res) => {
 
       reportedUserId = classroomPost.writerId;
     } else if (reportedTargetTypeId === reportType.COMMENT) {
-      const comment = await getCommentByCommentId(client, reportedTargetId);
+      const comment = await commentDB.getCommentByCommentId(client, reportedTargetId);
 
       if (!comment) {
         return res
