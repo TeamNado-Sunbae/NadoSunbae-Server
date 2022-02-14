@@ -23,28 +23,32 @@ module.exports = async (req, res) => {
     // 마이페이지 주인장 id
     const commentWriterId = req.user.id;
 
-    // 유저가 작성한 답글이 있는 질문글, 정보글 조회
+    // 주인장이 작성한 답글이 있는 전체 질문글 or 정보글 조회 (postTypeId가 3 또는 2로 올것임.)
     let classroomPostList = await commentDB.getClassroomPostListByMyCommentList(
       client,
       commentWriterId,
       postTypeId,
     );
 
+    // 주인장이 작성한 답글이 있는 게시글이 없다면 NO_POST 반환
     if (!classroomPostList) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
 
+    // 게시글 목록 조회
     const classroomPostListByMyCommentList = await Promise.all(
       classroomPostList.map(async (classroomPost) => {
+        // 게시글 작성자 정보
         let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
 
+        // 현재 주인장이 좋아요를 누른 상태인지(isLiked) 정보를 가져오기 위함
         let like = await likeDB.getLikeByPostId(
           client,
           classroomPost.id,
           postTypeId,
-          classroomPost.writerId,
+          commentWriterId,
         );
         let isLiked;
         if (!like) {
@@ -52,13 +56,17 @@ module.exports = async (req, res) => {
         } else {
           isLiked = like.isLiked;
         }
+        // 해당 게시글의 좋아요 수
         let likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
+
         like = {
           isLiked: isLiked,
           likeCount: likeCount.likeCount,
         };
 
+        // 해당 게시글의 댓글 수
         let commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
+
         return {
           postId: classroomPost.id,
           title: classroomPost.title,
