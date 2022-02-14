@@ -192,16 +192,25 @@ const updateUserByMypage = async (
   firstMajorStart,
   secondMajorId,
   secondMajorStart,
+  isOnQuestion,
 ) => {
   const { rows } = await client.query(
     `
     UPDATE "user"
-    SET nickname = $2, first_major_id= $3, first_major_start= $4, second_major_id= $5, second_major_start= $6, updated_at = now()
+    SET nickname = $2, first_major_id = $3, first_major_start = $4, second_major_id = $5, second_major_start = $6, is_on_question = $7, updated_at = now()
     WHERE id = $1
     AND is_deleted = FALSE
     RETURNING *
     `,
-    [userId, nickname, firstMajorId, firstMajorStart, secondMajorId, secondMajorStart],
+    [
+      userId,
+      nickname,
+      firstMajorId,
+      firstMajorStart,
+      secondMajorId,
+      secondMajorStart,
+      isOnQuestion,
+    ],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
