@@ -89,7 +89,9 @@ module.exports = {
 
   // 신고
   REPORT_SUCCESS: "신고 성공",
+  IS_REPORTED_SUCCESS: "신고 접수 성공",
   ALREADY_REPORT: "이미 신고한 글/댓글입니다.",
+  NO_REPORT: "존재하지 않는(혹은 만료된) 신고입니다.",
 
   // 알림
   PUSH_ALARM_SEND_SUCCESS: "푸시 알림 전송 성공",
