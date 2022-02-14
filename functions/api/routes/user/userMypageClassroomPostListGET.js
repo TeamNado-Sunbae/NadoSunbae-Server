@@ -4,8 +4,9 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, likeDB, userDB, postTypeDB, commentDB } = require("../../../db");
+const { classroomPostDB, likeDB, userDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
+const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
   const { userId } = req.params;
@@ -38,17 +39,28 @@ module.exports = async (req, res) => {
         // 댓글 개수
         const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
 
-        // 좋아요 개수
-        const questionToPersonPostType = await postTypeDB.getPostTypeIdByPostTypeName(
+        // 좋아요 정보
+        const likeData = await likeDB.getLikeByPostId(
           client,
-          "questionToPerson",
+          classroomPost.id,
+          postType.QUESTION_TO_PERSON,
+          req.user.id,
         );
-
+        let isLiked;
+        if (!likeData) {
+          isLiked = false;
+        } else {
+          isLiked = likeData.isLiked;
+        }
         const likeCount = await likeDB.getLikeCountByPostId(
           client,
           classroomPost.id,
-          questionToPersonPostType.id,
+          postType.QUESTION_TO_PERSON,
         );
+        const like = {
+          isLiked: isLiked,
+          likeCount: likeCount.likeCount,
+        };
 
         return {
           postId: classroomPost.id,
@@ -57,7 +69,7 @@ module.exports = async (req, res) => {
           createdAt: classroomPost.createdAt,
           writer: writer,
           commentCount: commentCount.commentCount,
-          likeCount: likeCount.likeCount,
+          like: like,
         };
       }),
     );
