@@ -5,18 +5,20 @@ const createNotification = async (
   senderId,
   receiverId,
   postId,
-  notificationType,
+  notificationTypeId,
   content,
+  commentId,
+  postTypeId,
 ) => {
   const { rows } = await client.query(
     `
       INSERT INTO notification
-      (sender_id, receiver_id, post_id, notification_type, content)
+      (sender_id, receiver_id, post_id, notification_type_id, content, comment_id, post_type_id)
       VALUES
-      ($1, $2, $3, $4, $5)
+      ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
       `,
-    [senderId, receiverId, postId, notificationType, content],
+    [senderId, receiverId, postId, notificationTypeId, content, commentId, postTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };

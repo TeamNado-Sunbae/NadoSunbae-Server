@@ -6,7 +6,8 @@ router.post("/duplication-check/nickname", require("./authDuplicationCheckNickna
 router.post("/duplication-check/email", require("./authDuplicationCheckEmailPOST"));
 router.post("/signup", require("./authSignupPOST"));
 router.post("/login", require("./authLoginPOST"));
-router.post("/login/token", checkUser, require("./authLoginTokenPOST"));
+router.post("/renewal/token", require("./authRenewalTokenPOST"));
 router.get("/university/:universityId", require("./authUniversityGET"));
+router.post("/certification/email", require("./authCertificationEmailPOST"));
 
 module.exports = router;

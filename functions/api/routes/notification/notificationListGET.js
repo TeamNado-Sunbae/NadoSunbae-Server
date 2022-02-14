@@ -3,9 +3,10 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { notificationDB, userDB, classroomPostDB } = require("../../../db");
+const { notificationDB, userDB, classroomPostDB, commentDB } = require("../../../db");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
+const notificationType = require("../../../constants/notificationType");
 
 module.exports = async (req, res) => {
   const { receiverId } = req.params;
@@ -29,13 +30,29 @@ module.exports = async (req, res) => {
           client,
           notification.postId,
         );
-        if (!classroomPost) {
-          return res
-            .status(statusCode.NOT_FOUND)
-            .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
+        // commentId 1:1 질문글 생성 알림의 경우에는 null - notification type QUESTION_TO_PERSON_ALARM
+        let comment;
+        if (notification.commentId) {
+          comment = await commentDB.getCommentByCommentId(client, notification.commentId);
         }
 
-        let isQuestionToPerson = classroomPost.postTypeId === postType.QUESTION_TO_PERSON;
+        // content 내용은 본글과 댓글이 삭제된 경우에만 변경
+        let content;
+        // 1:1 질문글이 삭제되었거나 댓글의 원본글(정보글, 질문글)이 삭제된 경우
+        if (!classroomPost) {
+          content = "원본글이 삭제되었습니다.";
+        } else if (
+          // 댓글 알림이지만 댓글이 삭제된 경우
+          notification.notificationTypeId !== notificationType.QUESTION_TO_PERSON_ALARM &&
+          !comment
+        ) {
+          content = "답글이 삭제되었습니다.";
+        } else {
+          content = notification.content;
+        }
+
+        // 질문글이 1:1 질문인지 전체 질문인지 알기 위함
+        const isQuestionToPerson = notification.postTypeId === postType.QUESTION_TO_PERSON;
 
         sender = {
           senderId: sender.id,
@@ -47,9 +64,11 @@ module.exports = async (req, res) => {
           notificationId: notification.id,
           sender: sender,
           postId: notification.postId,
+          commentId: notification.commentId,
+          postTypeId: notification.postTypeId,
           isQuestionToPerson: isQuestionToPerson,
-          notificationType: notification.notificationType,
-          content: notification.content,
+          notificationTypeId: notification.notificationTypeId,
+          content: content,
           isRead: notification.isRead,
           isDeleted: notification.isDeleted,
           createdAt: notification.createdAt,
