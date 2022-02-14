@@ -42,6 +42,7 @@ module.exports = async (req, res) => {
     let reportedUserId;
 
     if (reportedTargetTypeId === reportType.REVIEW_POST) {
+      // 후기글 신고
       const reviewPost = await reviewPostDB.getReviewPostByPostId(client, reportedTargetId);
 
       if (!reviewPost) {
@@ -52,6 +53,7 @@ module.exports = async (req, res) => {
 
       reportedUserId = reviewPost.writerId;
     } else if (reportedTargetTypeId === reportType.CLASSROOM_POST) {
+      // 과방글(질문글, 정보글) 신고
       const classroomPost = await classroomPostDB.getClassroomPostByPostId(
         client,
         reportedTargetId,
@@ -65,6 +67,7 @@ module.exports = async (req, res) => {
 
       reportedUserId = classroomPost.writerId;
     } else if (reportedTargetTypeId === reportType.COMMENT) {
+      // 댓글 신고
       const comment = await commentDB.getCommentByCommentId(client, reportedTargetId);
 
       if (!comment) {
@@ -74,6 +77,7 @@ module.exports = async (req, res) => {
       }
 
       reportedUserId = comment.writerId;
+      // 잘못된 report type
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
