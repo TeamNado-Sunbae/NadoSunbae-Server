@@ -5,7 +5,6 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { userDB } = require("../../../db");
-const jwtHandlers = require("../../../lib/jwtHandlers");
 const { firebaseAuth } = require("../../../config/firebaseClient");
 const { sendEmailVerification, signInWithEmailAndPassword } = require("firebase/auth");
 

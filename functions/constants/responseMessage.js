@@ -57,6 +57,9 @@ module.exports = {
   TOKEN_INVALID: "토큰이 유효하지 않습니다.",
   TOKEN_EMPTY: "토큰이 없습니다.",
   UPDATE_DEVICE_TOKEN_FAIL: "디바이스 토큰 업데이트 실패",
+  UPDATE_REFRESH_TOKEN_FAIL: "리프레스 토큰 업데이트 실패",
+  UPDATE_TOKEN_SUCCESS: "토큰 재발급 성공",
+  ALREADY_UPDATED_TOKEN_SUCCESS: "둘 다 유효한 토큰입니다.",
 
   // 인증
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
