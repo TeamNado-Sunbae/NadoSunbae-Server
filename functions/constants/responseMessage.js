@@ -87,8 +87,9 @@ module.exports = {
   // 좋아요
   UPDATE_LIKE_SUCCESS: "포스트 좋아요 업데이트 성공",
 
-  // 신고 성공
+  // 신고
   REPORT_SUCCESS: "신고 성공",
+  ALREADY_REPORT: "이미 신고한 글/댓글입니다.",
 
   // 알림
   PUSH_ALARM_SEND_SUCCESS: "푸시 알림 전송 성공",
