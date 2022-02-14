@@ -6,8 +6,6 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { userDB } = require("../../../db");
 
-const jwtHandlers = require("../../../lib/jwtHandlers");
-
 module.exports = async (req, res) => {
   const {
     email,
@@ -96,16 +94,10 @@ module.exports = async (req, res) => {
       createdAt: user.createdAt,
     };
 
-    // JWT 발급
-    const { accesstoken } = jwtHandlers.sign(user);
-
-    console.log(user);
-
-    // user + JWT를 response로 전송
+    // user를 response로 전송
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.CREATE_USER, {
         user,
-        accesstoken,
       }),
     );
   } catch (error) {
