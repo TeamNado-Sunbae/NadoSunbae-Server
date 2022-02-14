@@ -8,6 +8,5 @@ router.post("/signup", require("./authSignupPOST"));
 router.post("/login", require("./authLoginPOST"));
 router.post("/login/token", checkUser, require("./authLoginTokenPOST"));
 router.get("/university/:universityId", require("./authUniversityGET"));
-router.post("/certification/email", require("./authCertificationEmailPOST"));
 
 module.exports = router;
