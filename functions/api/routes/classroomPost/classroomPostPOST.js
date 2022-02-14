@@ -91,6 +91,8 @@ module.exports = async (req, res) => {
           post.postId,
           notificationType.QUESTION_TO_PERSON_ALARM,
           post.title,
+          null,
+          post.postTypeId,
         );
 
         // 디바이스로 보낼 푸시 알림 메시지
@@ -113,9 +115,6 @@ module.exports = async (req, res) => {
               },
             },
           },
-          data: {
-            postId: `${post.postId}`,
-          },
           token: receiver.deviceToken,
         };
 
@@ -127,7 +126,7 @@ module.exports = async (req, res) => {
             console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response);
           })
           .catch(function (error) {
-            console.log(responseMessage.PUSH_ALARM_SEND_FAIL);
+            console.log(responseMessage.PUSH_ALARM_SEND_FAIL, error);
           });
       }
     }
