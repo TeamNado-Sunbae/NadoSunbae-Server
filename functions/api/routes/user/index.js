@@ -7,5 +7,6 @@ router.get("/:userId/classroom-post/list", checkUser, require("./userMypageClass
 router.get("/list/major/:majorId", checkUser, require("./userListMajorGET"));
 router.put("/", checkUser, require("./userMypagePUT"));
 router.get("/app-version/recent", checkUser, require("./userMypageAppVersionRecentGET"));
+router.get("/comment/list/:postTypeId", checkUser, require("./userMypageCommentListGET"));
 
 module.exports = router;
