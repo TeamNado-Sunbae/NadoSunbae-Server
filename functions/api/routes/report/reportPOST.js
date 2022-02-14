@@ -46,15 +46,36 @@ module.exports = async (req, res) => {
 
     if (reportedTargetTypeId === reportType.REVIEW_POST) {
       const reviewPost = await getReviewPostByPostId(client, reportedTargetId);
+
+      if (!reviewPost) {
+        return res
+          .status(statusCode.NOT_FOUND)
+          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
+      }
+
       reportedUserId = reviewPost.writerId;
     } else if (reportedTargetTypeId === reportType.CLASSROOM_POST) {
       const classroomPost = await getClassroomPostByPostId(client, reportedTargetId);
+
+      if (!classroomPost) {
+        return res
+          .status(statusCode.NOT_FOUND)
+          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
+      }
+
       reportedUserId = classroomPost.writerId;
     } else if (reportedTargetTypeId === reportType.COMMENT) {
       const comment = await getCommentByCommentId(client, reportedTargetId);
+
+      if (!comment) {
+        return res
+          .status(statusCode.NOT_FOUND)
+          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
+      }
+
       reportedUserId = comment.writerId;
     } else {
-      res
+      return res
         .status(statusCode.BAD_REQUEST)
         .send(util.success(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
     }
