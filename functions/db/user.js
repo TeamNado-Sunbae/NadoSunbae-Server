@@ -173,7 +173,7 @@ const updateUserByDeviceToken = async (client, userId, deviceToken) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const updateUserByRefreshToken = async (client, userId, refreshToken) => {
+const updateUserByRefreshToken = async (client, userId, refreshtoken) => {
   const { rows: existingRows } = await client.query(
     `
     SELECT * FROM "user"
@@ -193,7 +193,7 @@ const updateUserByRefreshToken = async (client, userId, refreshToken) => {
     AND is_deleted = FALSE
     RETURNING *
     `,
-    [userId, refreshToken],
+    [userId, refreshtoken],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
@@ -209,14 +209,14 @@ const getUsersByCommentWriterId = async (client, commentWriterIdList) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getUserByRefreshToken = async (client, refreshToken) => {
+const getUserByRefreshToken = async (client, refreshtoken) => {
   const { rows } = await client.query(
     `
     SELECT * FROM "user"
     WHERE refresh_token = $1
     AND is_deleted = FALSE
     `,
-    [refreshToken],
+    [refreshtoken],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
