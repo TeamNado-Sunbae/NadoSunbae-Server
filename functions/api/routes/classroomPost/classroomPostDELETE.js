@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
-    // 1:1 질문글의 답변자가 아닌 경우 본인 게시글 삭제시도하면 403 FORBIDDEN Error
+    // 1:1 질문글의 답변자가 아닌 경우 본인 게시글이 아닌데 삭제시도하면 403 FORBIDDEN Error
     if (
       classroomPost.writerId !== classroomPost.answererId &&
       classroomPost.writerId !== req.user.id
