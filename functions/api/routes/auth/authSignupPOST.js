@@ -100,23 +100,28 @@ module.exports = async (req, res) => {
     // JWT 발급
     const { accesstoken } = jwtHandlers.sign(user);
 
-    console.log(user);
-
     // 로그인 및 메일 전송
-    await signInWithEmailAndPassword(firebaseAuth, email, password).then(() =>
-      sendEmailVerification(firebaseAuth.currentUser),
-    );
-    // .catch((e) => {
-    //   console.log(e);
-    //   return { err: true, error: e };
-    // });
+    await signInWithEmailAndPassword(firebaseAuth, email, password)
+      .then(() => sendEmailVerification(firebaseAuth.currentUser))
+      .catch((e) => {
+        return res
+          .status(statusCode.INTERNAL_SERVER_ERROR)
+          .send(
+            util.fail(
+              statusCode.INTERNAL_SERVER_ERROR,
+              responseMessage.SEND_VERIFICATION_EMAIL_FAIL,
+            ),
+          );
+      });
 
-    // user + JWT를 response로 전송
     res.status(statusCode.OK).send(
-      util.success(statusCode.OK, responseMessage.CREATE_USER, {
-        user,
-        accesstoken,
-      }),
+      util.success(
+        statusCode.OK,
+        `${responseMessage.CREATE_USER} 및 ${responseMessage.SEND_VERIFICATION_EMAIL_SUCCESS}`,
+        {
+          user,
+        },
+      ),
     );
   } catch (error) {
     console.log(error);
