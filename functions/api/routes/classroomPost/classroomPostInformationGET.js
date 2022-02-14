@@ -20,6 +20,13 @@ module.exports = async (req, res) => {
       .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
   }
 
+  // 신고당한 유저
+  if (req.user.reportCreatedAt) {
+    return res
+      .status(statusCode.FORBIDDEN)
+      .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS_REPORT));
+  }
+
   let client;
 
   try {

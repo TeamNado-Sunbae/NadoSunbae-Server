@@ -64,6 +64,7 @@ module.exports = {
   // 인증
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
   FORBIDDEN_ACCESS: "사용 권한이 없습니다.",
+  FORBIDDEN_ACCESS_REPORT: "신고로 인해 사용 권한이 없습니다.",
   IS_REVIEWED_FALSE: "후기글 미등록자입니다.",
   SEND_VERIFICATION_EMAIL_SUCCESS: "인증 메일 보내기 성공",
   SEND_VERIFICATION_EMAIL_FAIL: "인증 메일 보내기 실패",
