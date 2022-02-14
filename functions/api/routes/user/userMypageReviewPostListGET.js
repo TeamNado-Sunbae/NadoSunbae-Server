@@ -5,6 +5,7 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { reviewPostDB, likeDB, majorDB, relationReviewPostTagDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
+const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
   const user = req.user;
@@ -25,7 +26,6 @@ module.exports = async (req, res) => {
     // 해당 유저 정보
     const writer = {
       writerId: user.id,
-      profileImageId: user.profileImageId,
       nickname: user.nickname,
     };
 
@@ -33,15 +33,15 @@ module.exports = async (req, res) => {
       reviewPostList.map(async (reviewPost) => {
         const majorName = await majorDB.getMajorNameByMajorId(client, reviewPost.majorId);
 
-        const tagList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.id);
-        const likeCount = await likeDB.getLikeCountByPostId(client, reviewPost.id, 1);
+        const tagNameList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.id);
+        const likeCount = await likeDB.getLikeCountByPostId(client, reviewPost.id, postType.REVIEW);
 
         return {
           postId: reviewPost.id,
           majorName: majorName.majorName,
           oneLineReview: reviewPost.oneLineReview,
           createdAt: reviewPost.createdAt,
-          tagList: tagList,
+          tagList: tagNameList,
           likeCount: likeCount.likeCount,
         };
       }),
