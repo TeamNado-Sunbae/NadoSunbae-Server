@@ -93,12 +93,38 @@ module.exports = async (req, res) => {
         );
     }
 
-    const today = new Date();
     // 기본 userData로 초기화
     let updatedUserByExpiredReport = userData;
     if (userData.reportCreatedAt) {
-      // 신고기간 만료되었으면
-      if (userData.reportCreatedAt.toLocaleString() <= today.toLocaleString()) {
+      let expiredDate;
+      let reportCreatedDate = userData.reportCreatedAt;
+      // 오늘 날짜를 한국 표준시로
+      const today = new Date();
+      const utcNow = today.getTime() + today.getTimezoneOffset() * 60 * 1000;
+      const KR_TIME_DIFF = 9 * 60 * 60 * 1000; // UTC보다 9시간 빠름
+      const krNow = new Date(utcNow + KR_TIME_DIFF);
+
+      // setMonth parameter는 1 월에서 12 월까지의 월을 나타내는 0에서 11 사이의 정수
+      if (userData.reportCount === 1) {
+        expiredDate = new Date(
+          reportCreatedDate.setMonth(reportCreatedDate.getMonth() + reportPeriodType.FIRST_PERIOD),
+        );
+      } else if (userData.reportCount === 2) {
+        expiredDate = new Date(
+          reportCreatedDate.setMonth(reportCreatedDate.getMonth() + reportPeriodType.SECOND_PERIOD),
+        );
+      } else if (userData.reportCount === 3) {
+        expiredDate = new Date(
+          reportCreatedDate.setMonth(reportCreatedDate.getMonth() + reportPeriodType.THIRD_PERIOD),
+        );
+      } else if (userData.reportCount >= 4) {
+        expiredDate = new Date(
+          reportCreatedDate.setMonth(reportCreatedDate.getMonth() + reportPeriodType.FOURTH_PERIOD),
+        );
+      }
+
+      // 신고 만료 날짜 지났으면
+      if (expiredDate < krNow) {
         // 신고 테이블에서 유저에게 온 접수된 신고들을 만료시킴
         const deletedReportList = await reportDB.deleteReportList(client, userData.id);
 
@@ -130,7 +156,7 @@ module.exports = async (req, res) => {
         reportPeriod = reportPeriodType.SECOND_PERIOD;
       } else if (updatedUserByExpiredReport.reportCount === 3) {
         reportPeriod = reportPeriodType.THIRD_PERIOD;
-      } else if (updatedUserByExpiredReport.reportCount > 3) {
+      } else if (updatedUserByExpiredReport.reportCount >= 4) {
         reportPeriod = reportPeriodType.FOURTH_PERIOD;
       }
     } else {
