@@ -34,7 +34,25 @@ module.exports = async (req, res) => {
         const majorName = await majorDB.getMajorNameByMajorId(client, reviewPost.majorId);
 
         const tagNameList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.id);
+
+        // 좋아요 정보
+        const likeData = await likeDB.getLikeByPostId(
+          client,
+          reviewPost.id,
+          postType.REVIEW,
+          req.user.id,
+        );
+        let isLiked;
+        if (!likeData) {
+          isLiked = false;
+        } else {
+          isLiked = likeData.isLiked;
+        }
         const likeCount = await likeDB.getLikeCountByPostId(client, reviewPost.id, postType.REVIEW);
+        const like = {
+          isLiked: isLiked,
+          likeCount: likeCount.likeCount,
+        };
 
         return {
           postId: reviewPost.id,
@@ -42,7 +60,7 @@ module.exports = async (req, res) => {
           oneLineReview: reviewPost.oneLineReview,
           createdAt: reviewPost.createdAt,
           tagList: tagNameList,
-          likeCount: likeCount.likeCount,
+          like: like,
         };
       }),
     );
