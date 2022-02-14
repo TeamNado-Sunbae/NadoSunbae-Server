@@ -5,8 +5,8 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { userDB } = require("../../../db");
-
-const jwtHandlers = require("../../../lib/jwtHandlers");
+const { firebaseAuth } = require("../../../config/firebaseClient");
+const { sendEmailVerification, signInWithEmailAndPassword } = require("firebase/auth");
 
 module.exports = async (req, res) => {
   const {
@@ -96,17 +96,28 @@ module.exports = async (req, res) => {
       createdAt: user.createdAt,
     };
 
-    // JWT 발급
-    const { accesstoken } = jwtHandlers.sign(user);
+    // 로그인 및 메일 전송
+    await signInWithEmailAndPassword(firebaseAuth, email, password)
+      .then(() => sendEmailVerification(firebaseAuth.currentUser))
+      .catch((e) => {
+        return res
+          .status(statusCode.INTERNAL_SERVER_ERROR)
+          .send(
+            util.fail(
+              statusCode.INTERNAL_SERVER_ERROR,
+              responseMessage.SEND_VERIFICATION_EMAIL_FAIL,
+            ),
+          );
+      });
 
-    console.log(user);
-
-    // user + JWT를 response로 전송
     res.status(statusCode.OK).send(
-      util.success(statusCode.OK, responseMessage.CREATE_USER, {
-        user,
-        accesstoken,
-      }),
+      util.success(
+        statusCode.OK,
+        `${responseMessage.CREATE_USER} 및 ${responseMessage.SEND_VERIFICATION_EMAIL_SUCCESS}`,
+        {
+          user,
+        },
+      ),
     );
   } catch (error) {
     console.log(error);

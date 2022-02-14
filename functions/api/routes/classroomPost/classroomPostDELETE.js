@@ -20,24 +20,24 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // 삭제하려는 유저와 게시글의 작성자가 같은지 확인
-    let post = await classroomPostDB.getClassroomPostByPostId(client, postId);
+    let classroomPost = await classroomPostDB.getClassroomPostByPostId(client, postId);
 
-    if (!post) {
+    if (!classroomPost) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
-    // 같지 않을 경우 403 FORBIDDEN Error
-    if (post.writerId !== req.user.id) {
+    // 1:1 질문글의 답변자가 아닌 경우 본인 게시글이 아닌데 삭제시도하면 403 FORBIDDEN Error
+    if (classroomPost.answererId !== req.user.id && classroomPost.writerId !== req.user.id) {
       return res
         .status(statusCode.FORBIDDEN)
         .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
     }
 
     // 게시글 삭제
-    let deletedPost = await classroomPostDB.deleteClassroomPostByPostId(client, postId);
+    let deletedClassroomPost = await classroomPostDB.deleteClassroomPostByPostId(client, postId);
 
-    if (!deletedPost) {
+    if (!deletedClassroomPost) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
@@ -54,7 +54,9 @@ module.exports = async (req, res) => {
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, deletedPost));
+      .send(
+        util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, deletedClassroomPost),
+      );
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

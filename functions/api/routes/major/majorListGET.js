@@ -30,6 +30,7 @@ module.exports = async (req, res) => {
         [true, false],
         [true, false],
       );
+      majorList.shift();
     } else if (filter === "firstMajor") {
       majorList = await majorDB.getMajorListByUniversityId(
         client,
