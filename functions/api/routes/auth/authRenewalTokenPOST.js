@@ -56,6 +56,10 @@ module.exports = async (req, res) => {
           accesstoken: accesstoken,
         }),
       );
+    } else {
+      return res
+        .status(statusCode.UNAUTHORIZED)
+        .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID));
     }
   } catch (error) {
     console.log(error);
