@@ -6,6 +6,7 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { reviewPostDB, userDB, likeDB, majorDB, relationReviewPostTagDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
+const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
   const { sort } = req.query;
@@ -76,7 +77,29 @@ module.exports = async (req, res) => {
         };
 
         const tagList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.postId);
-        const likeCount = await likeDB.getLikeCountByPostId(client, reviewPost.postId, 1);
+
+        // 좋아요 정보
+        const likeData = await likeDB.getLikeByPostId(
+          client,
+          reviewPost.postId,
+          postType.REVIEW,
+          req.user.id,
+        );
+        let isLiked;
+        if (!likeData) {
+          isLiked = false;
+        } else {
+          isLiked = likeData.isLiked;
+        }
+        const likeCount = await likeDB.getLikeCountByPostId(
+          client,
+          reviewPost.postId,
+          postType.REVIEW,
+        );
+        const like = {
+          isLiked: isLiked,
+          likeCount: likeCount.likeCount,
+        };
 
         return {
           postId: reviewPost.postId,
@@ -84,7 +107,7 @@ module.exports = async (req, res) => {
           createdAt: reviewPost.createdAt,
           writer: writer,
           tagList: tagList,
-          likeCount: likeCount.likeCount,
+          like: like,
         };
       }),
     );

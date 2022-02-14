@@ -51,8 +51,26 @@ module.exports = async (req, res) => {
           nickname: writer.nickname,
         };
 
-        const likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
         const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
+
+        // 좋아요 정보
+        const likeData = await likeDB.getLikeByPostId(
+          client,
+          classroomPost.id,
+          postTypeId,
+          req.user.id,
+        );
+        let isLiked;
+        if (!likeData) {
+          isLiked = false;
+        } else {
+          isLiked = likeData.isLiked;
+        }
+        const likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
+        const like = {
+          isLiked: isLiked,
+          likeCount: likeCount.likeCount,
+        };
 
         return {
           postId: classroomPost.id,
@@ -60,7 +78,7 @@ module.exports = async (req, res) => {
           content: classroomPost.content,
           createdAt: classroomPost.createdAt,
           writer: writer,
-          likeCount: likeCount.likeCount,
+          like: like,
           commentCount: commentCount.commentCount,
         };
       }),
