@@ -6,6 +6,7 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { classroomPostDB, likeDB, commentDB, majorDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
+const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
   const { type } = req.query;
@@ -28,7 +29,7 @@ module.exports = async (req, res) => {
       classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeId(
         client,
         req.user.id,
-        [2],
+        [postType.INFORMATION],
       );
     }
     // 질문글일 경우 postypeId === 3(전체) or 4(1:1)
@@ -36,7 +37,7 @@ module.exports = async (req, res) => {
       classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeId(
         client,
         req.user.id,
-        [3, 4],
+        [postType.QUESTION_TO_EVERYONE, postType.QUESTION_TO_PERSON],
       );
     } else {
       return res
