@@ -8,5 +8,6 @@ router.get("/list/major/:majorId", checkUser, require("./userListMajorGET"));
 router.get("/:userId/review-post/list", checkUser, require("./userMypageReviewPostListGET"));
 router.put("/", checkUser, require("./userMypagePUT"));
 router.get("/app-version/recent", checkUser, require("./userMypageAppVersionRecentGET"));
+router.get("/comment/list/:postTypeId", checkUser, require("./userMypageCommentListGET"));
 
 module.exports = router;
