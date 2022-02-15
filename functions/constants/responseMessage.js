@@ -95,6 +95,7 @@ module.exports = {
 
   // 차단 성공
   BLOCK_SUCCESS: "차단 업데이트 성공",
+  READ_ALL_BLOCKED_USERS_SUCCESS: "차단 목록 조회 성공",
 
   // 알림
   PUSH_ALARM_SEND_SUCCESS: "푸시 알림 전송 성공",
