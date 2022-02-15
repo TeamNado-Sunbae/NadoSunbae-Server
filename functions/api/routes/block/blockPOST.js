@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const existingBlockData = await blockDB.getBlockByuserId(client, blockUserId, blockedUserId);
+    const existingBlockData = await blockDB.getBlockByUserId(client, blockUserId, blockedUserId);
 
     let blockData;
 
