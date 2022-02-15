@@ -73,7 +73,6 @@ module.exports = async (req, res) => {
           createdAt: classroomPost.createdAt,
           writer: {
             writerId: writer.id,
-            profileImageId: writer.profileImageId,
             nickname: writer.nickname,
           },
           like: like,
