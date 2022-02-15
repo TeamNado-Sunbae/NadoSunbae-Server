@@ -1,26 +1,17 @@
-const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, likeDB, commentDB } = require("../../../db");
+const { userDB, likeDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { postTypeId, majorId } = req.params;
-  const { sort } = req.query;
-
-  if (!postTypeId || !majorId || !sort) {
+  let { postTypeId } = req.params;
+  if (!postTypeId) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-  }
-
-  if (postTypeId < 2 || postTypeId > 4) {
-    return res
-      .status(statusCode.BAD_REQUEST)
-      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_POSTTYPEID));
   }
 
   let client;
@@ -28,75 +19,73 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let classroomPostList = await classroomPostDB.getClassroomPostListByMajorId(
+    // 마이페이지 주인장 id
+    const commentWriterId = req.user.id;
+
+    // 주인장이 작성한 답글이 있는 전체 질문글 or 정보글 조회 (postTypeId가 3 또는 2로 올것임.)
+    let classroomPostList = await commentDB.getClassroomPostListByMyCommentList(
       client,
-      majorId,
+      commentWriterId,
       postTypeId,
     );
 
-    // 해당 과에 정보 또는 질문 글이 없을 경우
+    // 주인장이 작성한 답글이 있는 게시글이 없다면 NO_POST 반환
     if (!classroomPostList) {
       return res
-        .status(statusCode.OK)
-        .send(util.success(statusCode.OK, responseMessage.NO_CONTENT, classroomPostList));
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
 
-    classroomPostList = await Promise.all(
+    // 게시글 목록 조회
+    const classroomPostListByMyCommentList = await Promise.all(
       classroomPostList.map(async (classroomPost) => {
+        // 게시글 작성자 정보
         let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
 
-        writer = {
-          writerId: writer.id,
-          profileImageId: writer.profileImageId,
-          nickname: writer.nickname,
-        };
-
-        const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
-
-        // 좋아요 정보
-        const likeData = await likeDB.getLikeByPostId(
+        // 현재 주인장이 좋아요를 누른 상태인지(isLiked) 정보를 가져오기 위함
+        let like = await likeDB.getLikeByPostId(
           client,
           classroomPost.id,
           postTypeId,
-          req.user.id,
+          commentWriterId,
         );
         let isLiked;
-        if (!likeData) {
+        if (!like) {
           isLiked = false;
         } else {
-          isLiked = likeData.isLiked;
+          isLiked = like.isLiked;
         }
-        const likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
-        const like = {
+        // 해당 게시글의 좋아요 수
+        let likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
+
+        like = {
           isLiked: isLiked,
           likeCount: likeCount.likeCount,
         };
+
+        // 해당 게시글의 댓글 수
+        let commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
 
         return {
           postId: classroomPost.id,
           title: classroomPost.title,
           content: classroomPost.content,
           createdAt: classroomPost.createdAt,
-          writer: writer,
+          writer: {
+            writerId: writer.id,
+            nickname: writer.nickname,
+          },
           like: like,
           commentCount: commentCount.commentCount,
         };
       }),
     );
 
-    if (sort === "recent") {
-      classroomPostList = _.sortBy(classroomPostList, "createdAt").reverse();
-    } else if (sort === "like") {
-      classroomPostList = _.sortBy(classroomPostList, ["like.likeCount", "like.isLiked"]).reverse();
-    } else {
-      return res
-        .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_SORT));
-    }
-
-    res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, classroomPostList));
+    res.status(statusCode.OK).send(
+      util.success(statusCode.OK, responseMessage.READ_ALL_POST_SUCCESS, {
+        classroomPostListByMyCommentList,
+      }),
+    );
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

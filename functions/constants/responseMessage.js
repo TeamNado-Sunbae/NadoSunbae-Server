@@ -27,6 +27,7 @@ module.exports = {
   READ_ALL_USERS_SUCCESS: "모든 유저 조회 성공",
   UPDATE_ONE_USER_SUCCESS: "유저 수정 성공",
   DELETE_ONE_USER_SUCCESS: "유저 삭제 성공",
+  NO_USER_EMAIL: "해당 메일로 가입된 사용자가 없습니다.",
 
   // 포스트
   CREATE_ONE_POST_SUCCESS: "포스트 추가 성공",
@@ -67,6 +68,8 @@ module.exports = {
   IS_REVIEWED_FALSE: "후기글 미등록자입니다.",
   SEND_VERIFICATION_EMAIL_SUCCESS: "인증 메일 보내기 성공",
   SEND_VERIFICATION_EMAIL_FAIL: "인증 메일 보내기 실패",
+  SEND_RESET_PASSWORD_EMAIL_SUCCESS: "비밀번호 재설정 메일 보내기 성공",
+  SEND_RESET_PASSWORD_EMAIL_FAIL: "비밀번호 재설정 메일 보내기 실패",
 
   // 전공 목록 조회
   READ_ALL_MAJORS_SUCCESS: "해당 학교의 학과 목록 조회 성공",
@@ -89,6 +92,9 @@ module.exports = {
 
   // 신고 성공
   REPORT_SUCCESS: "신고 성공",
+
+  // 차단 성공
+  BLOCK_SUCCESS: "차단 업데이트 성공",
 
   // 알림
   PUSH_ALARM_SEND_SUCCESS: "푸시 알림 전송 성공",

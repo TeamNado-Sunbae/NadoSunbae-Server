@@ -40,13 +40,13 @@ module.exports = async (req, res) => {
         let content;
         // 1:1 질문글이 삭제되었거나 댓글의 원본글(정보글, 질문글)이 삭제된 경우
         if (!classroomPost) {
-          content = "원본글이 삭제되었습니다.";
+          content = "삭제된 게시글입니다.";
         } else if (
           // 댓글 알림이지만 댓글이 삭제된 경우
           notification.notificationTypeId !== notificationType.QUESTION_TO_PERSON_ALARM &&
           !comment
         ) {
-          content = "답글이 삭제되었습니다.";
+          content = "삭제된 답글입니다.";
         } else {
           content = notification.content;
         }
