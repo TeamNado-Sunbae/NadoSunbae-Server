@@ -15,7 +15,7 @@ const createBlock = async (client, blockUserId, blockedUserId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getBlockByuserId = async (client, blockUserId, blockedUserId) => {
+const getBlockByUserId = async (client, blockUserId, blockedUserId) => {
   const { rows } = await client.query(
     `
       SELECT * FROM block
@@ -46,6 +46,6 @@ const updateBlockByUserId = async (client, blockUserId, blockedUserId) => {
 
 module.exports = {
   createBlock,
-  getBlockByuserId,
+  getBlockByUserId,
   updateBlockByUserId,
 };
