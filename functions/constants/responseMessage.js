@@ -90,6 +90,9 @@ module.exports = {
   // 신고 성공
   REPORT_SUCCESS: "신고 성공",
 
+  // 차단 성공
+  BLOCK_SUCCESS: "차단 업데이트 성공",
+
   // 알림
   PUSH_ALARM_SEND_SUCCESS: "푸시 알림 전송 성공",
   PUSH_ALARM_SEND_FAIL: "푸시 알림 전송 실패",
