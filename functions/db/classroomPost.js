@@ -125,7 +125,7 @@ const getClassroomPostListByMajorId = async (client, majorId, postTypeId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getMyClassroomPostListByPostTypeId = async (client, userId, postTypeId) => {
+const getMyClassroomPostListByPostTypeIds = async (client, userId, postTypeId) => {
   const { rows } = await client.query(
     `
     SELECT * FROM "classroom_post" c
@@ -147,5 +147,5 @@ module.exports = {
   getClassroomPostByPostId,
   updateClassroomPost,
   updateClassroomPostByReport,
-  getMyClassroomPostListByPostTypeId,
+  getMyClassroomPostListByPostTypeIds,
 };

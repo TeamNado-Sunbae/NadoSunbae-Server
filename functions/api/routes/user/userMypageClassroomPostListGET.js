@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
 
     // 정보글일 경우 postypeId === 2
     if (type === "information") {
-      classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeId(
+      classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeIds(
         client,
         req.user.id,
         [postType.INFORMATION],
@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
     }
     // 질문글일 경우 postypeId === 3(전체) or 4(1:1)
     else if (type === "question") {
-      classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeId(
+      classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeIds(
         client,
         req.user.id,
         [postType.QUESTION_TO_EVERYONE, postType.QUESTION_TO_PERSON],
