@@ -83,7 +83,7 @@ module.exports = async (req, res) => {
     );
 
     res.status(statusCode.OK).send(
-      util.success(statusCode.OK, responseMessage.READ_ONE_POST_SUCCESS, {
+      util.success(statusCode.OK, responseMessage.READ_ALL_POST_SUCCESS, {
         classroomPostListByMyCommentList,
       }),
     );
