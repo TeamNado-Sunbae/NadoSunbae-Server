@@ -3,18 +3,23 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reviewPostDB, likeDB, majorDB, relationReviewPostTagDB } = require("../../../db");
+const { reviewPostDB, likeDB, majorDB, relationReviewPostTagDB, userDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
-  const user = req.user;
+  const { userId } = req.params;
 
+  if (!userId) {
+    return res
+      .status(statusCode.BAD_REQUEST)
+      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+  }
   let client;
 
   try {
     client = await db.connect(req);
-    let reviewPostList = await reviewPostDB.getReviewPostByUserId(client, user.id);
+    let reviewPostList = await reviewPostDB.getReviewPostByUserId(client, userId);
 
     // 해당 유저의 후기글이 하나도 없을 경우
     if (reviewPostList.length === 0) {
@@ -23,10 +28,12 @@ module.exports = async (req, res) => {
         .send(util.success(statusCode.OK, responseMessage.NO_CONTENT, reviewPostList));
     }
 
+    let writer = await userDB.getUserByUserId(client, userId);
+
     // 해당 유저 정보
-    const writer = {
-      writerId: user.id,
-      nickname: user.nickname,
+    writer = {
+      writerId: writer.id,
+      nickname: writer.nickname,
     };
 
     reviewPostList = await Promise.all(
@@ -40,7 +47,7 @@ module.exports = async (req, res) => {
           client,
           reviewPost.id,
           postType.REVIEW,
-          req.user.id,
+          userId,
         );
         let isLiked;
         if (!likeData) {
