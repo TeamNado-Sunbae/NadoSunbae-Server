@@ -150,7 +150,8 @@ const getClassroomPostListByMyCommentList = async (client, commentWriterId, post
     INNER JOIN classroom_post AS p
     ON c.post_id = p.id 
     AND p.writer_id != $1
-    AND p.post_type_id = $2;
+    AND p.post_type_id = $2
+    AND p.is_deleted = false;
       `,
     [commentWriterId, postTypeId],
   );
