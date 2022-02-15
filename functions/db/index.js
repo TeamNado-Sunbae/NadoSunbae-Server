@@ -12,4 +12,5 @@ module.exports = {
   imageDB: require("./image"),
   commentDB: require("./comment"),
   notificationDB: require("./notification"),
+  blockDB: require("./block"),
 };
