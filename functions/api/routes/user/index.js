@@ -10,6 +10,7 @@ router.get(
 );
 router.get("/list/major/:majorId", checkUser, require("./userListMajorGET"));
 router.get("/classroom-post/list", checkUser, require("./userMypageClassroomPostListGET"));
+router.get("/review-post/list", checkUser, require("./userMypageReviewPostListGET"));
 router.put("/", checkUser, require("./userMypagePUT"));
 router.get("/app-version/recent", checkUser, require("./userMypageAppVersionRecentGET"));
 
