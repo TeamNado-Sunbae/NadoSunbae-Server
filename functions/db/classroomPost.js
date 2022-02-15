@@ -125,12 +125,12 @@ const getClassroomPostListByMajorId = async (client, majorId, postTypeId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getMyClassroomPostListByPostTypeIds = async (client, userId, postTypeId) => {
+const getMyClassroomPostListByPostTypeIds = async (client, userId, postTypeIds) => {
   const { rows } = await client.query(
     `
     SELECT * FROM "classroom_post" c
     WHERE writer_id = $1
-    AND post_type_id IN (${postTypeId.join()})
+    AND post_type_id IN (${postTypeIds.join()})
     AND is_deleted = false
     ORDER BY created_at desc
   `,
