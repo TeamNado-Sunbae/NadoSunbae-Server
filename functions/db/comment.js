@@ -146,7 +146,7 @@ const getClassroomPostListByMyCommentList = async (client, commentWriterId, post
   const { rows } = await client.query(
     `
     SELECT p.id, p.writer_id, p.title, p.content, p.created_at
-    FROM (SELECT DISTINCT post_id, writer_id FROM comment WHERE writer_id = $1 AND is_deleted = false) AS c 
+    FROM (SELECT DISTINCT post_id FROM comment WHERE writer_id = $1 AND is_deleted = false) AS c 
     INNER JOIN classroom_post AS p
     ON c.post_id = p.id 
     AND p.writer_id != $1
