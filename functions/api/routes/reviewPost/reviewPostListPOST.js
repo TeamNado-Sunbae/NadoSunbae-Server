@@ -115,7 +115,7 @@ module.exports = async (req, res) => {
     if (sort === "recent") {
       reviewPostList = _.sortBy(reviewPostList, "createdAt").reverse();
     } else if (sort === "like") {
-      reviewPostList = _.sortBy(reviewPostList, "likeCount").reverse();
+      reviewPostList = _.sortBy(reviewPostList, ["like.likeCount", "like.isLiked"]).reverse();
     } else {
       return res
         .status(statusCode.BAD_REQUEST)

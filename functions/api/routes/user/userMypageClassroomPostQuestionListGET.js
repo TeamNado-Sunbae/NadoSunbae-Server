@@ -4,14 +4,15 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, likeDB, commentDB, majorDB } = require("../../../db");
+const { classroomPostDB, likeDB, userDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
-  const { type } = req.query;
+  const { userId } = req.params;
+  const { sort } = req.query;
 
-  if (!type) {
+  if (!userId || !sort) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -22,33 +23,18 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let classroomPostList;
+    let classroomPostList = await classroomPostDB.getClassroomPostListByUserId(client, userId);
 
-    // 정보글일 경우 postypeId === 2
-    if (type === "information") {
-      classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeIds(
-        client,
-        req.user.id,
-        [postType.INFORMATION],
-      );
-    }
-    // 질문글일 경우 postypeId === 3(전체) or 4(1:1)
-    else if (type === "question") {
-      classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeIds(
-        client,
-        req.user.id,
-        [postType.QUESTION_TO_EVERYONE, postType.QUESTION_TO_PERSON],
-      );
-    } else {
-      return res
-        .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
-    }
-
+    // classroomPostList에 작성자 정보와 댓글 개수, 좋아요 개수를 붙임
     classroomPostList = await Promise.all(
       classroomPostList.map(async (classroomPost) => {
-        // 학과명
-        const majorName = await majorDB.getMajorNameByMajorId(client, classroomPost.majorId);
+        let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
+        // 작성자 정보
+        writer = {
+          writerId: writer.id,
+          profileImageId: writer.profileImageId,
+          nickname: writer.nickname,
+        };
 
         // 댓글 개수
         const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
@@ -57,7 +43,7 @@ module.exports = async (req, res) => {
         const likeData = await likeDB.getLikeByPostId(
           client,
           classroomPost.id,
-          classroomPost.postTypeId,
+          postType.QUESTION_TO_PERSON,
           req.user.id,
         );
         let isLiked;
@@ -69,7 +55,7 @@ module.exports = async (req, res) => {
         const likeCount = await likeDB.getLikeCountByPostId(
           client,
           classroomPost.id,
-          classroomPost.postTypeId,
+          postType.QUESTION_TO_PERSON,
         );
         const like = {
           isLiked: isLiked,
@@ -80,13 +66,23 @@ module.exports = async (req, res) => {
           postId: classroomPost.id,
           title: classroomPost.title,
           content: classroomPost.content,
-          majorName: majorName.majorName,
           createdAt: classroomPost.createdAt,
+          writer: writer,
           commentCount: commentCount.commentCount,
           like: like,
         };
       }),
     );
+
+    if (sort === "recent") {
+      classroomPostList = _.sortBy(classroomPostList, "createdAt").reverse();
+    } else if (sort === "like") {
+      classroomPostList = _.sortBy(classroomPostList, "likeCount").reverse();
+    } else {
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_SORT));
+    }
 
     res
       .status(statusCode.OK)

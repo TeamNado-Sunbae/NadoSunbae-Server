@@ -117,11 +117,28 @@ const deleteCommentByCommentId = async (client, commentId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getClassroomPostListByMyCommentList = async (client, commentWriterId, postTypeId) => {
+  const { rows } = await client.query(
+    `
+    SELECT p.id, p.writer_id, p.title, p.content, p.created_at
+    FROM (SELECT DISTINCT post_id FROM comment WHERE writer_id = $1 AND is_deleted = false) AS c 
+    INNER JOIN classroom_post AS p
+    ON c.post_id = p.id 
+    AND p.writer_id != $1
+    AND p.post_type_id = $2
+    AND p.is_deleted = false;
+      `,
+    [commentWriterId, postTypeId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createComment,
   getCommentCountByPostId,
   getCommentListByPostId,
   getCommentByCommentId,
+  getClassroomPostListByMyCommentList,
   updateComment,
   deleteCommentByCommentId,
   deleteCommentByPostId,
