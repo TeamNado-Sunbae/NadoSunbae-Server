@@ -3,29 +3,18 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { blockDB, userDB } = require("../../../db");
+const { blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const userId = req.user.id;
+  const blockUserId = req.user.id;
 
   let client;
 
   try {
     client = await db.connect(req);
 
-    const blockList = await blockDB.getBlockListByUserId(client, userId);
-
-    const blockedUserList = await Promise.all(
-      blockList.map(async (block) => {
-        const blockedUser = await userDB.getUserByUserId(client, block.blockedUserId);
-        return {
-          userId: blockedUser.id,
-          profileImageId: blockedUser.profileImageId,
-          nickname: blockedUser.nickname,
-        };
-      }),
-    );
+    const blockedUserList = await blockDB.getBlockedUserListByBlockUserId(client, blockUserId);
 
     res
       .status(statusCode.OK)

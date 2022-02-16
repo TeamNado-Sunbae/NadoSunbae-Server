@@ -27,14 +27,17 @@ const getBlockByUserId = async (client, blockUserId, blockedUserId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getBlockListByUserId = async (client, userId) => {
+const getBlockedUserListByBlockUserId = async (client, blockUserId) => {
   const { rows } = await client.query(
     `
-      SELECT * FROM block
-      WHERE block_user_id = $1
-      AND is_deleted = false
+    SELECT u.id, u.profile_image_id ,u.nickname FROM block AS b
+    INNER JOIN "user" AS u
+    ON b.block_user_id = $1
+    AND b.is_deleted = false
+    AND b.blocked_user_id = u.id
+    AND u.is_deleted = false;
           `,
-    [userId],
+    [blockUserId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -58,7 +61,7 @@ const updateBlockByUserId = async (client, blockUserId, blockedUserId) => {
 
 module.exports = {
   createBlock,
-  getBlockListByUserId,
+  getBlockedUserListByBlockUserId,
   getBlockByUserId,
   updateBlockByUserId,
 };
