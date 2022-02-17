@@ -39,7 +39,6 @@ module.exports = async (req, res) => {
 
     // 닉네임 변경했을 때만 nickname_updated_at 업데이트
     const isNicknameUpdated = req.user.nickname !== nickname ? true : false;
-    console.log(typeof req.user.nicknameUpdatedAt);
 
     // 유저 정보 수정
     let updatedUser = await userDB.updateUserByMypage(
