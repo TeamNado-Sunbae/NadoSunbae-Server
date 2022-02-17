@@ -198,13 +198,15 @@ const updateUserByRefreshToken = async (client, userId, refreshtoken) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUsersByCommentWriterId = async (client, commentWriterIdList) => {
+const getUserListByCommentPostId = async (client, commentPostId) => {
   const { rows } = await client.query(
     `
-      SELECT DISTINCT id, device_token FROM "user"
-      WHERE id IN (${commentWriterIdList.join()})
-      AND is_deleted = FALSE
+      SELECT DISTINCT u.id, u.device_token FROM "user" u
+      INNER JOIN (SELECT DISTINCT writer_id FROM comment WHERE post_id = $1 AND is_deleted = false) c
+      ON c.writer_id = u.id
+      AND u.is_deleted = false
       `,
+    [commentPostId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -267,7 +269,7 @@ module.exports = {
   getUsersByMajorId,
   updateUserByDeviceToken,
   updateUserByRefreshToken,
-  getUsersByCommentWriterId,
+  getUserListByCommentPostId,
   updateUserByMypage,
   getUserByRefreshToken,
 };

@@ -85,6 +85,7 @@ const getCommentListByPostId = async (client, postId) => {
     `
       SELECT * FROM comment
       WHERE post_id = $1
+      AND is_deleted = false
       ORDER BY created_at
       `,
     [postId],
