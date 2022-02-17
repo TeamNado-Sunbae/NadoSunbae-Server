@@ -36,7 +36,7 @@ const sendUnicast = function (token, notificationTitle, notificationContent) {
 };
 
 const sendMulticast = function (tokens, notificationTitle, notificationContent) {
-  // tokens가 비어있으면 푸시알림을 전송하지 않음
+  // 알림을 전송할 사용자가 없어 tokens가 비어있으면 푸시알림을 전송하지 않음
 
   if (tokens.length !== 0) {
     // 메세지 내용
