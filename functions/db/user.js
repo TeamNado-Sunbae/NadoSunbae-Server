@@ -198,7 +198,7 @@ const updateUserByRefreshToken = async (client, userId, refreshtoken) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUsersByCommentWriterId = async (client, commentWriterIdList) => {
+const getUsersByCommentWriterIdList = async (client, commentWriterIdList) => {
   const { rows } = await client.query(
     `
       SELECT DISTINCT id, device_token FROM "user"
@@ -263,7 +263,7 @@ module.exports = {
   getUsersByMajorId,
   updateUserByDeviceToken,
   updateUserByRefreshToken,
-  getUsersByCommentWriterId,
+  getUsersByCommentWriterIdList,
   updateUserByMypage,
   getUserByRefreshToken,
 };
