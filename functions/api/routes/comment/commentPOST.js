@@ -67,15 +67,20 @@ module.exports = async (req, res) => {
       writer: writer,
     };
 
-    // 푸시 알림 전송을 위한 case 설정
-    // notificationType 1은 마이페이지 관련
+    res
+      .status(statusCode.OK)
+      .send(util.success(statusCode.OK, responseMessage.CREATE_ONE_COMMENT_SUCCESS, comment));
+
+    // notification DB 저장 및 푸시 알림 전송
 
     // 푸시 알림 제목은 나도선배 통일
     const notificationTitle = "나도선배";
 
-    // 댓글이 작성된 게시글, sender는 댓글 작성자
+    // 댓글이 작성된 게시글, 추후 댓글 생성 시 댓글 객체만 받아와도 기능할 수 있도록 구현
     const commentPost = await classroomPostDB.getClassroomPostByPostId(client, comment.postId);
-    let sender = await userDB.getUserByUserId(client, comment.writer.writerId);
+
+    // sender는 댓글 작성자
+    const sender = await userDB.getUserByUserId(client, comment.writer.writerId);
 
     // ******** 게시글 작성자에게 보내는 Unicast Alarm 을 위한 변수 설정********
 
@@ -87,24 +92,15 @@ module.exports = async (req, res) => {
 
     // ******** 댓글 작성자들에게 보내는 Multicast Alarm 을 위한 변수 설정********
 
-    // 게시글에 달린 댓글 리스트
-    let commentList = await commentDB.getCommentListByPostId(client, comment.postId);
-
-    // 게시글에 달린 댓글 작성자들 아이디 리스트
-    let commentWriterIdList = [];
-    commentList.map((comment) => {
-      commentWriterIdList.push(comment.writerId);
-    });
-
-    // 게시글에 달린 댓글 작성자들 아이디 리스트에서 중복된 작성자는 제거
-    commentWriterIdList = [...new Set(commentWriterIdList)];
-
-    // receiver는 게시글에 달린 댓글 작성자들
-    const receivers = await userDB.getUsersByCommentWriterIdList(client, commentWriterIdList);
+    // receiver는 게시글에 달린 댓글 작성자들 (중복된 작성자 제외)
+    const receivers = await userDB.getUserListByCommentPostId(client, comment.postId);
 
     let MulticastNotificationTypeId;
     let MulticastNotificationContent;
+
     // ********************************************************************
+
+    // notification DB 저장 및 푸시 알림 전송을 위한 case 설정 - notificationType 1은 마이페이지 관련
 
     if (
       commentPost.postTypeId === postType.QUESTION_TO_EVERYONE ||
@@ -127,9 +123,9 @@ module.exports = async (req, res) => {
       MulticastNotificationContent = `답글을 작성하신 정보글에 ${sender.nickname}님이 답글을 남겼습니다.`;
     }
 
-    // DB에 알림 저장
+    // notification DB에 알림 저장
     if (receiver.id !== sender.id) {
-      const notification = await notificationDB.createNotification(
+      await notificationDB.createNotification(
         client,
         sender.id,
         receiver.id,
@@ -148,12 +144,12 @@ module.exports = async (req, res) => {
       );
     }
 
-    // DB에 알림 저장 및 receiverTokens 값 저장
+    // notification DB에 알림 저장 및 receiverTokens 값 저장
     const receiverTokens = [];
     await Promise.all(
       receivers.map(async (receiver) => {
         if (receiver.id !== sender.id && receiver.id !== commentPost.writerId) {
-          const notification = await notificationDB.createNotification(
+          await notificationDB.createNotification(
             client,
             sender.id,
             receiver.id,
@@ -175,10 +171,6 @@ module.exports = async (req, res) => {
       notificationTitle,
       MulticastNotificationContent,
     );
-
-    res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.CREATE_ONE_COMMENT_SUCCESS, comment));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
