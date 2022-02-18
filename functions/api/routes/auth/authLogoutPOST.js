@@ -12,22 +12,14 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // 리프레쉬토큰 업데이트
-    let refreshTokenUpdated = await userDB.updateUserByLogout(client, req.user.id);
+    const refreshTokenUpdated = await userDB.updateUserByLogout(client, req.user.id);
     if (!refreshTokenUpdated) {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.UPDATE_REFRESH_TOKEN_FAIL));
     }
 
-    refreshTokenUpdated = {
-      userId: refreshTokenUpdated.id,
-      refreshToken: refreshTokenUpdated.refreshToken,
-      updatedAt: refreshTokenUpdated.updatedAt,
-    };
-
-    res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.LOGOUT_SUCCESS, { refreshTokenUpdated }));
+    res.status(statusCode.OK).send(util.success(statusCode.OK, responseMessage.LOGOUT_SUCCESS));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
