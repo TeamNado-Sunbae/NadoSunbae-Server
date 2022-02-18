@@ -15,8 +15,10 @@ module.exports = async (req, res) => {
     const refreshTokenUpdated = await userDB.updateUserByLogout(client, req.user.id);
     if (!refreshTokenUpdated) {
       return res
-        .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.UPDATE_REFRESH_TOKEN_FAIL));
+        .status(statusCode.INTERNAL_SERVER_ERROR)
+        .send(
+          util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_REFRESH_TOKEN_FAIL),
+        );
     }
 
     res.status(statusCode.OK).send(util.success(statusCode.OK, responseMessage.LOGOUT_SUCCESS));
