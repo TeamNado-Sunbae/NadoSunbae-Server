@@ -19,6 +19,9 @@ module.exports = {
   MISS_MATCH_PW: "비밀번호가 맞지 않습니다.",
   INVALID_EMAIL: "이메일 형식을 확인해주세요.",
 
+  // 로그아웃
+  LOGOUT_SUCCESS: "로그아웃 성공",
+
   // 프로필 조회
   READ_PROFILE_SUCCESS: "프로필 조회 성공",
 
