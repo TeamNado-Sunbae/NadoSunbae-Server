@@ -258,6 +258,20 @@ const getUserByRefreshToken = async (client, refreshtoken) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const updateUserByLogout = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET refresh_token = null, updated_at = now()
+    WHERE id = $1
+    AND is_deleted = FALSE
+    RETURNING *
+    `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   createUser,
   getUserByNickname,
@@ -272,4 +286,5 @@ module.exports = {
   getUserListByCommentPostId,
   updateUserByMypage,
   getUserByRefreshToken,
+  updateUserByLogout,
 };
