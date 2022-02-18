@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 리프레쉬토큰 업데이트
+    // 리프레시 토큰 업데이트
     const refreshTokenUpdated = await userDB.updateUserByLogout(client, req.user.id);
     if (!refreshTokenUpdated) {
       return res
