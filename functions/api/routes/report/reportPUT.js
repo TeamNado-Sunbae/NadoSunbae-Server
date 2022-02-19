@@ -3,7 +3,14 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reportDB, userDB, reviewPostDB, classroomPostDB, commentDB } = require("../../../db");
+const {
+  reportDB,
+  userDB,
+  reviewPostDB,
+  classroomPostDB,
+  commentDB,
+  relationReviewPostTagDB,
+} = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const reportType = require("../../../constants/reportType");
 const { TOKEN_EXPIRED } = require("../../../constants/jwt");
@@ -78,6 +85,38 @@ module.exports = async (req, res) => {
         client,
         updatedReport.reportedTargetId,
       );
+
+      // 후기글과 관련된 삭제 로직
+      // 삭제된 reviewPost와 연계된 relationReviewPostTag 삭제
+      let deletedRelationReviewPostTag = await relationReviewPostTagDB.deleteRelationReviewPostTag(
+        client,
+        updatedReport.reportedTargetId,
+      );
+      if (!deletedRelationReviewPostTag) {
+        return res
+          .status(statusCode.NOT_FOUND)
+          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_RELATION));
+      }
+
+      // 후기글을 삭제 후, 해당 user가 작성한 다른 후기글이 없다면 isReviewed false로
+      const reviewPostByUser = await reviewPostDB.getReviewPostByUserId(
+        client,
+        deletedReportedTarget.writerId,
+      );
+      let isReviewed = true;
+      if (reviewPostByUser.length === 0) {
+        const updatedUser = await userDB.updateUserByIsReviewed(
+          client,
+          false,
+          deletedReportedTarget.writerId,
+        );
+        isReviewed = updatedUser.isReviewed;
+        if (!updatedUser) {
+          return res
+            .status(statusCode.NOT_FOUND)
+            .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
+        }
+      }
     } else if (updatedReport.reportedTargetTypeId === reportType.CLASSROOM_POST) {
       // 과방글(질문글, 정보글) 삭제
       deletedReportedTarget = await classroomPostDB.deleteClassroomPostByPostId(
