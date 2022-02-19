@@ -58,7 +58,7 @@ const updateBlockByUserId = async (client, blockUserId, blockedUserId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getInvisibleUserListByUserId = async (client, UserId) => {
+const getInvisibleUserListByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
       SELECT DISTINCT 
@@ -68,7 +68,7 @@ const getInvisibleUserListByUserId = async (client, UserId) => {
       WHERE (blocked_user_id = $1 OR block_user_id = $1)
       AND is_deleted = false
     `,
-    [UserId],
+    [userId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
