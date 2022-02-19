@@ -87,31 +87,6 @@ const updateUserByIsReviewed = async (client, isReviewed, userId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const updateUserByReport = async (client, userId) => {
-  const { rows: existingRows } = await client.query(
-    `
-    SELECT * FROM "user"
-    WHERE id = $1
-    AND is_deleted = FALSE
-    `,
-    [userId],
-  );
-
-  if (existingRows.length === 0) return false;
-
-  const { rows } = await client.query(
-    `
-    UPDATE "user"
-    SET report_count = report_count + 1, updated_at = now()
-    WHERE id = $1
-    AND is_deleted = FALSE
-    RETURNING *
-    `,
-    [userId],
-  );
-  return convertSnakeToCamel.keysToCamel(rows[0]);
-};
-
 const getUserByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
@@ -258,6 +233,31 @@ const getUserByRefreshToken = async (client, refreshtoken) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const updateUserByReport = async (client, userId, reportCount) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM "user"
+    WHERE id = $1
+    AND is_deleted = FALSE
+    `,
+    [userId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET report_count = $2, report_created_at = now(), updated_at = now()
+    WHERE id = $1
+    AND is_deleted = FALSE
+    RETURNING *
+    `,
+    [userId, reportCount],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const updateUserByLogout = async (client, userId) => {
   const { rows } = await client.query(
     `
@@ -272,12 +272,36 @@ const updateUserByLogout = async (client, userId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const updateUserByExpiredReport = async (client, userId, reportCreatedAt) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM "user"
+    WHERE id = $1
+    AND is_deleted = FALSE
+    `,
+    [userId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET report_created_at = $2, updated_at = now()
+    WHERE id = $1
+    AND is_deleted = FALSE
+    RETURNING *
+    `,
+    [userId, reportCreatedAt],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   createUser,
   getUserByNickname,
   getUserByEmail,
   updateUserByIsReviewed,
-  updateUserByReport,
   getUserByUserId,
   getUserByFirebaseId,
   getUsersByMajorId,
@@ -286,5 +310,7 @@ module.exports = {
   getUserListByCommentPostId,
   updateUserByMypage,
   getUserByRefreshToken,
+  updateUserByReport,
+  updateUserByExpiredReport,
   updateUserByLogout,
 };

@@ -68,6 +68,7 @@ module.exports = {
   // 인증
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
   FORBIDDEN_ACCESS: "사용 권한이 없습니다.",
+  FORBIDDEN_ACCESS_REPORT: "신고로 인해 사용 권한이 없습니다.",
   IS_REVIEWED_FALSE: "후기글 미등록자입니다.",
   SEND_VERIFICATION_EMAIL_SUCCESS: "인증 메일 보내기 성공",
   SEND_VERIFICATION_EMAIL_FAIL: "인증 메일 보내기 실패",
@@ -93,8 +94,12 @@ module.exports = {
   // 좋아요
   UPDATE_LIKE_SUCCESS: "포스트 좋아요 업데이트 성공",
 
-  // 신고 성공
+  // 신고
   REPORT_SUCCESS: "신고 성공",
+  IS_REPORTED_SUCCESS: "신고 접수 성공",
+  ALREADY_REPORT: "이미 신고한 글/댓글입니다.",
+  NO_REPORT_TARGET: "존재하지 않는 글/댓글입니다.",
+  NO_REPORT: "존재하지 않는(혹은 만료된) 신고입니다.",
 
   // 차단 성공
   BLOCK_SUCCESS: "차단 업데이트 성공",

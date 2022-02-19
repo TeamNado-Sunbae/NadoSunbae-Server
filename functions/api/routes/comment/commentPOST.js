@@ -137,11 +137,13 @@ module.exports = async (req, res) => {
       );
 
       // 푸시 알림 전송
-      pushAlarmHandlers.sendUnicast(
-        receiver.deviceToken,
-        notificationTitle,
-        UnicastNotificationContent,
-      );
+      if (receiver.deviceToken) {
+        pushAlarmHandlers.sendUnicast(
+          receiver.deviceToken,
+          notificationTitle,
+          UnicastNotificationContent,
+        );
+      }
     }
 
     // notification DB에 알림 저장 및 receiverTokens 값 저장
@@ -160,7 +162,9 @@ module.exports = async (req, res) => {
             commentPost.postTypeId,
           );
           // 댓글 리스트에 있는 유저들의 디바이스 토큰 정보 저장
-          receiverTokens.push(receiver.deviceToken);
+          if (receiver.deviceToken) {
+            receiverTokens.push(receiver.deviceToken);
+          }
         }
       }),
     );

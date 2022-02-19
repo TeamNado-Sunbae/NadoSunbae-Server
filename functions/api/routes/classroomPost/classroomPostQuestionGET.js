@@ -30,13 +30,19 @@ module.exports = async (req, res) => {
     const questionerId = classroomPost.writerId;
     const answererId = classroomPost.answererId;
 
-    // 후기 미작성자는
-    if (req.user.isReviewed === false) {
-      // 전체질문이나 1:1 질문 상세조회 불가 - 답변자가 본인인 경우 제외
-      if (!(answererId && answererId === req.user.id)) {
+    // 전체질문이나 1:1 질문 상세조회 불가 - 답변자가 본인인 경우 제외
+    if (!(answererId && answererId === req.user.id)) {
+      // 후기 미등록 유저
+      if (req.user.isReviewed === false) {
         return res
           .status(statusCode.FORBIDDEN)
           .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
+      }
+      // 신고당한 유저
+      if (req.user.reportCreatedAt) {
+        return res
+          .status(statusCode.FORBIDDEN)
+          .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS_REPORT));
       }
     }
 
