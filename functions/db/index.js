@@ -13,4 +13,5 @@ module.exports = {
   commentDB: require("./comment"),
   notificationDB: require("./notification"),
   reportDB: require("./report"),
+  blockDB: require("./block"),
 };
