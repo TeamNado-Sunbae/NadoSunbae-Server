@@ -195,13 +195,15 @@ module.exports = async (req, res) => {
       moreReportIdList.push(report.id);
     });
     if (moreReportList.length !== 0) {
-      moreReportResponseMessage = `[추가 신고 접수 권고] (${today.toLocaleString()} 기준) id ${
+      moreReportResponseMessage = `[추가 신고 접수 권고] (${today.format(
+        "YYYY.MM.DD HH:mm:ss",
+      )} 기준) id ${
         reportedUser.id
       }번 유저의 다른 글 또는 댓글에 대한 신고 중 아직 접수되지 않은 신고가 ${
         moreReportList.length
       }건 존재합니다. 기간이 지나고 신고를 접수할 경우 유저가 중복 제재를 받을 수 있으니 주의하시기 바랍니다. 관련 report id :  ${moreReportIdList}`;
     } else {
-      moreReportResponseMessage = `(${today.toLocaleString()} 기준) id ${
+      moreReportResponseMessage = `(${today.format("YYYY.MM.DD HH:mm:ss")} 기준) id ${
         reportedUser.id
       }번 유저에 대한 신고는 모두 접수 완료되었습니다.`;
     }

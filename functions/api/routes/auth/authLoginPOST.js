@@ -118,7 +118,7 @@ module.exports = async (req, res) => {
       const expirationDate = dateHandlers.getExpirationDateByMonth(reportCreatedDate, reportPeriod);
 
       // 신고 만료 날짜 지났으면
-      if (expirationDate < today) {
+      if (expirationDate.format("YYYY.MM.DD HH:mm:ss") < today.format("YYYY.MM.DD HH:mm:ss")) {
         // 신고 테이블에서 유저에게 온 접수된 신고들을 만료시킴
         const deletedReportList = await reportDB.deleteReportList(client, userData.id);
 
