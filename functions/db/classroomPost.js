@@ -112,13 +112,14 @@ const updateClassroomPostByReport = async (client, postId, postTypeId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getClassroomPostListByMajorId = async (client, majorId, postTypeId) => {
+const getClassroomPostListByMajorId = async (client, majorId, postTypeId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
   SELECT * FROM "classroom_post" c
   WHERE major_id = $1
   AND post_type_id = $2
   AND is_deleted = false
+  AND writer_id NOT IN (${invisibleUserIds.join()})
   `,
     [majorId, postTypeId],
   );
