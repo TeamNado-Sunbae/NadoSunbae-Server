@@ -6,8 +6,8 @@ const db = require("../../../db/db");
 const { classroomPostDB, majorDB, userDB, notificationDB } = require("../../../db");
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
-const admin = require("firebase-admin");
 const slackAPI = require("../../../middlewares/slackAPI");
+const pushAlarmHandlers = require("../../../lib/pushAlarmHandlers");
 
 module.exports = async (req, res) => {
   const { majorId, answererId, postTypeId, title, content } = req.body;
@@ -77,7 +77,11 @@ module.exports = async (req, res) => {
       secondMajorStart: writer.secondMajorStart,
     };
 
-    // 푸시 알림 전송을 위한 case 설정
+    res
+      .status(statusCode.OK)
+      .send(util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, { post, writer }));
+
+    // notification DB 저장 및 푸시 알림 전송을 위한 case 설정
     // [ case 1: 마이페이지에 1:1 질문글이 올라온 경우 ]
 
     // 1:1 질문글인 경우에만 알림 전송
@@ -103,45 +107,16 @@ module.exports = async (req, res) => {
           post.postTypeId,
         );
 
-        // 디바이스로 보낼 푸시 알림 메시지
-
-        // 메세지 내용
-        const message = {
-          notification: {
-            title: notificationTitle,
-            body: notificationContent,
-          },
-          android: {
-            notification: {
-              sound: "default",
-            },
-          },
-          apns: {
-            payload: {
-              aps: {
-                sound: "default",
-              },
-            },
-          },
-          token: receiver.deviceToken,
-        };
-
-        // 메세지 전송
-        admin
-          .messaging()
-          .send(message)
-          .then(function (response) {
-            console.log(responseMessage.PUSH_ALARM_SEND_SUCCESS, response);
-          })
-          .catch(function (error) {
-            console.log(responseMessage.PUSH_ALARM_SEND_FAIL, error);
-          });
+        // 푸시 알림 전송
+        if (receiver.deviceToken) {
+          pushAlarmHandlers.sendUnicast(
+            receiver.deviceToken,
+            notificationTitle,
+            notificationContent,
+          );
+        }
       }
     }
-
-    res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, { post, writer }));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

@@ -28,26 +28,30 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let userId = req.user.id;
+    // 닉네임 변경했을 때만 nickname_updated_at 업데이트
+    const isNicknameUpdated = req.user.nickname !== nickname ? true : false;
 
-    // 닉네임 중복 확인
-    const existingUser = await userDB.getUserByNickname(client, nickname);
-    if (existingUser) {
-      return res
-        .status(statusCode.CONFLICT)
-        .send(util.fail(statusCode.CONFLICT, responseMessage.ALREADY_NICKNAME));
+    if (isNicknameUpdated) {
+      // 닉네임 중복 확인
+      const existingUser = await userDB.getUserByNickname(client, nickname);
+      if (existingUser) {
+        return res
+          .status(statusCode.CONFLICT)
+          .send(util.fail(statusCode.CONFLICT, responseMessage.ALREADY_NICKNAME));
+      }
     }
 
     // 유저 정보 수정
     let updatedUser = await userDB.updateUserByMypage(
       client,
-      userId,
+      req.user.id,
       nickname,
       firstMajorId,
       firstMajorStart,
       secondMajorId,
       secondMajorStart,
       isOnQuestion,
+      isNicknameUpdated,
     );
 
     updatedUser = {

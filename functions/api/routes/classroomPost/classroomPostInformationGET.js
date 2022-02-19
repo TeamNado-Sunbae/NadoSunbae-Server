@@ -2,8 +2,9 @@ const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
+const postType = require("../../../constants/postType");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, majorDB, likeDB, postTypeDB, commentDB } = require("../../../db");
+const { classroomPostDB, userDB, majorDB, likeDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -64,17 +65,14 @@ module.exports = async (req, res) => {
     // post 좋아요 정보
 
     // postType을 알아야 함
-    const informationPostTypeId = await postTypeDB.getPostTypeIdByPostTypeName(
-      client,
-      "information",
-    );
+    const informationPostTypeId = postType.INFORMATION;
 
     // 로그인 유저가 좋아요한 상태인지
     const requestUser = req.user;
     let like = await likeDB.getLikeByPostId(
       client,
       classroomPost.id,
-      informationPostTypeId.id,
+      informationPostTypeId,
       requestUser.id,
     );
     let isLiked;
@@ -88,7 +86,7 @@ module.exports = async (req, res) => {
     const likeCount = await likeDB.getLikeCountByPostId(
       client,
       classroomPost.id,
-      informationPostTypeId.id,
+      informationPostTypeId,
     );
 
     like = {

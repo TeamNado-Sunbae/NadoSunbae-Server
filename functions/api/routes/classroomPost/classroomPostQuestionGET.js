@@ -4,7 +4,7 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const postType = require("../../../constants/postType");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, majorDB, likeDB, postTypeDB, commentDB } = require("../../../db");
+const { classroomPostDB, userDB, majorDB, likeDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
