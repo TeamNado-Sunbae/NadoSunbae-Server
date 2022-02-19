@@ -140,12 +140,7 @@ module.exports = async (req, res) => {
     // 유저 신고 여부, 신고 기간
 
     // 유저가 신고 당해 권한 제한된 상태인지
-    let isUserReported;
-    if (updatedUserByExpiredReport.reportCreatedAt) {
-      isUserReported = true;
-    } else {
-      isUserReported = false;
-    }
+    const isUserReported = updatedUserByExpiredReport.reportCreatedAt ? true : false;
 
     // 유저 신고 기간
     let reportPeriod;
