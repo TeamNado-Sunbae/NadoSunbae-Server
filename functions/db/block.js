@@ -65,7 +65,7 @@ const getInvisibleUserListByUserId = async (client, UserId) => {
       CASE WHEN blocked_user_id = $1 THEN block_user_id 
       ELSE blocked_user_id END
       AS user_id FROM "block"
-      WHERE (blocked_user_id = S1 OR block_user_id = S1)
+      WHERE (blocked_user_id = $1 OR block_user_id = $1)
       AND is_deleted = false
     `,
     [UserId],
