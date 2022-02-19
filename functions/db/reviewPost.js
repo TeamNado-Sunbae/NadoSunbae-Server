@@ -194,6 +194,25 @@ const updateReviewPost = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getReviewPostListByLike = async (client, userId, postTypeId) => {
+  const { rows } = await client.query(
+    `
+    SELECT p.id, p.writer_id, p.one_line_review, p.created_at
+    FROM review_post p
+    INNER JOIN "like" l
+    ON p.id = l.post_id
+    AND l.user_id = $1
+    AND l.is_liked = true
+    AND l.post_type_id = $2
+    AND p.writer_id != $1
+    AND p.is_deleted = false
+    ORDER BY l.updated_at desc
+  `,
+    [userId, postTypeId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   getReviewPostListByFilters,
   getReviewPostByPostId,
@@ -203,4 +222,5 @@ module.exports = {
   updateReviewPostByReport,
   getReviewPostByUserId,
   getReviewPostCountByUserId,
+  getReviewPostListByLike,
 };
