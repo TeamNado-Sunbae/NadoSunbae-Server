@@ -71,54 +71,37 @@ module.exports = async (req, res) => {
 
     // 1. 신고된 report의 글 or 댓글은 삭제함
 
-    let reportedTarget;
+    let deletedReportedTarget;
     if (updatedReport.reportedTargetTypeId === reportType.REVIEW_POST) {
       // 후기글 삭제
-      const deletedReviewPost = await reviewPostDB.deleteReviewPost(
+      deletedReportedTarget = await reviewPostDB.deleteReviewPost(
         client,
         updatedReport.reportedTargetId,
       );
-
-      if (!deletedReviewPost) {
-        return res
-          .status(statusCode.NOT_FOUND)
-          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
-      }
-
-      reportedTarget = deletedReviewPost;
     } else if (updatedReport.reportedTargetTypeId === reportType.CLASSROOM_POST) {
       // 과방글(질문글, 정보글) 삭제
-      const deletedClassroomPost = await classroomPostDB.deleteClassroomPostByPostId(
+      deletedReportedTarget = await classroomPostDB.deleteClassroomPostByPostId(
         client,
         updatedReport.reportedTargetId,
       );
-
-      if (!deletedClassroomPost) {
-        return res
-          .status(statusCode.NOT_FOUND)
-          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
-      }
-
-      reportedTarget = deletedClassroomPost;
     } else if (updatedReport.reportedTargetTypeId === reportType.COMMENT) {
       // 댓글 삭제
-      const deletedComment = await commentDB.deleteCommentByCommentId(
+      deletedReportedTarget = await commentDB.deleteCommentByCommentId(
         client,
         updatedReport.reportedTargetId,
       );
-
-      if (!deletedComment) {
-        return res
-          .status(statusCode.NOT_FOUND)
-          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
-      }
-
-      reportedTarget = deletedComment;
     } else {
       // 잘못된 report type
       return res
         .status(statusCode.BAD_REQUEST)
         .send(util.success(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
+    }
+
+    // 삭제 시도한 글/댓글이 없을 경우
+    if (!deletedReportedTarget) {
+      return res
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_REPORT_TARGET));
     }
 
     // 2. 신고된 유저는 권한을 막음
@@ -212,7 +195,7 @@ module.exports = async (req, res) => {
           reportedTarget: {
             reportedTargetTypeId: updatedReport.reportedTargetTypeId,
             reportedTargetId: updatedReport.reportedTargetId,
-            isDeleted: reportedTarget.isDeleted,
+            isDeleted: deletedReportedTarget.isDeleted,
           },
           reportedUser: user,
         },
