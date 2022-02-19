@@ -95,6 +95,7 @@ module.exports = {
   REPORT_SUCCESS: "신고 성공",
   IS_REPORTED_SUCCESS: "신고 접수 성공",
   ALREADY_REPORT: "이미 신고한 글/댓글입니다.",
+  NO_REPORT_TARGET: "존재하지 않는 글/댓글입니다.",
   NO_REPORT: "존재하지 않는(혹은 만료된) 신고입니다.",
 
   // 차단 성공
