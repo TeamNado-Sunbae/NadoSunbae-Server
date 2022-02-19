@@ -5,9 +5,9 @@ const responseMessage = require("../../../constants/responseMessage");
 const { signInWithEmailAndPassword } = require("firebase/auth");
 const db = require("../../../db/db");
 const { userDB, majorDB, reportDB } = require("../../../db");
-
 const { firebaseAuth } = require("../../../config/firebaseClient");
 const jwtHandlers = require("../../../lib/jwtHandlers");
+const dateHandlers = require("../../../lib/dateHandlers");
 const reportPeriodType = require("../../../constants/reportPeriodType");
 
 module.exports = async (req, res) => {
@@ -95,36 +95,30 @@ module.exports = async (req, res) => {
 
     // 기본 userData로 초기화
     let updatedUserByExpiredReport = userData;
-    if (userData.reportCreatedAt) {
-      let expiredDate;
-      let reportCreatedDate = userData.reportCreatedAt;
-      // 오늘 날짜를 한국 표준시로
-      const today = new Date();
-      const utcNow = today.getTime() + today.getTimezoneOffset() * 60 * 1000;
-      const KR_TIME_DIFF = 9 * 60 * 60 * 1000; // UTC보다 9시간 빠름
-      const krNow = new Date(utcNow + KR_TIME_DIFF);
 
-      // setMonth parameter는 1 월에서 12 월까지의 월을 나타내는 0에서 11 사이의 정수
+    // 신고로 인해 제재 중인 유저의 경우 - 신고 만료 확인
+    if (userData.reportCreatedAt) {
+      // 한국 표준시 현재 날짜
+      const today = dateHandlers.getCurrentKSTDate();
+
+      // 신고 접수된 날짜 - 기준 날짜
+      const reportCreatedDate = userData.reportCreatedAt;
+
+      // 유저 신고 기간
+      let reportPeriod;
+
       if (userData.reportCount === 1) {
-        expiredDate = new Date(
-          reportCreatedDate.setMonth(reportCreatedDate.getMonth() + reportPeriodType.FIRST_PERIOD),
-        );
+        reportPeriod = reportPeriodType.FIRST_PERIOD;
       } else if (userData.reportCount === 2) {
-        expiredDate = new Date(
-          reportCreatedDate.setMonth(reportCreatedDate.getMonth() + reportPeriodType.SECOND_PERIOD),
-        );
+        reportPeriod = reportPeriodType.SECOND_PERIOD;
       } else if (userData.reportCount === 3) {
-        expiredDate = new Date(
-          reportCreatedDate.setMonth(reportCreatedDate.getMonth() + reportPeriodType.THIRD_PERIOD),
-        );
-      } else if (userData.reportCount >= 4) {
-        expiredDate = new Date(
-          reportCreatedDate.setMonth(reportCreatedDate.getMonth() + reportPeriodType.FOURTH_PERIOD),
-        );
+        reportPeriod = reportPeriodType.THIRD_PERIOD;
       }
 
+      const expirationDate = dateHandlers.getExpirationDateByMonth(reportCreatedDate, reportPeriod);
+
       // 신고 만료 날짜 지났으면
-      if (expiredDate < krNow) {
+      if (expirationDate < today) {
         // 신고 테이블에서 유저에게 온 접수된 신고들을 만료시킴
         const deletedReportList = await reportDB.deleteReportList(client, userData.id);
 
@@ -137,26 +131,8 @@ module.exports = async (req, res) => {
       }
     }
 
-    // 유저 신고 여부, 신고 기간
-
     // 유저가 신고 당해 권한 제한된 상태인지
     const isUserReported = updatedUserByExpiredReport.reportCreatedAt ? true : false;
-
-    // 유저 신고 기간
-    let reportPeriod;
-    if (isUserReported) {
-      if (updatedUserByExpiredReport.reportCount === 1) {
-        reportPeriod = reportPeriodType.FIRST_PERIOD;
-      } else if (updatedUserByExpiredReport.reportCount === 2) {
-        reportPeriod = reportPeriodType.SECOND_PERIOD;
-      } else if (updatedUserByExpiredReport.reportCount === 3) {
-        reportPeriod = reportPeriodType.THIRD_PERIOD;
-      } else if (updatedUserByExpiredReport.reportCount >= 4) {
-        reportPeriod = reportPeriodType.FOURTH_PERIOD;
-      }
-    } else {
-      reportPeriod = reportPeriodType.NO_PERIOD;
-    }
 
     const user = {
       userId: userData.id,
@@ -169,7 +145,6 @@ module.exports = async (req, res) => {
       isReviewed: userData.isReviewed,
       isEmailVerified: isEmailVerified,
       isUserReported: isUserReported,
-      reportPeriod: reportPeriod,
     };
 
     res.status(statusCode.OK).send(
