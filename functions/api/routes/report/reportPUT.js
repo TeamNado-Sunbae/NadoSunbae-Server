@@ -168,12 +168,11 @@ module.exports = async (req, res) => {
     let updatedUser;
     // 해당 유저에 대해 모든 신고가 만료되었거나 아직 제재 당한 적이 없는 경우
     if (!reportedUser.reportCreatedAt) {
-      // 신고 접수 시간을 현재로 하고 reportCount를 1 증가한 후, 로그아웃을 위해 refreshtoken을 만료시킴
+      // 신고 접수 시간을 현재로 하고 reportCount를 1 증가
       updatedUser = await userDB.updateUserByReport(
         client,
         reportedUser.id,
         reportedUser.reportCount + 1,
-        TOKEN_EXPIRED,
       );
       reportResponseMessage = `신고한 글 또는 댓글이 삭제되었습니다. 신고 접수 횟수 1번 추가되어 (${updatedUser.reportCreatedAt.toLocaleString()} 기준) id ${
         reportedUser.id
@@ -216,14 +215,12 @@ module.exports = async (req, res) => {
         userId: reportedUser.id,
         reportCount: reportedUser.reportCount,
         reportCreatedAt: reportedUser.reportCreatedAt,
-        refreshtoken: reportedUser.refreshToken,
       };
     } else {
       user = {
         userId: updatedUser.id,
         reportCount: updatedUser.reportCount,
         reportCreatedAt: updatedUser.reportCreatedAt,
-        refreshtoken: updatedUser.refreshToken,
       };
     }
 

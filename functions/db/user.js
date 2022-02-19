@@ -227,7 +227,7 @@ const getUserByRefreshToken = async (client, refreshtoken) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const updateUserByReport = async (client, userId, reportCount, refreshtoken) => {
+const updateUserByReport = async (client, userId, reportCount) => {
   const { rows: existingRows } = await client.query(
     `
     SELECT * FROM "user"
@@ -242,12 +242,12 @@ const updateUserByReport = async (client, userId, reportCount, refreshtoken) => 
   const { rows } = await client.query(
     `
     UPDATE "user"
-    SET report_count = $2, report_created_at = now(), refresh_token = $3, updated_at = now()
+    SET report_count = $2, report_created_at = now(), updated_at = now()
     WHERE id = $1
     AND is_deleted = FALSE
     RETURNING *
     `,
-    [userId, reportCount, refreshtoken],
+    [userId, reportCount],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
