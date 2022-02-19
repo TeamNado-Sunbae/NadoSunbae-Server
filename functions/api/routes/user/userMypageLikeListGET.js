@@ -52,14 +52,13 @@ module.exports = async (req, res) => {
           );
 
           // 좋아요 정보
-          const isLiked = true; // 좋아요 목록이므로 모두 true
           const likeCount = await likeDB.getLikeCountByPostId(
             client,
             reviewPost.id,
             postType.REVIEW,
           );
           const like = {
-            isLiked: isLiked,
+            isLiked: true, // 좋아요 목록이므로 모두 true
             likeCount: likeCount.likeCount,
           };
           return {
@@ -100,14 +99,13 @@ module.exports = async (req, res) => {
           const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
 
           // 좋아요 정보
-          const isLiked = true; // 좋아요 목록이므로 모두 true
           const likeCount = await likeDB.getLikeCountByPostId(
             client,
             classroomPost.id,
             classroomPost.postTypeId,
           );
           const like = {
-            isLiked: isLiked,
+            isLiked: true, // 좋아요 목록이므로 모두 true
             likeCount: likeCount.likeCount,
           };
           return {
