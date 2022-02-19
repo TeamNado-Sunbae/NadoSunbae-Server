@@ -39,50 +39,32 @@ module.exports = async (req, res) => {
     }
 
     // 신고 당하는 유저 - 글 or 댓글의 작성자
-    let reportedUserId;
+    let reportedTarget;
 
     if (reportedTargetTypeId === reportType.REVIEW_POST) {
       // 후기글 신고
-      const reviewPost = await reviewPostDB.getReviewPostByPostId(client, reportedTargetId);
-
-      if (!reviewPost) {
-        return res
-          .status(statusCode.NOT_FOUND)
-          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
-      }
-
-      reportedUserId = reviewPost.writerId;
+      reportedTarget = await reviewPostDB.getReviewPostByPostId(client, reportedTargetId);
     } else if (reportedTargetTypeId === reportType.CLASSROOM_POST) {
       // 과방글(질문글, 정보글) 신고
-      const classroomPost = await classroomPostDB.getClassroomPostByPostId(
-        client,
-        reportedTargetId,
-      );
-
-      if (!classroomPost) {
-        return res
-          .status(statusCode.NOT_FOUND)
-          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
-      }
-
-      reportedUserId = classroomPost.writerId;
+      reportedTarget = await classroomPostDB.getClassroomPostByPostId(client, reportedTargetId);
     } else if (reportedTargetTypeId === reportType.COMMENT) {
       // 댓글 신고
-      const comment = await commentDB.getCommentByCommentId(client, reportedTargetId);
-
-      if (!comment) {
-        return res
-          .status(statusCode.NOT_FOUND)
-          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
-      }
-
-      reportedUserId = comment.writerId;
+      reportedTarget = await commentDB.getCommentByCommentId(client, reportedTargetId);
       // 잘못된 report type
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(util.success(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
     }
+
+    // 신고 대상인 글/댓글이 없는 경우
+    if (!reportedTarget) {
+      return res
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_REPORT_TARGET));
+    }
+
+    const reportedUserId = reportedTarget.writerId;
 
     // 신고 테이블에 추가
     const report = await reportDB.createReport(
