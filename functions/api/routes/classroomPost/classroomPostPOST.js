@@ -69,6 +69,10 @@ module.exports = async (req, res) => {
       secondMajorStart: writer.secondMajorStart,
     };
 
+    res
+      .status(statusCode.OK)
+      .send(util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, { post, writer }));
+
     // notification DB 저장 및 푸시 알림 전송을 위한 case 설정
     // [ case 1: 마이페이지에 1:1 질문글이 올라온 경우 ]
 
@@ -96,13 +100,15 @@ module.exports = async (req, res) => {
         );
 
         // 푸시 알림 전송
-        pushAlarmHandlers.sendUnicast(receiver.deviceToken, notificationTitle, notificationContent);
+        if (receiver.deviceToken) {
+          pushAlarmHandlers.sendUnicast(
+            receiver.deviceToken,
+            notificationTitle,
+            notificationContent,
+          );
+        }
       }
     }
-
-    res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, { post, writer }));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
