@@ -95,7 +95,7 @@ const deleteReportList = async (client, reportedUserId) => {
   const { rows } = await client.query(
     `
       UPDATE report
-      SET is_deleted = true, updated_at = now()
+      SET is_deleted = TRUE, updated_at = now()
       WHERE reported_user_id = $1
       AND is_reported = TRUE
       AND is_deleted = FALSE
