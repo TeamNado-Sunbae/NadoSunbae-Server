@@ -123,6 +123,19 @@ module.exports = async (req, res) => {
         client,
         updatedReport.reportedTargetId,
       );
+
+      // 과방글과 관련된 삭제 로직
+      // 관련된 댓글 삭제
+      const deletedComment = await commentDB.deleteCommentByPostId(
+        client,
+        updatedReport.reportedTargetId,
+      );
+
+      if (!deletedComment) {
+        return res
+          .status(statusCode.NOT_FOUND)
+          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
+      }
     } else if (updatedReport.reportedTargetTypeId === reportType.COMMENT) {
       // 댓글 삭제
       deletedReportedTarget = await commentDB.deleteCommentByCommentId(
