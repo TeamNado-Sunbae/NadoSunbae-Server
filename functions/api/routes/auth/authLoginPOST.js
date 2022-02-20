@@ -57,6 +57,16 @@ module.exports = async (req, res) => {
     // const isEmailVerified = userFirebase.user.emailVerified; 와 동일
 
     const userData = await userDB.getUserByFirebaseId(client, firebaseId);
+
+    if (!isEmailVerified) {
+      return res.status(statusCode.OK).send(
+        util.success(statusCode.OK, responseMessage.IS_NOT_EMAIL_VERIFICATION, {
+          userId: userData.id,
+          isEmailVerified: isEmailVerified,
+        }),
+      );
+    }
+
     const firstMajorName = await majorDB.getMajorNameByMajorId(client, userData.firstMajorId);
     const secondMajorName = await majorDB.getMajorNameByMajorId(client, userData.secondMajorId);
     const user = {
