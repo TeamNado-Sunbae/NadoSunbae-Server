@@ -72,10 +72,8 @@ module.exports = async (req, res) => {
       user: {
         id: userUpdatedByUserSecession.id,
         email: userUpdatedByUserSecession.email,
-        updatedAt: userUpdatedByUserSecession.updatedAt,
         isDeleted: userUpdatedByUserSecession.isDeleted,
-        deviceToken: userUpdatedByUserSecession.deviceToken,
-        refreshToken: userUpdatedByUserSecession.refreshToken,
+        updatedAt: userUpdatedByUserSecession.updatedAt,
       },
       block: blockUpdatedByUserSecession,
       classroomPost: classroomPostUpdatedByUserSecession,
