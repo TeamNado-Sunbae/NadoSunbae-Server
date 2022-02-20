@@ -18,10 +18,11 @@ const {
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { userId } = req.params;
-  const { email, password } = req.body;
+  const { password } = req.body;
+  const userId = req.user.id;
+  const email = req.user.email;
 
-  if (!userId || !email || !password) {
+  if (!password) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -31,12 +32,6 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
-
-    if (userId != req.user.id || email !== req.user.email) {
-      return res
-        .status(statusCode.FORBIDDEN)
-        .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
-    }
 
     // 로그인 및 firebase 계정 삭제
     const deletedUser = await signInWithEmailAndPassword(firebaseAuth, email, password)
