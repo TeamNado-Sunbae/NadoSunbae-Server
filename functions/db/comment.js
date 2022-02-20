@@ -134,6 +134,20 @@ const getClassroomPostListByMyCommentList = async (client, commentWriterId, post
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+const deleteCommetByUserSecession = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE comment
+    SET is_deleted = TRUE, updated_at = now()
+    WHERE writer_id = $1
+    AND is_deleted = FALSE
+    RETURNING id, is_deleted, updated_at
+    `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createComment,
   getCommentCountByPostId,
@@ -143,4 +157,5 @@ module.exports = {
   updateComment,
   deleteCommentByCommentId,
   deleteCommentByPostId,
+  deleteCommetByUserSecession,
 };
