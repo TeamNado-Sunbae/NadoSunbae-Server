@@ -11,5 +11,6 @@ router.post("/renewal/token", require("./authRenewalTokenPOST"));
 router.post("/reset/password", require("./authResetPasswordPOST"));
 router.get("/university/:universityId", require("./authUniversityGET"));
 router.post("/certification/email", require("./authCertificationEmailPOST"));
+router.delete("/secession/:userId", checkUser, require("./authSecessionDELETE"));
 
 module.exports = router;
