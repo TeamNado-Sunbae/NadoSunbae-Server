@@ -6,6 +6,8 @@ const postType = require("../../../constants/postType");
 const db = require("../../../db/db");
 const { classroomPostDB, userDB, majorDB, likeDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
+const dateHandlers = require("../../../lib/dateHandlers");
+const reportPeriodType = require("../../../constants/reportPeriodType");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
@@ -32,17 +34,43 @@ module.exports = async (req, res) => {
 
     // 전체질문이나 1:1 질문 상세조회 불가 - 답변자가 본인인 경우 제외
     if (!(answererId && answererId === req.user.id)) {
+      // 신고당한 유저
+      if (req.user.reportCreatedAt) {
+        // 유저 신고 기간
+        let reportPeriod;
+
+        // 알럿 메세지
+        let reportResponseMessage;
+
+        if (req.user.reportCount === 1) {
+          reportPeriod = reportPeriodType.FIRST_PERIOD;
+        } else if (req.user.reportCount === 2) {
+          reportPeriod = reportPeriodType.SECOND_PERIOD;
+        } else if (req.user.reportCount === 3) {
+          reportPeriod = reportPeriodType.THIRD_PERIOD;
+        } else if (req.user.reportCount >= 4) {
+          reportResponseMessage = `신고 누적으로 글 열람 및 작성이 영구적으로 제한됩니다.`;
+        }
+
+        // 신고 만료 날짜
+        const expirationDate = dateHandlers.getExpirationDateByMonth(
+          req.user.reportCreatedAt,
+          reportPeriod,
+        );
+
+        reportResponseMessage = `신고 누적이용자로 ${expirationDate.format(
+          "YYYY년 MM월 DD일",
+        )}까지 글 열람 및 작성이 불가능합니다.`;
+
+        return res
+          .status(statusCode.FORBIDDEN)
+          .send(util.fail(statusCode.FORBIDDEN, reportResponseMessage));
+      }
       // 후기 미등록 유저
       if (req.user.isReviewed === false) {
         return res
           .status(statusCode.FORBIDDEN)
           .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
-      }
-      // 신고당한 유저
-      if (req.user.reportCreatedAt) {
-        return res
-          .status(statusCode.FORBIDDEN)
-          .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS_REPORT));
       }
     }
 

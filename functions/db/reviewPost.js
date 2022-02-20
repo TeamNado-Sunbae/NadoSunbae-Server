@@ -179,6 +179,25 @@ const deleteReviewPostByUserSecession = async (client, userId) => {
     RETURNING id, is_deleted, updated_at
     `,
     [userId],
+    );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
+const getReviewPostListByLike = async (client, userId, postTypeId) => {
+  const { rows } = await client.query(
+    `
+    SELECT p.id, p.writer_id, p.one_line_review, p.created_at
+    FROM review_post p
+    INNER JOIN "like" l
+    ON p.id = l.post_id
+    AND l.user_id = $1
+    AND l.is_liked = true
+    AND l.post_type_id = $2
+    AND p.writer_id != $1
+    AND p.is_deleted = false
+    ORDER BY l.updated_at desc
+  `,
+    [userId, postTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -192,4 +211,5 @@ module.exports = {
   getReviewPostByUserId,
   getReviewPostCountByUserId,
   deleteReviewPostByUserSecession,
+  getReviewPostListByLike,
 };

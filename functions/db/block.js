@@ -72,10 +72,26 @@ const deleteBlockByUserSecession = async (client, userId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+const getInvisibleUserListByUserId = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+      SELECT DISTINCT 
+      CASE WHEN blocked_user_id = $1 THEN block_user_id 
+      ELSE blocked_user_id END
+      AS user_id FROM "block"
+      WHERE (blocked_user_id = $1 OR block_user_id = $1)
+      AND is_deleted = false
+    `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createBlock,
   getBlockedUserListByBlockUserId,
   getBlockByUserId,
   updateBlockByUserId,
   deleteBlockByUserSecession,
+  getInvisibleUserListByUserId,
 };
