@@ -48,29 +48,20 @@ const getNotificationByNotificationId = async (client, notificationId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const updateNotificationByIsRead = async (client, notificationId, isRead) => {
-  const { rows: existingRows } = await client.query(
-    `
-      SELECT * FROM notification
-      WHERE id = $1
-      AND is_deleted = FALSE
-      `,
-    [notificationId],
-  );
-
-  if (existingRows.length === 0) return false;
-
+const updateNotificationsByIsRead = async (client, postId, receiverId, isRead) => {
   const { rows } = await client.query(
     `
     UPDATE notification
-    SET is_read = $2, updated_at = now()
-    WHERE id = $1
+    SET is_read = $3, updated_at = now()
+    WHERE post_id = $1
+    AND receiver_id = $2
     AND is_deleted = false
+    AND is_read = false
     RETURNING *
       `,
-    [notificationId, isRead],
+    [postId, receiverId, isRead],
   );
-  return convertSnakeToCamel.keysToCamel(rows[0]);
+  return convertSnakeToCamel.keysToCamel(rows);
 };
 
 const deleteNotificationByNotificationId = async (client, notificationId) => {
@@ -90,6 +81,6 @@ module.exports = {
   createNotification,
   getNotificationListByReceiverId,
   getNotificationByNotificationId,
-  updateNotificationByIsRead,
+  updateNotificationsByIsRead,
   deleteNotificationByNotificationId,
 };
