@@ -85,6 +85,7 @@ module.exports = {
   READ_BACKGROUND_IMAGE_SUCCESS: "후기 배경 이미지 리스트 조회 성공",
 
   // 필터값 오류
+  INCORRECT_TYPE: "타입값이 잘못되었습니다.",
   INCORRECT_FILTER: "필터값이 잘못되었습니다.",
   INCORRECT_SORT: "정렬값이 잘못되었습니다.",
 

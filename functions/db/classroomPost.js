@@ -115,6 +115,27 @@ const getMyClassroomPostListByPostTypeIds = async (client, userId, postTypeIds) 
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+const getClassroomPostListByLike = async (client, userId, postTypeIds) => {
+  const { rows } = await client.query(
+    `
+    SELECT p.id, p.writer_id, p.title, p.content, p.created_at
+    FROM classroom_post p
+    INNER JOIN "like" l
+    ON p.id = l.post_id
+    AND p.post_type_id = l.post_type_id
+    AND l.user_id = $1
+    AND l.is_liked = true
+    AND l.post_type_id IN (${postTypeIds.join()})
+    AND p.writer_id != $1
+    AND (p.answerer_id != $1 OR p.answerer_id IS NULL)
+    AND p.is_deleted = false
+    ORDER BY l.updated_at desc
+  `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createClassroomPost,
   deleteClassroomPostByPostId,
@@ -123,4 +144,5 @@ module.exports = {
   getClassroomPostByPostId,
   updateClassroomPost,
   getMyClassroomPostListByPostTypeIds,
+  getClassroomPostListByLike,
 };
