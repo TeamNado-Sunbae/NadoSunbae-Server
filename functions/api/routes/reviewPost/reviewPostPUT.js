@@ -13,6 +13,7 @@ const {
 } = require("../../../db");
 const reviewPostContent = require("../../../constants/reviewPostContent");
 const slackAPI = require("../../../middlewares/slackAPI");
+const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
@@ -109,7 +110,7 @@ module.exports = async (req, res) => {
     };
 
     const likeCount = await likeDB.getLikeCountByPostId(client, updatedReviewPost.id);
-    let likeStatus = await likeDB.getLikeByPostId(client, postId, 1, req.user.id);
+    let likeStatus = await likeDB.getLikeByPostId(client, postId, postType.REVIEW, req.user.id);
     if (!likeStatus) {
       likeStatus = false;
     } else {

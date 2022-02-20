@@ -8,6 +8,7 @@ const reviewPostContent = require("../../../constants/reviewPostContent");
 const slackAPI = require("../../../middlewares/slackAPI");
 const dateHandlers = require("../../../lib/dateHandlers");
 const reportPeriodType = require("../../../constants/reportPeriodType");
+const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
@@ -76,8 +77,8 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
     // 현재 뷰어의 좋아요 정보 가져오기 (후기글의 postTypeId는 1 )
-    let likeCount = await likeDB.getLikeCountByPostId(client, postId, 1);
-    let likeData = await likeDB.getLikeByPostId(client, postId, 1, req.user.id);
+    let likeCount = await likeDB.getLikeCountByPostId(client, postId, postType.REVIEW);
+    let likeData = await likeDB.getLikeByPostId(client, postId, postType.REVIEW, req.user.id);
     let isLiked;
     if (!likeData) {
       isLiked = false;
