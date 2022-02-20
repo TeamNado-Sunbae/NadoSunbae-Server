@@ -75,9 +75,9 @@ const deleteLikeByUserSecession = async (client, userId) => {
   const { rows } = await client.query(
     `
     UPDATE "like"
-    SET is_liked = FALSE, updated_at = now()
+    SET is_liked = false, updated_at = now()
     WHERE user_id = $1
-    AND is_liked = TRUE
+    AND is_liked = true
     RETURNING id, is_liked, updated_at
     `,
     [userId],

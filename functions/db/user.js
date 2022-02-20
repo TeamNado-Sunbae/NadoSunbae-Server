@@ -301,9 +301,9 @@ const deleteUserByUserSecession = async (client, userId) => {
   const { rows } = await client.query(
     `
     UPDATE "user"
-    SET is_deleted = TRUE, device_token = null, refresh_token = null, updated_at = now()
+    SET is_deleted = true, device_token = null, refresh_token = null, updated_at = now()
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     RETURNING *
     `,
     [userId],

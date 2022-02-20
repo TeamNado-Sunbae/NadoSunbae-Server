@@ -138,9 +138,9 @@ const deleteCommetByUserSecession = async (client, userId) => {
   const { rows } = await client.query(
     `
     UPDATE comment
-    SET is_deleted = TRUE, updated_at = now()
+    SET is_deleted = true, updated_at = now()
     WHERE writer_id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     RETURNING id, is_deleted, updated_at
     `,
     [userId],
