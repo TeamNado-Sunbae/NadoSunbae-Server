@@ -32,50 +32,28 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    if (userId != req.user.id) {
+    if (userId != req.user.id || email !== req.user.email) {
       return res
         .status(statusCode.FORBIDDEN)
         .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
     }
 
-    // firebase 로그인
-    const userFirebase = await signInWithEmailAndPassword(firebaseAuth, email, password)
-      .then((user) => user)
+    // 로그인 및 firebase 계정 삭제
+    const deletedUser = await signInWithEmailAndPassword(firebaseAuth, email, password)
+      .then(() => {
+        deleteUser(firebaseAuth.currentUser);
+        return { err: false };
+      })
       .catch((e) => {
         console.log(e);
-        return { err: true, error: e };
+        return { err: true };
       });
 
-    // 에러 검증
-    if (userFirebase.err) {
-      if (userFirebase.error.code === "auth/user-not-found") {
-        return res
-          .status(statusCode.NOT_FOUND)
-          .json(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
-      } else if (userFirebase.error.code === "auth/invalid-email") {
-        return res
-          .status(statusCode.BAD_REQUEST)
-          .json(util.fail(statusCode.BAD_REQUEST, responseMessage.INVALID_EMAIL));
-      } else if (userFirebase.error.code === "auth/wrong-password") {
-        return res
-          .status(statusCode.BAD_REQUEST)
-          .json(util.fail(statusCode.BAD_REQUEST, responseMessage.MISS_MATCH_PW));
-      } else {
-        return res
-          .status(statusCode.INTERNAL_SERVER_ERROR)
-          .json(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
-      }
+    if (deletedUser.err) {
+      return res
+        .status(statusCode.INTERNAL_SERVER_ERROR)
+        .send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.DELETE_USER_FAIL));
     }
-
-    // firebase 로그인이 성공적으로 되었다면 계정 삭제
-    await deleteUser(firebaseAuth.currentUser)
-      .then(() => console.log("firebase 계정 삭제 성공"))
-      .catch((error) => {
-        console.log(error.code, error.message);
-        return res
-          .status(statusCode.INTERNAL_SERVER_ERROR)
-          .send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.DELETE_USER_FAIL));
-      });
 
     // DB에서 유저 관련 정보 모두 삭제
     const userUpdatedByUserSecession = await userDB.deleteUserByUserSecession(client, userId);
