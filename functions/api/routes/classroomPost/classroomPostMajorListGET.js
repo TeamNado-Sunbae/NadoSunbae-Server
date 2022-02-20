@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, likeDB, commentDB } = require("../../../db");
+const { classroomPostDB, userDB, likeDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -28,10 +28,14 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     let classroomPostList = await classroomPostDB.getClassroomPostListByMajorId(
       client,
       majorId,
       postTypeId,
+      invisibleUserIds,
     );
 
     // 해당 과에 정보 또는 질문 글이 없을 경우
