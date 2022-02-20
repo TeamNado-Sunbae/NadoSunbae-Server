@@ -72,7 +72,7 @@ const updateReportListByIsReported = async (client, reportIdList, isReported) =>
     `
       SELECT * FROM report
       WHERE id IN (${reportIdList.join()})
-      AND is_deleted = FALSE
+      AND is_deleted = false
       `,
   );
 
@@ -83,7 +83,7 @@ const updateReportListByIsReported = async (client, reportIdList, isReported) =>
       UPDATE report
       SET is_reported = $1, updated_at = now()
       WHERE id IN (${reportIdList.join()})
-      AND is_deleted = FALSE
+      AND is_deleted = false
       RETURNING *
       `,
     [isReported],
@@ -95,10 +95,10 @@ const deleteReportList = async (client, reportedUserId) => {
   const { rows } = await client.query(
     `
       UPDATE report
-      SET is_deleted = TRUE, updated_at = now()
+      SET is_deleted = true, updated_at = now()
       WHERE reported_user_id = $1
-      AND is_reported = TRUE
-      AND is_deleted = FALSE
+      AND is_reported = true
+      AND is_deleted = false
       RETURNING *
       `,
     [reportedUserId],

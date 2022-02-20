@@ -53,7 +53,7 @@ const updateNotificationByIsRead = async (client, notificationId, isRead) => {
     `
       SELECT * FROM notification
       WHERE id = $1
-      AND is_deleted = FALSE
+      AND is_deleted = false
       `,
     [notificationId],
   );
