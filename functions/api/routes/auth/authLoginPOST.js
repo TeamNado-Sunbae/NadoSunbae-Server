@@ -59,8 +59,8 @@ module.exports = async (req, res) => {
     const userData = await userDB.getUserByFirebaseId(client, firebaseId);
 
     if (!isEmailVerified) {
-      return res.status(statusCode.OK).send(
-        util.success(statusCode.OK, responseMessage.IS_NOT_EMAIL_VERIFICATION, {
+      return res.status(statusCode.ACCEPTED).send(
+        util.success(statusCode.ACCEPTED, responseMessage.IS_NOT_EMAIL_VERIFICATION, {
           userId: userData.id,
           isEmailVerified: isEmailVerified,
         }),
