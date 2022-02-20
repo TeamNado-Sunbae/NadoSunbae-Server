@@ -297,6 +297,20 @@ const updateUserByExpiredReport = async (client, userId, reportCreatedAt) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const deleteUserByUserSecession = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET is_deleted = TRUE, device_token = null, refresh_token = null, updated_at = now()
+    WHERE id = $1
+    AND is_deleted = FALSE
+    RETURNING *
+    `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   createUser,
   getUserByNickname,
@@ -313,4 +327,5 @@ module.exports = {
   updateUserByReport,
   updateUserByExpiredReport,
   updateUserByLogout,
+  deleteUserByUserSecession,
 };
