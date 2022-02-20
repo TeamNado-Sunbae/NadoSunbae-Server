@@ -58,9 +58,24 @@ const updateBlockByUserId = async (client, blockUserId, blockedUserId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const deleteBlockByUserSecession = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE block
+    SET is_deleted = TRUE, updated_at = now()
+    WHERE block_user_id = $1 OR blocked_user_id = $1
+    AND is_deleted = FALSE
+    RETURNING id, is_deleted, updated_at
+    `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createBlock,
   getBlockedUserListByBlockUserId,
   getBlockByUserId,
   updateBlockByUserId,
+  deleteBlockByUserSecession,
 };
