@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
     } else if (req.user.reportCount === 3) {
       reportPeriod = reportPeriodType.THIRD_PERIOD;
     } else if (req.user.reportCount >= 4) {
-      reportResponseMessage = `신고 누적이용자로 앞으로 글 열람 및 글 작성이 불가능합니다.`;
+      reportResponseMessage = `신고 누적으로 글 열람 및 작성이 영구적으로 제한됩니다.`;
     }
 
     // 신고 만료 날짜
@@ -41,8 +41,8 @@ module.exports = async (req, res) => {
     );
 
     reportResponseMessage = `신고 누적이용자로 ${expirationDate.format(
-      "YY년 MM월 DD일",
-    )}까지 글 열람 및 글 작성이 불가능합니다.`;
+      "YYYY년 MM월 DD일",
+    )}까지 글 열람 및 작성이 불가능합니다.`;
 
     return res
       .status(statusCode.FORBIDDEN)
