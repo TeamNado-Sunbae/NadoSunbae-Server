@@ -49,7 +49,7 @@ module.exports = async (req, res) => {
       } else {
         return res
           .status(statusCode.INTERNAL_SERVER_ERROR)
-          .json(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+          .json(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.DELETE_USER_FAIL));
       }
     }
 
