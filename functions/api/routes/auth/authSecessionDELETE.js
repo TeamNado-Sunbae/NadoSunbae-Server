@@ -33,25 +33,16 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let deletedUser;
-
     // 로그인 및 firebase 계정 삭제
     const loginUser = await signInWithEmailAndPassword(firebaseAuth, email, password)
-      .then(() => {
-        deletedUser = deleteUser(firebaseAuth.currentUser)
-          .then((user) => user)
-          .catch((e) => {
-            console.log(e);
-            return { err: true };
-          });
-      })
+      .then((user) => user)
       .catch((e) => {
         console.log(e);
-        return { err: true };
+        return { err: true, error: e };
       });
 
     if (loginUser.err) {
-      if (loginUser.error.code === "auth/auth/wrong-password") {
+      if (loginUser.error.code === "auth/wrong-password") {
         return res
           .status(statusCode.BAD_REQUEST)
           .json(util.fail(statusCode.BAD_REQUEST, responseMessage.MISS_MATCH_PW));
@@ -61,6 +52,16 @@ module.exports = async (req, res) => {
           .json(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
       }
     }
+
+    const deletedUser = await deleteUser(firebaseAuth.currentUser)
+      .then(() => {
+        console.log("firebase 계정 삭제 성공");
+        return { err: false };
+      })
+      .catch((e) => {
+        console.log(e);
+        return { err: true };
+      });
 
     if (deletedUser.err) {
       return res
