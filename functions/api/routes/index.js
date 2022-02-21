@@ -11,6 +11,6 @@ router.use("/like", require("./like"));
 router.use("/report", require("./report"));
 router.use("/notification", require("./notification"));
 router.use("/block", require("./block"));
-router.use("/inappropriateReviewPost", require("./inappropriateReviewPost"));
+router.use("/inappropriate-review-post", require("./inappropriateReviewPost"));
 
 module.exports = router;
