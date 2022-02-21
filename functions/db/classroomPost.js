@@ -86,13 +86,15 @@ const updateClassroomPost = async (client, title, content, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getClassroomPostListByMajorId = async (client, majorId, postTypeId) => {
+
+const getClassroomPostListByMajorId = async (client, majorId, postTypeId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
   SELECT * FROM "classroom_post" c
   WHERE major_id = $1
   AND post_type_id = $2
   AND is_deleted = false
+  AND writer_id NOT IN (${invisibleUserIds.join()})
   `,
     [majorId, postTypeId],
   );
@@ -127,6 +129,27 @@ const deleteClassroomPostByUserSecession = async (client, userId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+const getClassroomPostListByLike = async (client, userId, postTypeIds) => {
+  const { rows } = await client.query(
+    `
+    SELECT p.id, p.writer_id, p.title, p.content, p.created_at
+    FROM classroom_post p
+    INNER JOIN "like" l
+    ON p.id = l.post_id
+    AND p.post_type_id = l.post_type_id
+    AND l.user_id = $1
+    AND l.is_liked = true
+    AND l.post_type_id IN (${postTypeIds.join()})
+    AND p.writer_id != $1
+    AND (p.answerer_id != $1 OR p.answerer_id IS NULL)
+    AND p.is_deleted = false
+    ORDER BY l.updated_at desc
+  `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createClassroomPost,
   deleteClassroomPostByPostId,
@@ -136,4 +159,5 @@ module.exports = {
   updateClassroomPost,
   getMyClassroomPostListByPostTypeIds,
   deleteClassroomPostByUserSecession,
+  getClassroomPostListByLike,
 };
