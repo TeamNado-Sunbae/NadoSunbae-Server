@@ -72,7 +72,7 @@ const updateReportListByIsReported = async (client, reportIdList, isReported) =>
     `
       SELECT * FROM report
       WHERE id IN (${reportIdList.join()})
-      AND is_deleted = FALSE
+      AND is_deleted = false
       `,
   );
 
@@ -83,7 +83,7 @@ const updateReportListByIsReported = async (client, reportIdList, isReported) =>
       UPDATE report
       SET is_reported = $1, updated_at = now()
       WHERE id IN (${reportIdList.join()})
-      AND is_deleted = FALSE
+      AND is_deleted = false
       RETURNING *
       `,
     [isReported],
@@ -95,13 +95,27 @@ const deleteReportList = async (client, reportedUserId) => {
   const { rows } = await client.query(
     `
       UPDATE report
-      SET is_deleted = TRUE, updated_at = now()
+      SET is_deleted = true, updated_at = now()
       WHERE reported_user_id = $1
-      AND is_reported = TRUE
-      AND is_deleted = FALSE
+      AND is_reported = true
+      AND is_deleted = false
       RETURNING *
       `,
     [reportedUserId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
+const deleteReportByUserSecession = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE report
+    SET is_deleted = true, updated_at = now()
+    WHERE (report_user_id = $1 OR reported_user_id = $1)
+    AND is_deleted = false
+    RETURNING id, is_deleted, updated_at
+    `,
+    [userId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -113,4 +127,5 @@ module.exports = {
   getReportListByReportedTarget,
   updateReportListByIsReported,
   deleteReportList,
+  deleteReportByUserSecession,
 };

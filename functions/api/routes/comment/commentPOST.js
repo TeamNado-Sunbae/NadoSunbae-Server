@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
-    if (postData.postTypeId === 4) {
+    if (postData.postTypeId === postType.QUESTION_TO_PERSON) {
       if (postData.writerId !== commentWriterId && postData.answererId !== commentWriterId) {
         return res
           .status(statusCode.FORBIDDEN)

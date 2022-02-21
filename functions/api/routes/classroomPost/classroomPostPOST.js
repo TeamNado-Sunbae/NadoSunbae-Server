@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
   }
 
-  if (postTypeId === 4) {
+  if (postTypeId === postType.QUESTION_TO_PERSON) {
     if (!answererId) {
       return res
         .status(statusCode.BAD_REQUEST)
