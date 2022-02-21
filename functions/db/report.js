@@ -111,7 +111,7 @@ const deleteReportByUserSecession = async (client, userId) => {
     `
     UPDATE report
     SET is_deleted = true, updated_at = now()
-    WHERE report_user_id = $1 OR reported_user_id = $1
+    WHERE (report_user_id = $1 OR reported_user_id = $1)
     AND is_deleted = false
     RETURNING id, is_deleted, updated_at
     `,
