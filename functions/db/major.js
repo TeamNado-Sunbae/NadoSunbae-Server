@@ -1,4 +1,3 @@
-const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
 const getMajorListByUniversityId = async (client, universityId, isFirstMajor, isSecondMajor) => {
