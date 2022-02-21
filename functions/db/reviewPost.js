@@ -74,7 +74,7 @@ const deleteReviewPost = async (client, postId) => {
   const { rows } = await client.query(
     `
     UPDATE review_post
-    SET is_deleted = TRUE, updated_at = now()
+    SET is_deleted = true, updated_at = now()
     WHERE id = $1
     RETURNING id as post_id, is_deleted
     `,
@@ -125,7 +125,7 @@ const updateReviewPost = async (
     `
       SELECT * FROM review_post
       WHERE id = $1
-      AND is_deleted = FALSE
+      AND is_deleted = false
       `,
     [postId],
   );

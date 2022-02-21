@@ -66,7 +66,7 @@ const updateUserByIsReviewed = async (client, isReviewed, userId) => {
     `
     SELECT * FROM "user"
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     `,
     [userId],
   );
@@ -92,7 +92,7 @@ const getUserByUserId = async (client, userId) => {
     `
       SELECT * FROM "user"
       WHERE id = $1
-      AND is_deleted = FALSE
+      AND is_deleted = false
       `,
     [userId],
   );
@@ -104,7 +104,7 @@ const getUserByFirebaseId = async (client, firebaseId) => {
     `
     SELECT * FROM "user" u
     WHERE firebase_id = $1
-      AND is_deleted = FALSE
+      AND is_deleted = false
     `,
     [firebaseId],
   );
@@ -128,7 +128,7 @@ const updateUserByDeviceToken = async (client, userId, deviceToken) => {
     `
     SELECT * FROM "user"
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     `,
     [userId],
   );
@@ -140,7 +140,7 @@ const updateUserByDeviceToken = async (client, userId, deviceToken) => {
     UPDATE "user"
     SET device_token = $2, updated_at = now()
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     RETURNING *
     `,
     [userId, deviceToken],
@@ -153,7 +153,7 @@ const updateUserByRefreshToken = async (client, userId, refreshtoken) => {
     `
     SELECT * FROM "user"
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     `,
     [userId],
   );
@@ -165,7 +165,7 @@ const updateUserByRefreshToken = async (client, userId, refreshtoken) => {
     UPDATE "user"
     SET refresh_token = $2, updated_at = now()
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     RETURNING *
     `,
     [userId, refreshtoken],
@@ -204,7 +204,7 @@ const updateUserByMypage = async (
     nickname_updated_at = (CASE WHEN $8 = true THEN now() ELSE nickname_updated_at END),
     updated_at = now()
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     RETURNING *
     `,
     [
@@ -226,7 +226,7 @@ const getUserByRefreshToken = async (client, refreshtoken) => {
     `
     SELECT * FROM "user"
     WHERE refresh_token = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     `,
     [refreshtoken],
   );
@@ -238,7 +238,7 @@ const updateUserByReport = async (client, userId, reportCount) => {
     `
     SELECT * FROM "user"
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     `,
     [userId],
   );
@@ -250,7 +250,7 @@ const updateUserByReport = async (client, userId, reportCount) => {
     UPDATE "user"
     SET report_count = $2, report_created_at = now(), updated_at = now()
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     RETURNING *
     `,
     [userId, reportCount],
@@ -264,7 +264,7 @@ const updateUserByLogout = async (client, userId) => {
     UPDATE "user"
     SET refresh_token = null, updated_at = now()
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     RETURNING *
     `,
     [userId],
@@ -277,7 +277,7 @@ const updateUserByExpiredReport = async (client, userId, reportCreatedAt) => {
     `
     SELECT * FROM "user"
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     `,
     [userId],
   );
@@ -289,7 +289,7 @@ const updateUserByExpiredReport = async (client, userId, reportCreatedAt) => {
     UPDATE "user"
     SET report_created_at = $2, updated_at = now()
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     RETURNING *
     `,
     [userId, reportCreatedAt],

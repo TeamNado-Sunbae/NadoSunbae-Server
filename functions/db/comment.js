@@ -20,7 +20,7 @@ const updateComment = async (client, commentId, content) => {
     `
       SELECT * FROM comment
       WHERE id = $1
-      AND is_deleted = FALSE
+      AND is_deleted = false
       `,
     [commentId],
   );
@@ -35,7 +35,7 @@ const updateComment = async (client, commentId, content) => {
       UPDATE comment
       SET content = $1, updated_at = now()
       WHERE id = $2
-      AND is_deleted = FALSE
+      AND is_deleted = false
       RETURNING * 
       `,
     [data.content, commentId],
@@ -73,7 +73,7 @@ const deleteCommentByPostId = async (client, postId) => {
     `
       SELECT * FROM comment 
       WHERE post_id = $1
-         AND is_deleted = FALSE
+         AND is_deleted = false
       `,
     [postId],
   );
@@ -97,7 +97,7 @@ const getCommentByCommentId = async (client, commentId) => {
     `
       SELECT * FROM comment
       WHERE id = $1
-      AND is_deleted = FALSE
+      AND is_deleted = false
       `,
     [commentId],
   );
@@ -108,7 +108,7 @@ const deleteCommentByCommentId = async (client, commentId) => {
   const { rows } = await client.query(
     `
     UPDATE comment
-    SET is_deleted = TRUE, updated_at = now()
+    SET is_deleted = true, updated_at = now()
     WHERE id = $1
     AND is_deleted = false
     RETURNING id as comment_id, is_deleted
