@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, likeDB, userDB, commentDB } = require("../../../db");
+const { classroomPostDB, likeDB, userDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
@@ -23,7 +23,15 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let classroomPostList = await classroomPostDB.getClassroomPostListByUserId(client, userId);
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
+    let classroomPostList = await classroomPostDB.getClassroomPostListByUserId(
+      client,
+      userId,
+      invisibleUserIds,
+    );
 
     // classroomPostList에 작성자 정보와 댓글 개수, 좋아요 개수를 붙임
     classroomPostList = await Promise.all(
@@ -37,7 +45,11 @@ module.exports = async (req, res) => {
         };
 
         // 댓글 개수
-        const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
+        const commentCount = await commentDB.getCommentCountByPostId(
+          client,
+          classroomPost.id,
+          invisibleUserIds,
+        );
 
         // 좋아요 정보
         const likeData = await likeDB.getLikeByPostId(

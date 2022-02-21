@@ -1,9 +1,10 @@
+const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { notificationDB, userDB, classroomPostDB, commentDB } = require("../../../db");
+const { notificationDB, userDB, classroomPostDB, commentDB, blockDB } = require("../../../db");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
 const notificationType = require("../../../constants/notificationType");
@@ -21,7 +22,15 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let notificationList = await notificationDB.getNotificationListByReceiverId(client, receiverId);
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
+    let notificationList = await notificationDB.getNotificationListByReceiverId(
+      client,
+      receiverId,
+      invisibleUserIds,
+    );
 
     notificationList = await Promise.all(
       notificationList.map(async (notification) => {

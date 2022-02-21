@@ -111,11 +111,12 @@ const getUserByFirebaseId = async (client, firebaseId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUsersByMajorId = async (client, majorId) => {
+const getUsersByMajorId = async (client, majorId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
     SELECT * FROM "user" u
     WHERE (u.first_major_id = $1 OR u.second_major_id = $1)
+    AND id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
     AND is_deleted = false
         `,
     [majorId],
@@ -173,11 +174,11 @@ const updateUserByRefreshToken = async (client, userId, refreshtoken) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUserListByCommentPostId = async (client, commentPostId) => {
+const getUserListByCommentPostId = async (client, commentPostId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
       SELECT DISTINCT u.id, u.device_token FROM "user" u
-      INNER JOIN (SELECT DISTINCT writer_id FROM comment WHERE post_id = $1 AND is_deleted = false) c
+      INNER JOIN (SELECT DISTINCT writer_id FROM comment WHERE post_id = $1 AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[]) AND is_deleted = false) c
       ON c.writer_id = u.id
       AND u.is_deleted = false
       `,

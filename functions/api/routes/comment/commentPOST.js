@@ -1,9 +1,17 @@
+const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { commentDB, userDB, majorDB, classroomPostDB, notificationDB } = require("../../../db");
+const {
+  commentDB,
+  userDB,
+  majorDB,
+  classroomPostDB,
+  notificationDB,
+  blockDB,
+} = require("../../../db");
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
@@ -92,8 +100,16 @@ module.exports = async (req, res) => {
 
     // ******** 댓글 작성자들에게 보내는 Multicast Alarm 을 위한 변수 설정********
 
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     // receiver는 게시글에 달린 댓글 작성자들 (중복된 작성자 제외)
-    const receivers = await userDB.getUserListByCommentPostId(client, comment.postId);
+    const receivers = await userDB.getUserListByCommentPostId(
+      client,
+      comment.postId,
+      invisibleUserIds,
+    );
 
     let MulticastNotificationTypeId;
     let MulticastNotificationContent;

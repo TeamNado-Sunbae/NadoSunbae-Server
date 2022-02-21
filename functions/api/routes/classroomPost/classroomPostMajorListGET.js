@@ -28,6 +28,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
+    // 내가 차단한 사람과 나를 차단한 사람을 block
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
@@ -55,7 +56,11 @@ module.exports = async (req, res) => {
           nickname: writer.nickname,
         };
 
-        const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
+        const commentCount = await commentDB.getCommentCountByPostId(
+          client,
+          classroomPost.id,
+          invisibleUserIds,
+        );
 
         // 좋아요 정보
         const likeData = await likeDB.getLikeByPostId(

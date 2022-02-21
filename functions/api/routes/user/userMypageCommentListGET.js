@@ -1,9 +1,10 @@
+const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, likeDB, commentDB } = require("../../../db");
+const { userDB, likeDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -22,11 +23,16 @@ module.exports = async (req, res) => {
     // 마이페이지 주인장 id
     const commentWriterId = req.user.id;
 
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     // 주인장이 작성한 답글이 있는 전체 질문글 or 정보글 조회 (postTypeId가 3 또는 2로 올것임.)
     let classroomPostList = await commentDB.getClassroomPostListByMyCommentList(
       client,
       commentWriterId,
       postTypeId,
+      invisibleUserIds,
     );
 
     // 주인장이 작성한 답글이 있는 게시글이 없다면 NO_POST 반환
@@ -64,7 +70,12 @@ module.exports = async (req, res) => {
         };
 
         // 해당 게시글의 댓글 수
-        let commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
+
+        let commentCount = await commentDB.getCommentCountByPostId(
+          client,
+          classroomPost.id,
+          invisibleUserIds,
+        );
 
         return {
           postId: classroomPost.id,
