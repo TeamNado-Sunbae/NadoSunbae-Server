@@ -5,6 +5,7 @@ const responseMessage = require("../../../constants/responseMessage");
 const { signInWithEmailAndPassword } = require("firebase/auth");
 const db = require("../../../db/db");
 const { userDB, majorDB, reportDB } = require("../../../db");
+const slackAPI = require("../../../middlewares/slackAPI");
 const { firebaseAuth } = require("../../../config/firebaseClient");
 const jwtHandlers = require("../../../lib/jwtHandlers");
 const dateHandlers = require("../../../lib/dateHandlers");
@@ -160,6 +161,11 @@ module.exports = async (req, res) => {
       `[EMAIL LOGIN ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
       `[CONTENT] email:${email} ${error}`,
     );
+
+    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
+      req.originalUrl
+    } ${error} ${JSON.stringify(error)}`;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

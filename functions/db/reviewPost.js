@@ -169,6 +169,20 @@ const updateReviewPost = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const deleteReviewPostByUserSecession = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE review_post
+    SET is_deleted = true, updated_at = now()
+    WHERE writer_id = $1
+    AND is_deleted = false
+    RETURNING id, is_deleted, updated_at
+    `,
+    [userId],
+    );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 const getReviewPostListByLike = async (client, userId, postTypeId) => {
   const { rows } = await client.query(
     `
@@ -196,5 +210,6 @@ module.exports = {
   updateReviewPost,
   getReviewPostByUserId,
   getReviewPostCountByUserId,
+  deleteReviewPostByUserSecession,
   getReviewPostListByLike,
 };
