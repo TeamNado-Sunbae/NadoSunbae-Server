@@ -4,7 +4,14 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reviewPostDB, userDB, likeDB, majorDB, relationReviewPostTagDB } = require("../../../db");
+const {
+  reviewPostDB,
+  userDB,
+  likeDB,
+  majorDB,
+  relationReviewPostTagDB,
+  blockDB,
+} = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
@@ -22,6 +29,11 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
+
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     let reviewPostList;
     if (writerFilter === 1) {
       // 전체 목록 조회
@@ -30,6 +42,7 @@ module.exports = async (req, res) => {
         majorId,
         [true, false],
         tagFilter,
+        invisibleUserIds,
       );
     } else if (writerFilter === 2) {
       // 본전공 필터만 선택
@@ -38,6 +51,7 @@ module.exports = async (req, res) => {
         majorId,
         [true],
         tagFilter,
+        invisibleUserIds,
       );
     } else if (writerFilter === 3) {
       // 제 2전공 필터만 선택
@@ -46,6 +60,7 @@ module.exports = async (req, res) => {
         majorId,
         [false],
         tagFilter,
+        invisibleUserIds,
       );
     } else {
       return res

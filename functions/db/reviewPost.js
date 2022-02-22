@@ -1,7 +1,13 @@
 const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const getReviewPostListByFilters = async (client, majorId, writerFilter, tagFilter) => {
+const getReviewPostListByFilters = async (
+  client,
+  majorId,
+  writerFilter,
+  tagFilter,
+  invisibleUserIds,
+) => {
   const { rows } = await client.query(
     `
     SELECT DISTINCT ON (review_post.id) *
@@ -11,6 +17,7 @@ const getReviewPostListByFilters = async (client, majorId, writerFilter, tagFilt
     AND is_first_major IN (${writerFilter.join()})
     AND rrpt.tag_id IN (${tagFilter.join()})
     AND review_post.is_deleted = false
+    AND review_post.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
     AND rrpt.is_deleted = false
       `,
     [majorId],
@@ -179,7 +186,7 @@ const deleteReviewPostByUserSecession = async (client, userId) => {
     RETURNING id, is_deleted, updated_at
     `,
     [userId],
-    );
+  );
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
