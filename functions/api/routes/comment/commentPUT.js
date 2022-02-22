@@ -4,7 +4,6 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { commentDB, userDB, majorDB } = require("../../../db");
-const { response } = require("express");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
