@@ -29,13 +29,6 @@ module.exports = async (req, res) => {
       postTypeId,
     );
 
-    // 주인장이 작성한 답글이 있는 게시글이 없다면 NO_POST 반환
-    if (classroomPostList.length === 0) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
-    }
-
     // 게시글 목록 조회
     const classroomPostListByMyCommentList = await Promise.all(
       classroomPostList.map(async (classroomPost) => {

@@ -24,8 +24,8 @@ module.exports = async (req, res) => {
     // 해당 유저의 후기글이 하나도 없을 경우
     if (reviewPostList.length === 0) {
       return res
-        .status(statusCode.OK)
-        .send(util.success(statusCode.OK, responseMessage.NO_CONTENT, reviewPostList));
+        .status(statusCode.NO_CONTENT)
+        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, reviewPostList));
     }
 
     let writer = await userDB.getUserByUserId(client, userId);
