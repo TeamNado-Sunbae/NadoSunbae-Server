@@ -11,6 +11,7 @@ const {
   relationReviewPostTagDB,
   majorDB,
   imageDB,
+  inappropriateReviewPostDB,
 } = require("../../../db");
 const {
   PROS_CONS,
@@ -185,6 +186,13 @@ module.exports = async (req, res) => {
       imageId: reviewPost.backgroundImageId,
       imageUrl: backgroundImageUrl,
     };
+
+    const inappropriateReviewPost =
+      await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, req.user.id);
+    if (inappropriateReviewPost) {
+      const deletedInappropriateReviewPost =
+        await inappropriateReviewPostDB.deleteInappropriateReviewPostList(client, req.user.id);
+    }
 
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, {
