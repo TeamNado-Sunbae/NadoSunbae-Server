@@ -43,11 +43,12 @@ const updateComment = async (client, commentId, content) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getCommentCountByPostId = async (client, postId) => {
+const getCommentCountByPostId = async (client, postId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
     SELECT cast(count(*) as integer) AS comment_count FROM comment
     WHERE post_id = $1
+    AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
     AND is_deleted = false
     `,
     [postId],
@@ -55,12 +56,13 @@ const getCommentCountByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getCommentListByPostId = async (client, postId) => {
+const getCommentListByPostId = async (client, postId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
       SELECT * FROM comment
       WHERE post_id = $1
       AND is_deleted = false
+      AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
       ORDER BY created_at
       `,
     [postId],
@@ -118,7 +120,12 @@ const deleteCommentByCommentId = async (client, commentId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getClassroomPostListByMyCommentList = async (client, commentWriterId, postTypeId) => {
+const getClassroomPostListByMyCommentList = async (
+  client,
+  commentWriterId,
+  postTypeId,
+  invisibleUserIds,
+) => {
   const { rows } = await client.query(
     `
     SELECT p.id, p.writer_id, p.title, p.content, p.created_at
@@ -126,6 +133,7 @@ const getClassroomPostListByMyCommentList = async (client, commentWriterId, post
     INNER JOIN classroom_post AS p
     ON c.post_id = p.id 
     AND p.writer_id != $1
+    AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
     AND p.post_type_id = $2
     AND p.is_deleted = false;
       `,

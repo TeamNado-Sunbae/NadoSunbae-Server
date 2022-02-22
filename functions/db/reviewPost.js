@@ -179,11 +179,11 @@ const deleteReviewPostByUserSecession = async (client, userId) => {
     RETURNING id, is_deleted, updated_at
     `,
     [userId],
-    );
+  );
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getReviewPostListByLike = async (client, userId, postTypeId) => {
+const getReviewPostListByLike = async (client, userId, postTypeId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
     SELECT p.id, p.writer_id, p.one_line_review, p.created_at
@@ -194,6 +194,7 @@ const getReviewPostListByLike = async (client, userId, postTypeId) => {
     AND l.is_liked = true
     AND l.post_type_id = $2
     AND p.writer_id != $1
+    AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
     AND p.is_deleted = false
     ORDER BY l.updated_at desc
   `,

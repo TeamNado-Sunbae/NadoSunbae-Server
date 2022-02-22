@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB } = require("../../../db");
+const { userDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -21,8 +21,12 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     // get userList
-    let userList = await userDB.getUsersByMajorId(client, majorId);
+    let userList = await userDB.getUsersByMajorId(client, majorId, invisibleUserIds);
 
     // userList를 랜덤으로 섞기
     userList = _.shuffle(userList);

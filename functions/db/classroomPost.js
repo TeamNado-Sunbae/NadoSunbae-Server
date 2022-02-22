@@ -14,11 +14,12 @@ const deleteClassroomPostByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getClassroomPostListByUserId = async (client, userId) => {
+const getClassroomPostListByUserId = async (client, userId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
       SELECT * FROM classroom_post
       WHERE answerer_id = $1
+      AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
       AND is_deleted = false
           `,
     [userId],
@@ -93,7 +94,7 @@ const getClassroomPostListByMajorId = async (client, majorId, postTypeId, invisi
   WHERE major_id = $1
   AND post_type_id = $2
   AND is_deleted = false
-  AND writer_id NOT IN (${invisibleUserIds.join()})
+  AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   `,
     [majorId, postTypeId],
   );
@@ -128,7 +129,7 @@ const deleteClassroomPostByUserSecession = async (client, userId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getClassroomPostListByLike = async (client, userId, postTypeIds) => {
+const getClassroomPostListByLike = async (client, userId, postTypeIds, invisibleUserIds) => {
   const { rows } = await client.query(
     `
     SELECT p.id, p.writer_id, p.title, p.content, p.created_at
@@ -140,6 +141,7 @@ const getClassroomPostListByLike = async (client, userId, postTypeIds) => {
     AND l.is_liked = true
     AND l.post_type_id IN (${postTypeIds.join()})
     AND p.writer_id != $1
+    AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
     AND (p.answerer_id != $1 OR p.answerer_id IS NULL)
     AND p.is_deleted = false
     ORDER BY l.updated_at desc

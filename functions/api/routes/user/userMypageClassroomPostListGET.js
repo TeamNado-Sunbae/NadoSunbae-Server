@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, likeDB, commentDB, majorDB } = require("../../../db");
+const { classroomPostDB, likeDB, commentDB, majorDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
@@ -51,7 +51,16 @@ module.exports = async (req, res) => {
         const majorName = await majorDB.getMajorNameByMajorId(client, classroomPost.majorId);
 
         // 댓글 개수
-        const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
+
+        // 내가 차단한 사람과 나를 차단한 사람을 block
+        const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+        const invisibleUserIds = _.map(invisibleUserList, "userId");
+
+        const commentCount = await commentDB.getCommentCountByPostId(
+          client,
+          classroomPost.id,
+          invisibleUserIds,
+        );
 
         // 좋아요 정보
         const likeData = await likeDB.getLikeByPostId(

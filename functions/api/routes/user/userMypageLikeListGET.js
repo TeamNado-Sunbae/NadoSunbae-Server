@@ -11,6 +11,7 @@ const {
   likeDB,
   commentDB,
   userDB,
+  blockDB,
 } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
@@ -29,6 +30,10 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     // 좋아요 목록 게시글 리스트
     let likePostList;
 
@@ -38,6 +43,7 @@ module.exports = async (req, res) => {
         client,
         req.user.id,
         postType.REVIEW,
+        invisibleUserIds,
       );
 
       likePostList = await Promise.all(
@@ -88,6 +94,7 @@ module.exports = async (req, res) => {
         client,
         req.user.id,
         postTypeIds,
+        invisibleUserIds,
       );
 
       likePostList = await Promise.all(
@@ -96,7 +103,11 @@ module.exports = async (req, res) => {
           const writer = await userDB.getUserByUserId(client, classroomPost.writerId);
 
           // 댓글 개수
-          const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
+          const commentCount = await commentDB.getCommentCountByPostId(
+            client,
+            classroomPost.id,
+            invisibleUserIds,
+          );
 
           // 좋아요 정보
           const likeCount = await likeDB.getLikeCountByPostId(

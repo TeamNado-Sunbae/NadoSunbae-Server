@@ -23,12 +23,13 @@ const createNotification = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getNotificationListByReceiverId = async (client, receiverId) => {
+const getNotificationListByReceiverId = async (client, receiverId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
   SELECT * FROM notification
   WHERE receiver_id = $1
   AND is_deleted = false
+  AND sender_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   ORDER BY created_at desc
   `,
     [receiverId],

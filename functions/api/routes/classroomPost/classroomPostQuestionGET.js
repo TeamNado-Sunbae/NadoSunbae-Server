@@ -1,10 +1,11 @@
+const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const postType = require("../../../constants/postType");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, majorDB, likeDB, commentDB } = require("../../../db");
+const { classroomPostDB, userDB, majorDB, likeDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const dateHandlers = require("../../../lib/dateHandlers");
 const reportPeriodType = require("../../../constants/reportPeriodType");
@@ -130,8 +131,16 @@ module.exports = async (req, res) => {
 
     // post 댓글 정보
 
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     // post 댓글 리스트 - 삭제 댓글 포함
-    let messageList = await commentDB.getCommentListByPostId(client, classroomPost.id);
+    let messageList = await commentDB.getCommentListByPostId(
+      client,
+      classroomPost.id,
+      invisibleUserIds,
+    );
 
     messageList = await Promise.all(
       messageList.map(async (comment) => {
