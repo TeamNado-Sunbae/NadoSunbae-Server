@@ -1,4 +1,3 @@
-const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
 const getTagList = async (client) => {
