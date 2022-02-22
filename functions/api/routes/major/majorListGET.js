@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
     }
 
-    if (!majorList) {
+    if (majorList.length === 0) {
       return res
         .status(statusCode.NO_CONTENT)
         .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, majorList));
