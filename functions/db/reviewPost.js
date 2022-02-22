@@ -76,7 +76,7 @@ const deleteReviewPost = async (client, postId) => {
     UPDATE review_post
     SET is_deleted = true, updated_at = now()
     WHERE id = $1
-    RETURNING id as post_id, is_deleted
+    RETURNING id as post_id, is_deleted, writer_id
     `,
     [postId],
   );
@@ -179,7 +179,7 @@ const deleteReviewPostByUserSecession = async (client, userId) => {
     RETURNING id, is_deleted, updated_at
     `,
     [userId],
-    );
+  );
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
