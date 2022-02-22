@@ -62,6 +62,15 @@ module.exports = async (req, res) => {
       .send(util.fail(statusCode.FORBIDDEN, reportResponseMessage));
   }
 
+  // 부적절 후기글 등록 유저
+  if (req.user.isReviewInappropriate === true) {
+    return res
+      .status(statusCode.FORBIDDEN)
+      .send(
+        util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS_INAPPROPRIATE_REVIEW_POST),
+      );
+  }
+
   // 후기글 미등록 유저
   if (writer.isReviewed === false) {
     return res
