@@ -69,11 +69,6 @@ module.exports = async (req, res) => {
     let updatedReportList = [];
     if (reportIdList.length !== 0) {
       updatedReportList = await reportDB.updateReportListByIsReported(client, [reportIdList], true);
-      if (updatedReportList.length === 0) {
-        return res
-          .status(statusCode.NOT_FOUND)
-          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_REPORT));
-      }
     }
 
     // 1. 신고된 report의 글 or 댓글은 삭제함

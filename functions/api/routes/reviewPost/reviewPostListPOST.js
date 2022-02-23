@@ -56,8 +56,8 @@ module.exports = async (req, res) => {
     // 해당 과에 후기 글이 없을 경우
     if (reviewPostList.length === 0) {
       return res
-        .status(statusCode.OK)
-        .send(util.success(statusCode.OK, responseMessage.NO_CONTENT, reviewPostList));
+        .status(statusCode.NO_CONTENT)
+        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, reviewPostList));
     }
 
     reviewPostList = await Promise.all(

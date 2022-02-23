@@ -39,13 +39,6 @@ module.exports = async (req, res) => {
       invisibleUserIds,
     );
 
-    // 해당 과에 정보 또는 질문 글이 없을 경우
-    if (!classroomPostList) {
-      return res
-        .status(statusCode.OK)
-        .send(util.success(statusCode.OK, responseMessage.NO_CONTENT, classroomPostList));
-    }
-
     classroomPostList = await Promise.all(
       classroomPostList.map(async (classroomPost) => {
         let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
