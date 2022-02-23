@@ -169,7 +169,7 @@ module.exports = async (req, res) => {
           messageId: comment.id,
           title: "",
           content: comment.content,
-          createdAt: comment.createdAt,
+          updatedAt: comment.updatedAt,
           isDeleted: comment.isDeleted,
           writer: commentWriter,
         };
