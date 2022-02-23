@@ -169,7 +169,8 @@ module.exports = async (req, res) => {
           messageId: comment.id,
           title: "",
           content: comment.content,
-          updatedAt: comment.updatedAt,
+          // createdAt으로 변수명은 맞추되, 시간은 업데이트 된 시간으로
+          createdAt: comment.updatedAt,
           isDeleted: comment.isDeleted,
           writer: commentWriter,
         };
