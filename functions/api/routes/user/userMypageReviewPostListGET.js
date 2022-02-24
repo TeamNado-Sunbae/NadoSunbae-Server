@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
     // 해당 유저의 후기글이 하나도 없을 경우
     if (reviewPostList.length === 0) {
       return res
-        .status(statusCode.NO_CONTENT)
+        .status(statusCode.OK)
         .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, reviewPostList));
     }
 
