@@ -91,12 +91,12 @@ module.exports = async (req, res) => {
           secondMajorStart: writer.secondMajorStart,
         };
 
-        const tagList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.postId);
+        const tagList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.id);
 
         // 좋아요 정보
         const likeData = await likeDB.getLikeByPostId(
           client,
-          reviewPost.postId,
+          reviewPost.id,
           postType.REVIEW,
           req.user.id,
         );
@@ -106,18 +106,14 @@ module.exports = async (req, res) => {
         } else {
           isLiked = likeData.isLiked;
         }
-        const likeCount = await likeDB.getLikeCountByPostId(
-          client,
-          reviewPost.postId,
-          postType.REVIEW,
-        );
+        const likeCount = await likeDB.getLikeCountByPostId(client, reviewPost.id, postType.REVIEW);
         const like = {
           isLiked: isLiked,
           likeCount: likeCount.likeCount,
         };
 
         return {
-          postId: reviewPost.postId,
+          postId: reviewPost.id,
           oneLineReview: reviewPost.oneLineReview,
           createdAt: reviewPost.createdAt,
           writer: writer,
