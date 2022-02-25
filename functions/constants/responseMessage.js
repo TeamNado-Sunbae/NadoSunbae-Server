@@ -70,6 +70,8 @@ module.exports = {
   NO_AUTH_HEADER: "Authorization 헤더가 없습니다.",
   FORBIDDEN_ACCESS: "사용 권한이 없습니다.",
   FORBIDDEN_ACCESS_REPORT: "신고로 인해 사용 권한이 없습니다.",
+  FORBIDDEN_ACCESS_INAPPROPRIATE_REVIEW_POST:
+    "부적절한 후기 작성이 확인되어, 열람 권한이 제한되었습니다. 권한을 얻고 싶다면 다시 학과후기를 작성해주세요.",
   IS_REVIEWED_FALSE: "후기글 미등록자입니다.",
   SEND_VERIFICATION_EMAIL_SUCCESS: "인증 메일 보내기 성공",
   SEND_VERIFICATION_EMAIL_FAIL: "인증 메일 보내기 실패",
@@ -102,6 +104,9 @@ module.exports = {
   ALREADY_REPORT: "이미 신고한 글/댓글입니다.",
   NO_REPORT_TARGET: "존재하지 않는 글/댓글입니다.",
   NO_REPORT: "존재하지 않는(혹은 만료된) 신고입니다.",
+
+  // 부적절 후기
+  CREATE_ONE_INAPPROPRIATE_REVIEW_POST_SUCCESS: "부적절 후기 등록 성공",
 
   // 차단 성공
   BLOCK_SUCCESS: "차단 업데이트 성공",

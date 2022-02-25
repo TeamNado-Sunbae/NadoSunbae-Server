@@ -13,4 +13,5 @@ module.exports = {
   notificationDB: require("./notification"),
   reportDB: require("./report"),
   blockDB: require("./block"),
+  inappropriateReviewPostDB: require("./inappropriateReviewPost"),
 };

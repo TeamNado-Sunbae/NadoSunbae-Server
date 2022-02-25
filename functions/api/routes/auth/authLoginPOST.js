@@ -4,7 +4,7 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const { signInWithEmailAndPassword } = require("firebase/auth");
 const db = require("../../../db/db");
-const { userDB, majorDB, reportDB } = require("../../../db");
+const { userDB, majorDB, reportDB, inappropriateReviewPostDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const { firebaseAuth } = require("../../../config/firebaseClient");
 const jwtHandlers = require("../../../lib/jwtHandlers");
@@ -135,6 +135,12 @@ module.exports = async (req, res) => {
     // 유저가 신고 당해 권한 제한된 상태인지
     const isUserReported = updatedUserByExpiredReport.reportCreatedAt ? true : false;
 
+    // 부적절 후기 등록 유저인지
+    const inappropriateReviewPost =
+      await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, userData.id);
+
+    const isReviewInappropriate = inappropriateReviewPost ? true : false;
+
     const user = {
       userId: userData.id,
       email: userData.email,
@@ -146,6 +152,7 @@ module.exports = async (req, res) => {
       isReviewed: userData.isReviewed,
       isEmailVerified: isEmailVerified,
       isUserReported: isUserReported,
+      isReviewInappropriate: isReviewInappropriate,
     };
 
     res.status(statusCode.OK).send(

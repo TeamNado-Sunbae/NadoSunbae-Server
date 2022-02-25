@@ -68,13 +68,13 @@ module.exports = async (req, res) => {
     }
 
     // deletedReviewPost에 isReviewed 추가해서 response 보냄
-    deletedReviewPost.isReviewed = isReviewed;
-
-    res
-      .status(statusCode.OK)
-      .send(
-        util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, deletedReviewPost),
-      );
+    res.status(statusCode.OK).send(
+      util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, {
+        postId: deletedReviewPost.postId,
+        isDeleted: deletedReviewPost.isDeleted,
+        isReviewed: isReviewed,
+      }),
+    );
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

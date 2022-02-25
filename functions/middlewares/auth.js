@@ -4,7 +4,7 @@ const db = require("../db/db");
 const util = require("../lib/util");
 const statusCode = require("../constants/statusCode");
 const responseMessage = require("../constants/responseMessage");
-const { userDB } = require("../db");
+const { userDB, inappropriateReviewPostDB } = require("../db");
 const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../constants/jwt");
 
 const checkUser = async (req, res, next) => {
@@ -54,6 +54,13 @@ const checkUser = async (req, res, next) => {
     // 유저를 찾았으면, req.user에 유저 객체를 담아서 next()를 이용해 다음 middleware로 보냅니다.
     // 다음 middleware는 req.user에 담긴 유저 정보를 활용할 수 있습니다.
     req.user = user;
+
+    // 부적절 후기 등록 유저인지
+    const inappropriateReviewPost =
+      await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, req.user.id);
+
+    user.isReviewInappropriate = inappropriateReviewPost ? true : false;
+
     next();
   } catch (error) {
     console.log(error);
