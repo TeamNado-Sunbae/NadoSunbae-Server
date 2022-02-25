@@ -10,15 +10,16 @@ const getReviewPostListByFilters = async (
 ) => {
   const { rows } = await client.query(
     `
-    SELECT DISTINCT ON (review_post.id) *
-    FROM review_post
-    left join relation_review_post_tag rrpt on review_post.id = rrpt.post_id
+    SELECT p.*
+    FROM review_post p
+    LEFT JOIN relation_review_post_tag r on p.id = r.post_id
     WHERE major_id = $1
-    AND is_first_major IN (${writerFilter.join()})
-    AND rrpt.tag_id IN (${tagFilter.join()})
-    AND review_post.is_deleted = false
-    AND review_post.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-    AND rrpt.is_deleted = false
+    AND p.is_first_major IN (${writerFilter.join()})
+    AND r.tag_id IN (${tagFilter.join()})
+    AND p.is_deleted = false
+    AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    AND r.is_deleted = false
+    GROUP BY p.id
       `,
     [majorId],
   );
