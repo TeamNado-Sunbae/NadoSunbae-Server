@@ -14,6 +14,7 @@
 
 > SOPT 29th APPJAM <br>
 > 프로젝트 기간: 2021.12.18 ~ 2022.01.22
+> 릴리즈 준비 기간: 2022.02.06 ~
 <br>
 
 ### 🌲 Menu Tree 
@@ -197,9 +198,12 @@ ex) [FEAT] implement postGET
                |            |- 📋 firebaseClient.js
                |
                |- 📁 constants_
+               |               |- 📋 appVersion.js
                |               |- 📋 jwt.js
                |               |- 📋 notificationType.js
                |               |- 📋 postType.js
+               |               |- 📋 reportPeriodType.js
+               |               |- 📋 reportType.js
                |               |- 📋 responseMessage.js
                |               |- 📋 reviewPostContent.js
                |               |- 📋 statusCode.js
@@ -207,14 +211,30 @@ ex) [FEAT] implement postGET
                |- 📁 db_ 
                |        |- 📋 db.js
                |        |- 📋 index.js
+               |        |- 📋 block.js
+               |        |- 📋 classroomPost.js
+               |        |- 📋 comment.js
+               |        |- 📋 image.js
+               |        |- 📋 like.js
+               |        |- 📋 major.js
+               |        |- 📋 notification.js
+               |        |- 📋 relationReviewPostTag.js
+               |        |- 📋 report.js
+               |        |- 📋 reviewPost.js
+               |        |- 📋 tag.js
+               |        |- 📋 university.js
+               |        |- 📋 user.js
                |
                |- 📁 lib_
                |         |- 📋 convertSnakeToCamel.js
-               |         |- 📋 jwtHandler.js
+               |         |- 📋 dateHandlers.js
+               |         |- 📋 jwtHandlers.js
+               |         |- 📋 pushAlarmHandlers.js
                |         |- 📋 util.js
                |
                |- 📁 middlewares_
                                  |- 📋 auth.js
+                                 |- 📋 slackAPI.js
                
 ```
 <br>
