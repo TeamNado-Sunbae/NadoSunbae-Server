@@ -58,14 +58,14 @@
 | localdevelop_feature/#issue | 각자 기능 추가 브랜치 |
 <br>
 
-### 📌 Commit Convention
-
-* **[태그] 내용** 의 형태로 작성 <br>
-ex) [FEAT] implement postGET
+### 📌 Conventions
 
 <details>
-<summary>Tags</summary>
-<div markdown="1">   
+<summary>Commit Convention</summary>
+<div markdown="1"> 
+
+* **[태그] 내용** 의 형태로 작성 <br>
+ex) [FEAT] implement postGET 
   
 | 태그 이름| 설명 |
 | :--: | :-----: |
@@ -84,67 +84,42 @@ ex) [FEAT] implement postGET
   
 </div>
 </details>
-<br>
 
-### 📌 Issue, PR Convention
-
-<div markdown="1">       
-      
+<details>
+<summary>Issue, PR Convention</summary>
+<div markdown="1">     
  
 * 변수나 폴더명은 영어로 쓰되, 설명은 한글로 작성
-<details>
-<summary>Issue</summary>
-<div mardown="1">
-  [영어 대문자] 내용
-</div>
-</details>
-<details>
-<summary>PR</summary>
-<div mardown="1">
-  [영어 대문자] #이슈 번호 - 해당 이슈 내용 <br>
-  * 이슈와 내용이 동일할 필요는 없음 <br>
-  * 이슈 번호는 동일 해야 함
-</div>
-</details>
- 
-</div>
-<br>
-
-### 📌 Coding Convention
-
-<details>
-<summary>변수명</summary>   
-<div markdown="1">       
-      
- 
- 1. Camel Case 사용 
-   - lower Camel Case
- 2. 함수의 경우 동사+명사 사용 
-   - ex) getInformation()
- 3. 길이는 20자로 제한한다. 
-   - 부득이한 경우 팀원과의 상의를 거친다.
- 4. flag로 사용 되는 변수는 조동사 + flag 종류로 구성 
-   - ex) isNumber
- 5. 약어는 되도록 사용하지 않는다.
+* Issue
+  * [영어 대문자] 내용
+* PR
+  * [영어 대문자] #이슈 번호 - 해당 이슈 내용 <br>
+    * 이슈와 내용이 동일할 필요는 없음 <br>
+    * 이슈 번호는 동일 해야 함
  
 </div>
 </details>
-
-<details>
-<summary>주석</summary>
-<div markdown="1">       
-
- 1. 한줄 주석은 // 를 사용한다.
- 2. 그 이상은 /** */ 를 사용한다.
- 3. 함수 설명 주석은 2번을 사용한다.
  
-</div>
-</details>
-
 <details>
-<summary>Bracket</summary>
-<div markdown="1">       
+<summary>Coding Convention</summary>
+<div markdown="1">  
 
+ * 변수명
+   * Camel Case 사용 
+   * 함수의 경우 동사+명사 사용 ex) getInformation()
+   * 길이는 20자로 제한
+   * flag로 사용 되는 변수는 조동사 + flag 종류로 구성 
+   * 약어는 되도록 사용하지 않는다. 
+ <br>
+ 
+ * 주석
+   * 한줄 주석은 // 를 사용한다.
+   * 그 이상은 /** */ 를 사용한다.
+   * 함수 설명 주석은 2번을 사용한다.
+ <br>
+ 
+ * Bracket
+ 
  ``` javascript
  // 한줄 if 문 - 여러 줄로 작성
   if(trigger) {
@@ -163,22 +138,22 @@ ex) [FEAT] implement postGET
      return;  
   }
  ```
+ <br>
  
-</div>
-</details>
-
-<details>
-<summary>비동기 함수의 사용</summary>
-<div markdown="1">       
-
- 1. async, await 함수 사용을 지향한다.
- 2. Promise 사용은 지양한다.
+  * 비동기 함수의 사용    
+    * async, await 함수 사용을 지향한다.
+    * Promise 사용은 지양한다.
  
-</div>
+ </div>
 </details>
-<br>
+</br>
 
 ### 🗂 Foldering
+
+<details>
+<summary>펼쳐보기</summary>
+<div markdown="1"> 
+
 ```markdown
 |-📋 firebaserc
 |-📋 firebase.json
@@ -237,9 +212,15 @@ ex) [FEAT] implement postGET
                                  |- 📋 slackAPI.js
                
 ```
+</details>
 <br>
 
 ### ⚙️ Dependencies Module
+ 
+<details>
+<summary>펼쳐보기</summary>
+<div markdown="1"> 
+ 
 ```
 {
   "name": "functions",
@@ -283,6 +264,7 @@ ex) [FEAT] implement postGET
   "private": true
 }
 ```
+</details>
 <br>
 
 ### 🧩 Role
