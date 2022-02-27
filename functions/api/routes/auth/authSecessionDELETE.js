@@ -74,7 +74,7 @@ module.exports = async (req, res) => {
     const blockUpdatedByUserSecession = await blockDB.deleteBlockByUserSecession(client, userId);
     const classroomPostUpdatedByUserSecession =
       await classroomPostDB.deleteClassroomPostByUserSecession(client, userId);
-    const commentUpdatedByUserSecession = await commentDB.deleteCommetByUserSecession(
+    const commentUpdatedByUserSecession = await commentDB.deleteCommentByUserSecession(
       client,
       userId,
     );
