@@ -4,7 +4,7 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const { signInWithEmailAndPassword } = require("firebase/auth");
 const db = require("../../../db/db");
-const { userDB, majorDB, reportDB, inappropriateReviewPostDB } = require("../../../db");
+const { userDB, reportDB, inappropriateReviewPostDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const { firebaseAuth } = require("../../../config/firebaseClient");
 const jwtHandlers = require("../../../lib/jwtHandlers");
@@ -59,8 +59,6 @@ module.exports = async (req, res) => {
     // const isEmailVerified = userFirebase.user.emailVerified; 와 동일
 
     const userData = await userDB.getUserByFirebaseId(client, firebaseId);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, userData.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, userData.secondMajorId);
 
     // 로그인시 토큰 새로 발급
     const { accesstoken } = jwtHandlers.access(userData);
@@ -146,9 +144,9 @@ module.exports = async (req, res) => {
       email: userData.email,
       universityId: userData.universityId,
       firstMajorId: userData.firstMajorId,
-      firstMajorName: firstMajorName.majorName,
+      firstMajorName: userData.firstMajorName,
       secondMajorId: userData.secondMajorId,
-      secondMajorName: secondMajorName.majorName,
+      secondMajorName: userData.secondMajorName,
       isReviewed: userData.isReviewed,
       isEmailVerified: isEmailVerified,
       isUserReported: isUserReported,

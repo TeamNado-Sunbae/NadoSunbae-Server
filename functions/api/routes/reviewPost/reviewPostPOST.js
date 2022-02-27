@@ -8,7 +8,6 @@ const {
   userDB,
   tagDB,
   relationReviewPostTagDB,
-  majorDB,
   imageDB,
   inappropriateReviewPostDB,
 } = require("../../../db");
@@ -158,15 +157,13 @@ module.exports = async (req, res) => {
       createdAt: reviewPost.createdAt,
     };
 
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, updatedUser.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, updatedUser.secondMajorId);
     const writer = {
       writerId: updatedUser.id,
       nickname: updatedUser.nickname,
       profileImageId: updatedUser.profileImageId,
-      firstMajorName: firstMajorName.majorName,
+      firstMajorName: req.user.firstMajorName,
       firstMajorStart: updatedUser.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
+      secondMajorName: req.user.secondMajorName,
       secondMajorStart: updatedUser.secondMajorStart,
       isOnQuestion: updatedUser.isOnQuestion,
       isReviewed: updatedUser.isReviewed,

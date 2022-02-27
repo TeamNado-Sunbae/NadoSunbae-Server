@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, reviewPostDB, imageDB, majorDB, likeDB } = require("../../../db");
+const { userDB, reviewPostDB, imageDB, likeDB } = require("../../../db");
 const reviewPostContent = require("../../../constants/reviewPostContent");
 const slackAPI = require("../../../middlewares/slackAPI");
 const dateHandlers = require("../../../lib/dateHandlers");
@@ -99,8 +99,6 @@ module.exports = async (req, res) => {
     // 후기글 작성자 정보 가져오기
     const writerId = post.writerId;
     let writer = await userDB.getUserByUserId(client, writerId);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
 
     // 후기글 배경 이미지 가져오기
     const imageId = post.backgroundImageId;
@@ -150,9 +148,9 @@ module.exports = async (req, res) => {
       writerId: writer.id,
       profileImageId: writer.profileImageId,
       nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
+      firstMajorName: writer.firstMajorName,
       firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
+      secondMajorName: writer.secondMajorName,
       secondMajorStart: writer.secondMajorStart,
       isOnQuestion: writer.isOnQuestion,
       isReviewed: writer.isReviewed,

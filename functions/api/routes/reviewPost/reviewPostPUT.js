@@ -3,14 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const {
-  reviewPostDB,
-  userDB,
-  majorDB,
-  imageDB,
-  likeDB,
-  relationReviewPostTagDB,
-} = require("../../../db");
+const { reviewPostDB, userDB, imageDB, likeDB, relationReviewPostTagDB } = require("../../../db");
 const reviewPostContent = require("../../../constants/reviewPostContent");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
@@ -61,8 +54,6 @@ module.exports = async (req, res) => {
     );
 
     let writer = await userDB.getUserByUserId(client, updatedReviewPost.writerId);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
 
     let contentList = [];
     const content = [
@@ -103,9 +94,9 @@ module.exports = async (req, res) => {
       writerId: writer.id,
       profileImageId: writer.profileImageId,
       nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
+      firstMajorName: writer.firstMajorName,
       firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
+      secondMajorName: writer.secondMajorName,
       secondMajorStart: writer.secondMajorStart,
     };
 

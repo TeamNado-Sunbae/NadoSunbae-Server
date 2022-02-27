@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, majorDB, likeDB, reviewPostDB, blockDB } = require("../../../db");
+const { userDB, likeDB, reviewPostDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -27,9 +27,6 @@ module.exports = async (req, res) => {
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
     }
-
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, user.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, user.secondMajorId);
 
     let count;
 
@@ -54,10 +51,10 @@ module.exports = async (req, res) => {
       profileImageId: user.profileImageId,
       nickname: user.nickname,
       firstMajorId: user.firstMajorId,
-      firstMajorName: firstMajorName.majorName,
+      firstMajorName: user.firstMajorName,
       firstMajorStart: user.firstMajorStart,
       secondMajorId: user.secondMajorId,
-      secondMajorName: secondMajorName.majorName,
+      secondMajorName: user.secondMajorName,
       secondMajorStart: user.secondMajorStart,
       isOnQuestion: user.isOnQuestion,
       count: count,

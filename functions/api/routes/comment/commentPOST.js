@@ -4,14 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const {
-  commentDB,
-  userDB,
-  majorDB,
-  classroomPostDB,
-  notificationDB,
-  blockDB,
-} = require("../../../db");
+const { commentDB, userDB, classroomPostDB, notificationDB, blockDB } = require("../../../db");
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
@@ -53,16 +46,14 @@ module.exports = async (req, res) => {
 
     // 댓글 작성자 정보 가져오기
     let writer = await userDB.getUserByUserId(client, commentWriterId);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
 
     writer = {
       writerId: writer.id,
       profileImageId: writer.profileImageId,
       nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
+      firstMajorName: writer.firstMajorName,
       firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
+      secondMajorName: writer.secondMajorName,
       secondMajorStart: writer.secondMajorStart,
     };
 

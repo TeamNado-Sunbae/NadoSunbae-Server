@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, majorDB, userDB, notificationDB } = require("../../../db");
+const { classroomPostDB, userDB, notificationDB } = require("../../../db");
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
@@ -92,9 +92,6 @@ module.exports = async (req, res) => {
       content,
     );
 
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
-
     post = {
       postId: post.id,
       title: post.title,
@@ -108,9 +105,9 @@ module.exports = async (req, res) => {
       writerId: writer.id,
       profileImageId: writer.profileImageId,
       nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
+      firstMajorName: writer.firstMajorName,
       firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
+      secondMajorName: writer.secondMajorName,
       secondMajorStart: writer.secondMajorStart,
     };
 
