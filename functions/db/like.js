@@ -25,7 +25,7 @@ const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
 
   const { rows } = await client.query(
     `
-        WITH LIKE_ID (id) AS (
+        WITH LIKE_ID AS (
           SELECT l.id FROM "like" l
           INNER JOIN review_post p
           ON l.post_id = p.id
