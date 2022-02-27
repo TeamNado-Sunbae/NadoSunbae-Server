@@ -39,6 +39,17 @@ const getClassroomPostByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getClassroomPostByNotification = async (client, postId) => {
+  const { rows } = await client.query(
+    `
+    SELECT * FROM classroom_post 
+    WHERE id = $1
+    `,
+    [postId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const createClassroomPost = async (
   client,
   majorId,
@@ -104,11 +115,15 @@ const getClassroomPostListByMajorId = async (client, majorId, postTypeId, invisi
 const getMyClassroomPostListByPostTypeIds = async (client, userId, postTypeIds) => {
   const { rows } = await client.query(
     `
-    SELECT * FROM "classroom_post" c
-    WHERE writer_id = $1
-    AND post_type_id IN (${postTypeIds.join()})
-    AND is_deleted = false
-    ORDER BY created_at desc
+    SELECT c.*, m.major_name 
+    FROM "classroom_post" c
+    INNER JOIN major m
+    ON c.major_id = m.id
+    AND m.is_deleted = false
+    AND c.writer_id = $1
+    AND c.post_type_id IN (${postTypeIds.join()})
+    AND c.is_deleted = false
+    ORDER BY c.created_at desc
   `,
     [userId],
   );
@@ -161,4 +176,5 @@ module.exports = {
   getMyClassroomPostListByPostTypeIds,
   deleteClassroomPostByUserSecession,
   getClassroomPostListByLike,
+  getClassroomPostByNotification,
 };

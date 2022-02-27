@@ -94,10 +94,13 @@ const deleteReviewPost = async (client, postId) => {
 const getReviewPostByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
-      SELECT * 
-      FROM review_post
-      WHERE writer_id = $1
-        AND is_deleted = false
+      SELECT r.*, m.major_name
+      FROM review_post r
+      INNER JOIN major m
+      ON r.major_id = m.id
+      AND m.is_deleted = false
+      AND r.writer_id = $1
+      AND r.is_deleted = false
       `,
     [userId],
   );
