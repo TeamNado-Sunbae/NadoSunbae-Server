@@ -121,19 +121,17 @@ const getCommentByCommentId = async (client, commentId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getCommentByNotification = async (client, commentId) => {
+const getCommentListByNotification = async (client) => {
   const { rows } = await client.query(
     `
-      SELECT c.* 
+      SELECT c.id, c.is_deleted
       FROM comment c
       INNER JOIN "user" u
       ON c.writer_id = u.id
-      AND c.id = $1
       AND u.is_deleted = false
       `,
-    [commentId],
   );
-  return convertSnakeToCamel.keysToCamel(rows[0]);
+  return convertSnakeToCamel.keysToCamel(rows);
 };
 
 const deleteCommentByCommentId = async (client, commentId) => {
@@ -196,5 +194,5 @@ module.exports = {
   deleteCommentByCommentId,
   deleteCommentByPostId,
   deleteCommentByUserSecession,
-  getCommentByNotification,
+  getCommentListByNotification,
 };

@@ -39,19 +39,17 @@ const getClassroomPostByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getClassroomPostByNotification = async (client, postId) => {
+const getClassroomPostListByNotification = async (client) => {
   const { rows } = await client.query(
     `
-    SELECT p.*
+    SELECT p.id, p.is_deleted
     FROM classroom_post p
     INNER JOIN "user" u
     ON p.writer_id = u.id
-    AND p.id = $1
     AND u.is_deleted = false
     `,
-    [postId],
   );
-  return convertSnakeToCamel.keysToCamel(rows[0]);
+  return convertSnakeToCamel.keysToCamel(rows);
 };
 
 const createClassroomPost = async (
@@ -180,5 +178,5 @@ module.exports = {
   getMyClassroomPostListByPostTypeIds,
   deleteClassroomPostByUserSecession,
   getClassroomPostListByLike,
-  getClassroomPostByNotification,
+  getClassroomPostListByNotification,
 };
