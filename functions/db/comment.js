@@ -59,11 +59,26 @@ const getCommentCountByPostId = async (client, postId, invisibleUserIds) => {
 const getCommentListByPostId = async (client, postId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-      SELECT * FROM comment
-      WHERE post_id = $1
-      AND is_deleted = false
-      AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-      ORDER BY created_at
+      WITH USER_MAJOR (id, first_major_start, second_major_start, profile_image_id, nickname, is_deleted, first_major_name, second_major_name) AS (
+        SELECT u.id, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.is_deleted, m1.major_name first_major_name, m2.major_name seconde_major_name
+        FROM "user" u
+        INNER JOIN major m1
+        ON u.first_major_id = m1.id
+        AND u.is_deleted = false
+        AND m1.is_deleted = false
+        INNER JOIN major m2
+        ON u.second_major_id = m2.id
+        AND u.is_deleted = false
+        AND m2.is_deleted = false
+      )
+
+      SELECT c.*, u.id, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.first_major_name, u.second_major_name FROM comment c
+      INNER JOIN USER_MAJOR u
+      ON c.writer_id = u.id
+      AND c.post_id = $1
+      AND u.is_deleted = false
+      AND c.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+      ORDER BY c.created_at
       `,
     [postId],
   );
