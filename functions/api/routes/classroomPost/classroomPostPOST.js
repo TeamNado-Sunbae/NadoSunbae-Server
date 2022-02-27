@@ -13,8 +13,6 @@ const reportPeriodType = require("../../../constants/reportPeriodType");
 
 module.exports = async (req, res) => {
   const { majorId, answererId, postTypeId, title, content } = req.body;
-  let writer = req.user;
-
   if (!majorId || !postTypeId || !title || !content) {
     return res
       .status(statusCode.BAD_REQUEST)
@@ -72,7 +70,7 @@ module.exports = async (req, res) => {
   }
 
   // 후기글 미등록 유저
-  if (writer.isReviewed === false) {
+  if (req.user.isReviewed === false) {
     return res
       .status(statusCode.FORBIDDEN)
       .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
@@ -85,7 +83,7 @@ module.exports = async (req, res) => {
     let post = await classroomPostDB.createClassroomPost(
       client,
       majorId,
-      writer.id,
+      req.user.id,
       answererId,
       postTypeId,
       title,
@@ -101,14 +99,14 @@ module.exports = async (req, res) => {
       postTypeId: post.postTypeId,
     };
 
-    writer = {
-      writerId: writer.id,
-      profileImageId: writer.profileImageId,
-      nickname: writer.nickname,
-      firstMajorName: writer.firstMajorName,
-      firstMajorStart: writer.firstMajorStart,
-      secondMajorName: writer.secondMajorName,
-      secondMajorStart: writer.secondMajorStart,
+    const writer = {
+      writerId: req.user.id,
+      profileImageId: req.user.profileImageId,
+      nickname: req.user.nickname,
+      firstMajorName: req.user.firstMajorName,
+      firstMajorStart: req.user.firstMajorStart,
+      secondMajorName: req.user.secondMajorName,
+      secondMajorStart: req.user.secondMajorStart,
     };
 
     res
@@ -125,7 +123,7 @@ module.exports = async (req, res) => {
 
       // receiver는 게시글의 answerer, sender는 게시글 작성자
       let receiver = await userDB.getUserByUserId(client, post.answererId);
-      let sender = await userDB.getUserByUserId(client, writer.writerId);
+      let sender = await userDB.getUserByUserId(client, req.user.id);
       let notificationContent = `마이페이지에 ${sender.nickname}님이 1:1 질문을 남겼습니다.`;
 
       if (receiver.id !== sender.id) {

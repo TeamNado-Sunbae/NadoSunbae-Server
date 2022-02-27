@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, likeDB } = require("../../../db");
+const { classroomPostDB, likeDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -44,9 +44,6 @@ module.exports = async (req, res) => {
       postId,
     );
 
-    // 작성자 정보 가져오기
-    let writer = await userDB.getUserByUserId(client, updatedClassroomPost.writerId);
-
     const post = {
       postId: updatedClassroomPost.id,
       title: updatedClassroomPost.title,
@@ -55,14 +52,14 @@ module.exports = async (req, res) => {
       updatedAt: updatedClassroomPost.updatedAt,
     };
 
-    writer = {
-      writerId: writer.id,
-      profileImageId: writer.profileImageId,
-      nickname: writer.nickname,
-      firstMajorName: writer.firstMajorName,
-      firstMajorStart: writer.firstMajorStart,
-      secondMajorName: writer.secondMajorName,
-      secondMajorStart: writer.secondMajorStart,
+    const writer = {
+      writerId: req.user.id,
+      profileImageId: req.user.profileImageId,
+      nickname: req.user.nickname,
+      firstMajorName: req.user.firstMajorName,
+      firstMajorStart: req.user.firstMajorStart,
+      secondMajorName: req.user.secondMajorName,
+      secondMajorStart: req.user.secondMajorStart,
     };
 
     // 좋아요 수

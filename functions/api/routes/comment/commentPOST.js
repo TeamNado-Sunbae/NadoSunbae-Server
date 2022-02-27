@@ -23,7 +23,6 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
-    const commentWriterId = req.user.id;
 
     // 1대 1 질문글인 경우
     // 원글 작성자와 답변자만 댓글 등록 가능
@@ -33,8 +32,9 @@ module.exports = async (req, res) => {
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
+
     if (postData.postTypeId === postType.QUESTION_TO_PERSON) {
-      if (postData.writerId !== commentWriterId && postData.answererId !== commentWriterId) {
+      if (postData.writerId !== req.user.id && postData.answererId !== req.user.id) {
         return res
           .status(statusCode.FORBIDDEN)
           .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
@@ -42,19 +42,16 @@ module.exports = async (req, res) => {
     }
 
     // 댓글 등록
-    let comment = await commentDB.createComment(client, postId, commentWriterId, content);
+    let comment = await commentDB.createComment(client, postId, req.user.id, content);
 
-    // 댓글 작성자 정보 가져오기
-    let writer = await userDB.getUserByUserId(client, commentWriterId);
-
-    writer = {
-      writerId: writer.id,
-      profileImageId: writer.profileImageId,
-      nickname: writer.nickname,
-      firstMajorName: writer.firstMajorName,
-      firstMajorStart: writer.firstMajorStart,
-      secondMajorName: writer.secondMajorName,
-      secondMajorStart: writer.secondMajorStart,
+    const writer = {
+      writerId: req.user.id,
+      profileImageId: req.user.profileImageId,
+      nickname: req.user.nickname,
+      firstMajorName: req.user.firstMajorName,
+      firstMajorStart: req.user.firstMajorStart,
+      secondMajorName: req.user.secondMajorName,
+      secondMajorStart: req.user.secondMajorStart,
     };
 
     comment = {

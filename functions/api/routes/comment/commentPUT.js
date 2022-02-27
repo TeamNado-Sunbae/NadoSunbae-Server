@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { commentDB, userDB } = require("../../../db");
+const { commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -42,17 +42,14 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
     }
 
-    // 댓글의 작성자 정보
-    let writer = await userDB.getUserByUserId(client, updatedComment.writerId);
-
-    writer = {
-      writerId: writer.id,
-      profileImageId: writer.profileImageId,
-      nickname: writer.nickname,
-      firstMajorName: writer.firstMajorName,
-      firstMajorStart: writer.firstMajorStart,
-      secondMajorName: writer.secondMajorName,
-      secondMajorStart: writer.secondMajorStart,
+    const writer = {
+      writerId: req.user.id,
+      profileImageId: req.user.profileImageId,
+      nickname: req.user.nickname,
+      firstMajorName: req.user.firstMajorName,
+      firstMajorStart: req.user.firstMajorStart,
+      secondMajorName: req.user.secondMajorName,
+      secondMajorStart: req.user.secondMajorStart,
     };
 
     updatedComment = {
