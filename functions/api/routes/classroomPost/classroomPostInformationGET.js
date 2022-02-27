@@ -5,7 +5,7 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const postType = require("../../../constants/postType");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, majorDB, likeDB, commentDB, blockDB } = require("../../../db");
+const { classroomPostDB, userDB, likeDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const dateHandlers = require("../../../lib/dateHandlers");
 const reportPeriodType = require("../../../constants/reportPeriodType");
@@ -59,7 +59,7 @@ module.exports = async (req, res) => {
       );
   }
 
-  // 후기 미작성자는 정보글 상세조회 불가
+  // 후기 미등록 유저
   if (req.user.isReviewed === false) {
     return res
       .status(statusCode.FORBIDDEN)
@@ -77,41 +77,15 @@ module.exports = async (req, res) => {
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
-    // post 정보
-    const post = {
-      postId: classroomPost.id,
-      title: classroomPost.title,
-      content: classroomPost.content,
-      createdAt: classroomPost.createdAt,
-    };
-
-    // post 작성자 정보
-    let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
-
-    writer = {
-      writerId: writer.id,
-      profileImageId: writer.profileImageId,
-      nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
-      firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
-      secondMajorStart: writer.secondMajorStart,
-    };
 
     // post 좋아요 정보
 
-    // postType을 알아야 함
-    const informationPostTypeId = postType.INFORMATION;
-
     // 로그인 유저가 좋아요한 상태인지
-    const requestUser = req.user;
     let like = await likeDB.getLikeByPostId(
       client,
       classroomPost.id,
-      informationPostTypeId,
-      requestUser.id,
+      postType.INFORMATION,
+      req.user.id,
     );
     let isLiked;
     if (!like) {
@@ -124,12 +98,33 @@ module.exports = async (req, res) => {
     const likeCount = await likeDB.getLikeCountByPostId(
       client,
       classroomPost.id,
-      informationPostTypeId,
+      postType.INFORMATION,
     );
 
     like = {
       isLiked: isLiked,
       likeCount: likeCount.likeCount,
+    };
+
+    // post 작성자 정보
+    let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
+
+    writer = {
+      writerId: writer.id,
+      profileImageId: writer.profileImageId,
+      nickname: writer.nickname,
+      firstMajorName: writer.firstMajorName,
+      firstMajorStart: writer.firstMajorStart,
+      secondMajorName: writer.secondMajorName,
+      secondMajorStart: writer.secondMajorStart,
+    };
+
+    // post 정보
+    const post = {
+      postId: classroomPost.id,
+      title: classroomPost.title,
+      content: classroomPost.content,
+      createdAt: classroomPost.createdAt,
     };
 
     // post 댓글 정보
@@ -139,12 +134,11 @@ module.exports = async (req, res) => {
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
     // post 댓글 개수
-    let commentCount = await commentDB.getCommentCountByPostId(
+    const commentCount = await commentDB.getCommentCountByPostId(
       client,
       classroomPost.id,
       invisibleUserIds,
     );
-    commentCount = commentCount.commentCount;
 
     // post 댓글 리스트 - 삭제 댓글 포함
     let commentList = await commentDB.getCommentListByPostId(
@@ -153,45 +147,33 @@ module.exports = async (req, res) => {
       invisibleUserIds,
     );
 
-    commentList = await Promise.all(
-      commentList.map(async (comment) => {
-        let commentWriter = await userDB.getUserByUserId(client, comment.writerId);
-        const firstMajorName = await majorDB.getMajorNameByMajorId(
-          client,
-          commentWriter.firstMajorId,
-        );
-        const secondMajorName = await majorDB.getMajorNameByMajorId(
-          client,
-          commentWriter.secondMajorId,
-        );
+    commentList = commentList.map((comment) => {
+      const commentWriter = {
+        writerId: comment.writerId,
+        profileImageId: comment.profileImageId,
+        nickname: comment.nickname,
+        firstMajorName: comment.firstMajorName,
+        firstMajorStart: comment.firstMajorStart,
+        secondMajorName: comment.secondMajorName,
+        secondMajorStart: comment.secondMajorStart,
+        isPostWriter: comment.writerId === classroomPost.writerId,
+      };
 
-        commentWriter = {
-          writerId: commentWriter.id,
-          profileImageId: commentWriter.profileImageId,
-          nickname: commentWriter.nickname,
-          firstMajorName: firstMajorName.majorName,
-          firstMajorStart: commentWriter.firstMajorStart,
-          secondMajorName: secondMajorName.majorName,
-          secondMajorStart: commentWriter.secondMajorStart,
-          isPostWriter: commentWriter.id === classroomPost.writerId,
-        };
-
-        return {
-          commentId: comment.id,
-          content: comment.content,
-          createdAt: comment.updatedAt,
-          isDeleted: comment.isDeleted,
-          writer: commentWriter,
-        };
-      }),
-    );
+      return {
+        commentId: comment.id,
+        content: comment.content,
+        createdAt: comment.updatedAt,
+        isDeleted: comment.isDeleted,
+        writer: commentWriter,
+      };
+    });
 
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.READ_ONE_POST_SUCCESS, {
         post,
         writer,
         like,
-        commentCount,
+        commentCount: commentCount.commentCount,
         commentList,
       }),
     );

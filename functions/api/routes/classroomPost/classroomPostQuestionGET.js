@@ -5,7 +5,7 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const postType = require("../../../constants/postType");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, majorDB, likeDB, commentDB, blockDB } = require("../../../db");
+const { classroomPostDB, userDB, likeDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const dateHandlers = require("../../../lib/dateHandlers");
 const reportPeriodType = require("../../../constants/reportPeriodType");
@@ -90,16 +90,10 @@ module.exports = async (req, res) => {
 
     // post 좋아요 정보
 
-    // 1:1 질문인지, 전체 질문인지
-    let postTypeId;
+    // answererId 여부에 따라 1:1 질문인지, 전체 질문인지 판단
+    const postTypeId = answererId ? postType.QUESTION_TO_PERSON : postType.QUESTION_TO_EVERYONE;
 
-    // answererId 없을 때는 전체 질문
-    if (!answererId) {
-      postTypeId = postType.QUESTION_TO_EVERYONE;
-    } else {
-      postTypeId = postType.QUESTION_TO_PERSON;
-    }
-
+    // 로그인 유저가 좋아요한 상태인지
     let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, req.user.id);
     let isLiked;
     if (!like) {
@@ -118,17 +112,15 @@ module.exports = async (req, res) => {
 
     // post 작성자 정보
     let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
 
     writer = {
       writerId: writer.id,
       profileImageId: writer.profileImageId,
       isQuestioner: true,
       nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
+      firstMajorName: writer.firstMajorName,
       firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
+      secondMajorName: writer.secondMajorName,
       secondMajorStart: writer.secondMajorStart,
     };
 
@@ -155,40 +147,28 @@ module.exports = async (req, res) => {
       invisibleUserIds,
     );
 
-    messageList = await Promise.all(
-      messageList.map(async (comment) => {
-        let commentWriter = await userDB.getUserByUserId(client, comment.writerId);
-        const firstMajorName = await majorDB.getMajorNameByMajorId(
-          client,
-          commentWriter.firstMajorId,
-        );
-        const secondMajorName = await majorDB.getMajorNameByMajorId(
-          client,
-          commentWriter.secondMajorId,
-        );
+    messageList = messageList.map((comment) => {
+      const commentWriter = {
+        writerId: comment.writerId,
+        profileImageId: comment.profileImageId,
+        isQuestioner: comment.writerId === classroomPost.writerId,
+        nickname: comment.nickname,
+        firstMajorName: comment.firstMajorName,
+        firstMajorStart: comment.firstMajorStart,
+        secondMajorName: comment.secondMajorName,
+        secondMajorStart: comment.secondMajorStart,
+      };
 
-        commentWriter = {
-          writerId: commentWriter.id,
-          profileImageId: commentWriter.profileImageId,
-          isQuestioner: commentWriter.id === classroomPost.writerId,
-          nickname: commentWriter.nickname,
-          firstMajorName: firstMajorName.majorName,
-          firstMajorStart: commentWriter.firstMajorStart,
-          secondMajorName: secondMajorName.majorName,
-          secondMajorStart: commentWriter.secondMajorStart,
-        };
-
-        return {
-          messageId: comment.id,
-          title: "",
-          content: comment.content,
-          // createdAt으로 변수명은 맞추되, 시간은 업데이트 된 시간으로
-          createdAt: comment.updatedAt,
-          isDeleted: comment.isDeleted,
-          writer: commentWriter,
-        };
-      }),
-    );
+      return {
+        messageId: comment.id,
+        title: "",
+        content: comment.content,
+        // createdAt으로 변수명은 맞추되, 시간은 업데이트 된 시간으로
+        createdAt: comment.updatedAt,
+        isDeleted: comment.isDeleted,
+        writer: commentWriter,
+      };
+    });
 
     // 메세지 리스트 앞에 원글 포함
     messageList.unshift(post);
