@@ -81,7 +81,7 @@ module.exports = async (req, res) => {
     // post 좋아요 정보
 
     // 로그인 유저가 좋아요한 상태인지
-    let like = await likeDB.getLikeByPostId(
+    const like = await likeDB.getLikeByPostId(
       client,
       classroomPost.id,
       postType.INFORMATION,
@@ -96,11 +96,6 @@ module.exports = async (req, res) => {
       classroomPost.id,
       postType.INFORMATION,
     );
-
-    like = {
-      isLiked: isLiked,
-      likeCount: likeCount.likeCount,
-    };
 
     // post 작성자 정보
     let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
@@ -168,7 +163,10 @@ module.exports = async (req, res) => {
       util.success(statusCode.OK, responseMessage.READ_ONE_POST_SUCCESS, {
         post,
         writer,
-        like,
+        like: {
+          isLiked: isLiked,
+          likeCount: likeCount.likeCount,
+        },
         commentCount: commentCount.commentCount,
         commentList,
       }),

@@ -94,17 +94,12 @@ module.exports = async (req, res) => {
     const postTypeId = answererId ? postType.QUESTION_TO_PERSON : postType.QUESTION_TO_EVERYONE;
 
     // 로그인 유저가 좋아요한 상태인지
-    let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, req.user.id);
+    const like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, req.user.id);
 
     const isLiked = like ? like.isLiked : false;
 
     // post 좋아요 개수
     const likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
-
-    like = {
-      isLiked: isLiked,
-      likeCount: likeCount.likeCount,
-    };
 
     // post 작성자 정보
     let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
@@ -173,7 +168,10 @@ module.exports = async (req, res) => {
       util.success(statusCode.OK, responseMessage.READ_ONE_POST_SUCCESS, {
         questionerId,
         answererId,
-        like,
+        like: {
+          isLiked: isLiked,
+          likeCount: likeCount.likeCount,
+        },
         messageList,
       }),
     );
