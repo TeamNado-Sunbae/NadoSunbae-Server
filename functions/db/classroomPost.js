@@ -42,8 +42,12 @@ const getClassroomPostByPostId = async (client, postId) => {
 const getClassroomPostByNotification = async (client, postId) => {
   const { rows } = await client.query(
     `
-    SELECT * FROM classroom_post 
-    WHERE id = $1
+    SELECT p.*
+    FROM classroom_post p
+    INNER JOIN "user" u
+    ON p.writer_id = u.id
+    AND p.id = $1
+    AND u.is_deleted = false
     `,
     [postId],
   );

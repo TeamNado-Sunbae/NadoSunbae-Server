@@ -35,25 +35,25 @@ module.exports = async (req, res) => {
     notificationList = await Promise.all(
       notificationList.map(async (notification) => {
         let sender = await userDB.getUserByUserId(client, notification.senderId);
-        let classroomPost = await classroomPostDB.getClassroomPostByPostId(
+        let classroomPost = await classroomPostDB.getClassroomPostByNotification(
           client,
           notification.postId,
         );
         // commentId 1:1 질문글 생성 알림의 경우에는 null - notification type QUESTION_TO_PERSON_ALARM
         let comment;
         if (notification.commentId) {
-          comment = await commentDB.getCommentByCommentId(client, notification.commentId);
+          comment = await commentDB.getCommentByNotification(client, notification.commentId);
         }
 
         // content 내용은 본글과 댓글이 삭제된 경우에만 변경
         let content;
         // 1:1 질문글이 삭제되었거나 댓글의 원본글(정보글, 질문글)이 삭제된 경우
-        if (!classroomPost) {
+        if (classroomPost.isDeleted) {
           content = "삭제된 게시글입니다.";
         } else if (
           // 댓글 알림이지만 댓글이 삭제된 경우
           notification.notificationTypeId !== notificationType.QUESTION_TO_PERSON_ALARM &&
-          !comment
+          comment.isDeleted
         ) {
           content = "삭제된 답글입니다.";
         } else {

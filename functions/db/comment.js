@@ -72,7 +72,7 @@ const getCommentListByPostId = async (client, postId, invisibleUserIds) => {
         AND m2.is_deleted = false
       )
 
-      SELECT c.*, u.id, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.first_major_name, u.second_major_name FROM comment c
+      SELECT c.*, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.first_major_name, u.second_major_name FROM comment c
       INNER JOIN USER_MAJOR u
       ON c.writer_id = u.id
       AND c.post_id = $1
@@ -121,6 +121,21 @@ const getCommentByCommentId = async (client, commentId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getCommentByNotification = async (client, commentId) => {
+  const { rows } = await client.query(
+    `
+      SELECT c.* 
+      FROM comment c
+      INNER JOIN "user" u
+      ON c.writer_id = u.id
+      AND c.id = $1
+      AND u.is_deleted = false
+      `,
+    [commentId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 const deleteCommentByCommentId = async (client, commentId) => {
   const { rows } = await client.query(
     `
@@ -157,7 +172,7 @@ const getClassroomPostListByMyCommentList = async (
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const deleteCommetByUserSecession = async (client, userId) => {
+const deleteCommentByUserSecession = async (client, userId) => {
   const { rows } = await client.query(
     `
     UPDATE comment
@@ -180,5 +195,6 @@ module.exports = {
   updateComment,
   deleteCommentByCommentId,
   deleteCommentByPostId,
-  deleteCommetByUserSecession,
+  deleteCommentByUserSecession,
+  getCommentByNotification,
 };
