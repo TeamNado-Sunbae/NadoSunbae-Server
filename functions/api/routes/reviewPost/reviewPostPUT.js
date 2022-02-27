@@ -106,12 +106,9 @@ module.exports = async (req, res) => {
     };
 
     const likeCount = await likeDB.getLikeCountByPostId(client, updatedReviewPost.id);
-    let likeStatus = await likeDB.getLikeByPostId(client, postId, postType.REVIEW, req.user.id);
-    if (!likeStatus) {
-      likeStatus = false;
-    } else {
-      likeStatus = likeStatus.isLiked;
-    }
+    const likeStatus = await likeDB.getLikeByPostId(client, postId, postType.REVIEW, req.user.id);
+
+    const isLiked = likeStatus ? likeStatus.isLiked : false;
 
     const backgroundImage = await imageDB.getImageUrlByImageId(
       client,
@@ -121,7 +118,7 @@ module.exports = async (req, res) => {
     updatedReviewPost = {
       post: post,
       writer: writer,
-      like: { isLiked: likeStatus, likeCount: likeCount.likeCount },
+      like: { isLiked: isLiked, likeCount: likeCount.likeCount },
       backgroundImage: { imageId: backgroundImageId, imageUrl: backgroundImage.imageUrl },
     };
 

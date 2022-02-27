@@ -89,12 +89,8 @@ module.exports = async (req, res) => {
     // 현재 뷰어의 좋아요 정보 가져오기 (후기글의 postTypeId는 1 )
     let likeCount = await likeDB.getLikeCountByPostId(client, postId, postType.REVIEW);
     let likeData = await likeDB.getLikeByPostId(client, postId, postType.REVIEW, req.user.id);
-    let isLiked;
-    if (!likeData) {
-      isLiked = false;
-    } else {
-      isLiked = likeData.isLiked;
-    }
+
+    const isLiked = likeData ? likeData.isLiked : false;
 
     // 후기글 작성자 정보 가져오기
     const writerId = post.writerId;

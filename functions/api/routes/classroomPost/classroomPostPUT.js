@@ -69,22 +69,19 @@ module.exports = async (req, res) => {
       updatedClassroomPost.postTypeId,
     );
     // 좋아요 상태
-    let likeStatus = await likeDB.getLikeByPostId(
+    const likeStatus = await likeDB.getLikeByPostId(
       client,
       postId,
       updatedClassroomPost.postTypeId,
       req.user.id,
     );
-    if (!likeStatus) {
-      likeStatus = false;
-    } else {
-      likeStatus = likeStatus.isLiked;
-    }
+
+    const isLiked = likeStatus ? likeStatus.isLiked : false;
 
     updatedClassroomPost = {
       post: post,
       writer: writer,
-      like: { isLiked: likeStatus, likeCount: likeCount.likeCount },
+      like: { isLiked: isLiked, likeCount: likeCount.likeCount },
     };
 
     res

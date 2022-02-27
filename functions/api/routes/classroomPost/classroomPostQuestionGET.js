@@ -95,12 +95,8 @@ module.exports = async (req, res) => {
 
     // 로그인 유저가 좋아요한 상태인지
     let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, req.user.id);
-    let isLiked;
-    if (!like) {
-      isLiked = false;
-    } else {
-      isLiked = like.isLiked;
-    }
+
+    const isLiked = like ? like.isLiked : false;
 
     // post 좋아요 개수
     const likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);

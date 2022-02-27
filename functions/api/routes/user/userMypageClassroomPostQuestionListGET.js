@@ -58,12 +58,9 @@ module.exports = async (req, res) => {
           postType.QUESTION_TO_PERSON,
           req.user.id,
         );
-        let isLiked;
-        if (!likeData) {
-          isLiked = false;
-        } else {
-          isLiked = likeData.isLiked;
-        }
+
+        const isLiked = likeData ? likeData.isLiked : false;
+
         const likeCount = await likeDB.getLikeCountByPostId(
           client,
           classroomPost.id,

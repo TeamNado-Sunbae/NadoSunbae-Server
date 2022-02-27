@@ -87,12 +87,8 @@ module.exports = async (req, res) => {
       postType.INFORMATION,
       req.user.id,
     );
-    let isLiked;
-    if (!like) {
-      isLiked = false;
-    } else {
-      isLiked = like.isLiked;
-    }
+
+    const isLiked = like ? like.isLiked : false;
 
     // post 좋아요 개수
     const likeCount = await likeDB.getLikeCountByPostId(
