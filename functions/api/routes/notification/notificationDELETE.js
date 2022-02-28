@@ -25,11 +25,6 @@ module.exports = async (req, res) => {
       client,
       notificationId,
     );
-    if (!notification) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
-    }
 
     if (notification.receiverId !== req.user.id) {
       return res
@@ -42,12 +37,6 @@ module.exports = async (req, res) => {
       client,
       notificationId,
     );
-
-    if (!deletedNotification) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
-    }
 
     // response로 보낼 isDeleted
     const isDeleted = deletedNotification.isDeleted;
