@@ -16,18 +16,6 @@ const getMajorListByUniversityId = async (client, universityId, isFirstMajor, is
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getMajorNameByMajorId = async (client, majorId) => {
-  const { rows } = await client.query(
-    `
-        SELECT major_name FROM major
-        WHERE id = $1
-        AND is_deleted = false
-        `,
-    [majorId],
-  );
-  return convertSnakeToCamel.keysToCamel(rows[0]);
-};
-
 const getMajorByMajorId = async (client, majorId) => {
   const { rows } = await client.query(
     `
@@ -42,6 +30,5 @@ const getMajorByMajorId = async (client, majorId) => {
 
 module.exports = {
   getMajorByMajorId,
-  getMajorNameByMajorId,
   getMajorListByUniversityId,
 };

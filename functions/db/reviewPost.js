@@ -7,21 +7,50 @@ const getReviewPostListByFilters = async (
   writerFilter,
   tagFilter,
   invisibleUserIds,
+  postTypeId,
 ) => {
   const { rows } = await client.query(
     `
-    SELECT p.*
-    FROM review_post p
-    LEFT JOIN relation_review_post_tag r on p.id = r.post_id
-    WHERE major_id = $1
-    AND p.is_first_major IN (${writerFilter.join()})
-    AND r.tag_id IN (${tagFilter.join()})
-    AND p.is_deleted = false
-    AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-    AND r.is_deleted = false
-    GROUP BY p.id
+    WITH USER_MAJOR AS (
+      SELECT u.id, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.is_deleted, m1.major_name first_major_name, m2.major_name second_major_name
+      FROM "user" u
+      INNER JOIN major m1
+      ON u.first_major_id = m1.id
+      AND u.is_deleted = false
+      AND m1.is_deleted = false
+      INNER JOIN major m2
+      ON u.second_major_id = m2.id
+      AND u.is_deleted = false
+      AND m2.is_deleted = false
+    )
+
+    SELECT DISTINCT ON (p.id) p.*, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.first_major_name, u.second_major_name,
+    (
+      SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
+      WHERE l.post_id = p.id
+      AND l.post_type_id = $2
+      AND l.is_liked = true
+      AND p.is_deleted = false
+    )
+      FROM review_post p
+      INNER JOIN USER_MAJOR u
+      ON u.id = p.writer_id
+      AND u.is_deleted = false
+      AND p.is_deleted = false
+      AND p.major_id = $1
+      AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+      AND p.is_first_major IN (${writerFilter.join()})
+      AND p.id = ANY (
+        SELECT r.post_id
+        FROM relation_review_post_tag r
+        INNER JOIN "tag" t
+        ON t.id = r.tag_id
+        AND t.id IN (${tagFilter.join()})
+        AND r.is_deleted = false
+        AND t.is_deleted = false
+       )
       `,
-    [majorId],
+    [majorId, postTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -94,10 +123,13 @@ const deleteReviewPost = async (client, postId) => {
 const getReviewPostByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
-      SELECT * 
-      FROM review_post
-      WHERE writer_id = $1
-        AND is_deleted = false
+      SELECT r.*, m.major_name
+      FROM review_post r
+      INNER JOIN major m
+      ON r.major_id = m.id
+      AND m.is_deleted = false
+      AND r.writer_id = $1
+      AND r.is_deleted = false
       `,
     [userId],
   );

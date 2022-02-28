@@ -48,12 +48,9 @@ module.exports = async (req, res) => {
           postTypeId,
           commentWriterId,
         );
-        let isLiked;
-        if (!like) {
-          isLiked = false;
-        } else {
-          isLiked = like.isLiked;
-        }
+
+        const isLiked = like ? like.isLiked : false;
+
         // 해당 게시글의 좋아요 수
         let likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
 

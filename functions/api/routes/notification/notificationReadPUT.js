@@ -53,19 +53,18 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
     }
 
-    updatedNotifications = await Promise.all(
-      updatedNotifications.map(async (notification) => {
-        return {
-          notificationId: notification.id,
-          notificationPostId: notification.postId,
-          receiverId: notification.receiverId,
-          isRead: notification.isRead,
-          createdAt: notification.createdAt,
-          updatedAt: notification.updatedAt,
-          isDeleted: notification.isDeleted,
-        };
-      }),
-    );
+    updatedNotifications = updatedNotifications.map((notification) => {
+      return {
+        notificationId: notification.id,
+        notificationPostId: notification.postId,
+        receiverId: notification.receiverId,
+        isRead: notification.isRead,
+        createdAt: notification.createdAt,
+        updatedAt: notification.updatedAt,
+        isDeleted: notification.isDeleted,
+      };
+    });
+
     res
       .status(statusCode.OK)
       .send(

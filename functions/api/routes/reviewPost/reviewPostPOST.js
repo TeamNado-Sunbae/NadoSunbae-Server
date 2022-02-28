@@ -8,7 +8,6 @@ const {
   userDB,
   tagDB,
   relationReviewPostTagDB,
-  majorDB,
   inappropriateReviewPostDB,
 } = require("../../../db");
 const {
@@ -105,14 +104,11 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
     }
 
-    // writerId는 accesstoken을 디코딩하여 받은 id를 사용
-    const writerId = req.user.id;
-
-    // req.body로 받은 정보와 isFirstMajor, writerId를 가지고 reviewPost를 생성
+    // req.body로 받은 정보와 isFirstMajor를 가지고 reviewPost를 생성
     let reviewPost = await reviewPostDB.createReviewPost(
       client,
       majorId,
-      writerId,
+      req.user.id,
       backgroundImageId,
       isFirstMajor,
       oneLineReview,
@@ -142,7 +138,7 @@ module.exports = async (req, res) => {
     }
 
     // reviewPost를 작성한 writer는 isReviewed를 true로 업데이트
-    let updatedUser = await userDB.updateUserByIsReviewed(client, true, writerId);
+    let updatedUser = await userDB.updateUserByIsReviewed(client, true, req.user.id);
 
     // post, writer, like, backgroundImage 객체로 묶어서 보냄
     let contentList = [];
@@ -165,17 +161,15 @@ module.exports = async (req, res) => {
       createdAt: reviewPost.createdAt,
     };
 
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, updatedUser.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, updatedUser.secondMajorId);
     const writer = {
-      writerId: updatedUser.id,
-      nickname: updatedUser.nickname,
-      profileImageId: updatedUser.profileImageId,
-      firstMajorName: firstMajorName.majorName,
-      firstMajorStart: updatedUser.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
-      secondMajorStart: updatedUser.secondMajorStart,
-      isOnQuestion: updatedUser.isOnQuestion,
+      writerId: req.user.id,
+      nickname: req.user.nickname,
+      profileImageId: req.user.profileImageId,
+      firstMajorName: req.user.firstMajorName,
+      firstMajorStart: req.user.firstMajorStart,
+      secondMajorName: req.user.secondMajorName,
+      secondMajorStart: req.user.secondMajorStart,
+      isOnQuestion: req.user.isOnQuestion,
       isReviewed: updatedUser.isReviewed,
     };
 

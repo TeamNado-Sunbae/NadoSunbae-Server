@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, majorDB, userDB, notificationDB } = require("../../../db");
+const { classroomPostDB, userDB, notificationDB } = require("../../../db");
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
@@ -13,8 +13,6 @@ const reportPeriodType = require("../../../constants/reportPeriodType");
 
 module.exports = async (req, res) => {
   const { majorId, answererId, postTypeId, title, content } = req.body;
-  let writer = req.user;
-
   if (!majorId || !postTypeId || !title || !content) {
     return res
       .status(statusCode.BAD_REQUEST)
@@ -72,7 +70,7 @@ module.exports = async (req, res) => {
   }
 
   // 후기글 미등록 유저
-  if (writer.isReviewed === false) {
+  if (req.user.isReviewed === false) {
     return res
       .status(statusCode.FORBIDDEN)
       .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
@@ -85,15 +83,12 @@ module.exports = async (req, res) => {
     let post = await classroomPostDB.createClassroomPost(
       client,
       majorId,
-      writer.id,
+      req.user.id,
       answererId,
       postTypeId,
       title,
       content,
     );
-
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
 
     post = {
       postId: post.id,
@@ -104,14 +99,14 @@ module.exports = async (req, res) => {
       postTypeId: post.postTypeId,
     };
 
-    writer = {
-      writerId: writer.id,
-      profileImageId: writer.profileImageId,
-      nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
-      firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
-      secondMajorStart: writer.secondMajorStart,
+    const writer = {
+      writerId: req.user.id,
+      profileImageId: req.user.profileImageId,
+      nickname: req.user.nickname,
+      firstMajorName: req.user.firstMajorName,
+      firstMajorStart: req.user.firstMajorStart,
+      secondMajorName: req.user.secondMajorName,
+      secondMajorStart: req.user.secondMajorStart,
     };
 
     res
@@ -128,7 +123,7 @@ module.exports = async (req, res) => {
 
       // receiver는 게시글의 answerer, sender는 게시글 작성자
       let receiver = await userDB.getUserByUserId(client, post.answererId);
-      let sender = await userDB.getUserByUserId(client, writer.writerId);
+      let sender = await userDB.getUserByUserId(client, req.user.id);
       let notificationContent = `마이페이지에 ${sender.nickname}님이 1:1 질문을 남겼습니다.`;
 
       if (receiver.id !== sender.id) {

@@ -39,6 +39,19 @@ const getClassroomPostByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getClassroomPostListByNotification = async (client) => {
+  const { rows } = await client.query(
+    `
+    SELECT p.id, p.is_deleted
+    FROM classroom_post p
+    INNER JOIN "user" u
+    ON p.writer_id = u.id
+    AND u.is_deleted = false
+    `,
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 const createClassroomPost = async (
   client,
   majorId,
@@ -90,11 +103,29 @@ const updateClassroomPost = async (client, title, content, postId) => {
 const getClassroomPostListByMajorId = async (client, majorId, postTypeId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-  SELECT * FROM "classroom_post" c
-  WHERE major_id = $1
-  AND post_type_id = $2
-  AND is_deleted = false
-  AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+  SELECT p.*, u.profile_image_id, u.nickname,
+  (
+    SELECT cast(count(c.*) as integer) comment_count FROM comment c
+    WHERE c.post_id = p.id
+    AND c.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    AND c.is_deleted = false
+    AND p.is_deleted = false
+  ),
+  (
+    SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
+    WHERE l.post_id = p.id
+    AND l.post_type_id = $2
+    AND l.is_liked = true
+    AND p.is_deleted = false
+  )
+  FROM "classroom_post" p
+  INNER JOIN "user" u
+  ON p.writer_id = u.id
+  AND u.is_deleted = false
+  AND p.major_id = $1
+  AND p.post_type_id = $2
+  AND p.is_deleted = false
+  AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   `,
     [majorId, postTypeId],
   );
@@ -104,11 +135,15 @@ const getClassroomPostListByMajorId = async (client, majorId, postTypeId, invisi
 const getMyClassroomPostListByPostTypeIds = async (client, userId, postTypeIds) => {
   const { rows } = await client.query(
     `
-    SELECT * FROM "classroom_post" c
-    WHERE writer_id = $1
-    AND post_type_id IN (${postTypeIds.join()})
-    AND is_deleted = false
-    ORDER BY created_at desc
+    SELECT c.*, m.major_name 
+    FROM "classroom_post" c
+    INNER JOIN major m
+    ON c.major_id = m.id
+    AND m.is_deleted = false
+    AND c.writer_id = $1
+    AND c.post_type_id IN (${postTypeIds.join()})
+    AND c.is_deleted = false
+    ORDER BY c.created_at desc
   `,
     [userId],
   );
@@ -161,4 +196,5 @@ module.exports = {
   getMyClassroomPostListByPostTypeIds,
   deleteClassroomPostByUserSecession,
   getClassroomPostListByLike,
+  getClassroomPostListByNotification,
 };

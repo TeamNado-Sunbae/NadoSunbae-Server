@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, likeDB, commentDB, majorDB, blockDB } = require("../../../db");
+const { classroomPostDB, likeDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
@@ -47,9 +47,6 @@ module.exports = async (req, res) => {
 
     classroomPostList = await Promise.all(
       classroomPostList.map(async (classroomPost) => {
-        // 학과명
-        const majorName = await majorDB.getMajorNameByMajorId(client, classroomPost.majorId);
-
         // 댓글 개수
 
         // 내가 차단한 사람과 나를 차단한 사람을 block
@@ -69,12 +66,9 @@ module.exports = async (req, res) => {
           classroomPost.postTypeId,
           req.user.id,
         );
-        let isLiked;
-        if (!likeData) {
-          isLiked = false;
-        } else {
-          isLiked = likeData.isLiked;
-        }
+
+        const isLiked = likeData ? likeData.isLiked : false;
+
         const likeCount = await likeDB.getLikeCountByPostId(
           client,
           classroomPost.id,
@@ -89,7 +83,7 @@ module.exports = async (req, res) => {
           postId: classroomPost.id,
           title: classroomPost.title,
           content: classroomPost.content,
-          majorName: majorName.majorName,
+          majorName: classroomPost.majorName,
           createdAt: classroomPost.createdAt,
           commentCount: commentCount.commentCount,
           like: like,
