@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reviewPostDB, userDB, likeDB, relationReviewPostTagDB, blockDB } = require("../../../db");
+const { reviewPostDB, likeDB, relationReviewPostTagDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
@@ -36,6 +36,7 @@ module.exports = async (req, res) => {
         [true, false],
         tagFilter,
         invisibleUserIds,
+        postType.REVIEW,
       );
     } else if (writerFilter === 2) {
       // 본전공 필터만 선택
@@ -45,6 +46,7 @@ module.exports = async (req, res) => {
         [true],
         tagFilter,
         invisibleUserIds,
+        postType.REVIEW,
       );
     } else if (writerFilter === 3) {
       // 제 2전공 필터만 선택
@@ -54,6 +56,7 @@ module.exports = async (req, res) => {
         [false],
         tagFilter,
         invisibleUserIds,
+        postType.REVIEW,
       );
     } else {
       return res
@@ -68,48 +71,51 @@ module.exports = async (req, res) => {
         .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, reviewPostList));
     }
 
-    reviewPostList = await Promise.all(
-      reviewPostList.map(async (reviewPost) => {
-        let writer = await userDB.getUserByUserId(client, reviewPost.writerId);
-
-        writer = {
-          writerId: writer.id,
-          profileImageId: writer.profileImageId,
-          nickname: writer.nickname,
-          firstMajorName: writer.firstMajorName,
-          firstMajorStart: writer.firstMajorStart,
-          secondMajorName: writer.secondMajorName,
-          secondMajorStart: writer.secondMajorStart,
-        };
-
-        const tagList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.id);
-
-        // 좋아요 정보
-        const likeData = await likeDB.getLikeByPostId(
-          client,
-          reviewPost.id,
-          postType.REVIEW,
-          req.user.id,
-        );
-
-        const isLiked = likeData ? likeData.isLiked : false;
-
-        const likeCount = await likeDB.getLikeCountByPostId(client, reviewPost.id, postType.REVIEW);
-        const like = {
-          isLiked: isLiked,
-          likeCount: likeCount.likeCount,
-        };
-
-        return {
-          postId: reviewPost.id,
-          oneLineReview: reviewPost.oneLineReview,
-          createdAt: reviewPost.createdAt,
-          writer: writer,
-          tagList: tagList,
-          like: like,
-        };
-      }),
+    const relationReviewPostTagList = await relationReviewPostTagDB.getRelationReviewPostTagList(
+      client,
     );
+
+    const likeList = await likeDB.getLikeListByUserId(client, req.user.id);
+
+    reviewPostList = reviewPostList.map((reviewPost) => {
+      const writer = {
+        writerId: reviewPost.writerId,
+        profileImageId: reviewPost.profileImageId,
+        nickname: reviewPost.nickname,
+        firstMajorName: reviewPost.firstMajorName,
+        firstMajorStart: reviewPost.firstMajorStart,
+        secondMajorName: reviewPost.secondMajorName,
+        secondMajorStart: reviewPost.secondMajorStart,
+      };
+
+      // 태그 정보
+      reviewPost.tagList = _.filter(
+        relationReviewPostTagList,
+        (r) => r.postId === reviewPost.id,
+      ).map((o) => {
+        return { tagName: o.tagName };
+      });
+
+      // 좋아요 정보
+      const likeData = _.find(likeList, {
+        postId: reviewPost.id,
+        postTypeId: postType.REVIEW,
+      });
+
+      const isLiked = likeData ? likeData.isLiked : false;
+
+      return {
+        postId: reviewPost.id,
+        oneLineReview: reviewPost.oneLineReview,
+        createdAt: reviewPost.createdAt,
+        writer: writer,
+        tagList: reviewPost.tagList,
+        like: {
+          isLiked: isLiked,
+          likeCount: reviewPost.likeCount,
+        },
+      };
+    });
 
     if (sort === "recent") {
       reviewPostList = _.sortBy(reviewPostList, "createdAt").reverse();
