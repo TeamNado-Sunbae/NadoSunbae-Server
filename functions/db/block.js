@@ -29,7 +29,7 @@ const getBlockByUserId = async (client, blockUserId, blockedUserId) => {
 const getBlockedUserListByBlockUserId = async (client, blockUserId) => {
   const { rows } = await client.query(
     `
-    SELECT u.id, u.profile_image_id ,u.nickname FROM block AS b
+    SELECT u.id AS user_id, u.profile_image_id ,u.nickname FROM block AS b
     INNER JOIN "user" AS u
     ON b.block_user_id = $1
     AND b.is_deleted = false
