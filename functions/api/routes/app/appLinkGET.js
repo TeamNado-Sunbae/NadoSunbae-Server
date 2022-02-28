@@ -8,11 +8,12 @@ const slackAPI = require("../../../middlewares/slackAPI");
 module.exports = async (req, res) => {
   try {
     const linkList = {
-      PersonalInformationPolicy:
+      personalInformationPolicy:
         "https://www.notion.so/nadosunbae/V-1-0-2022-3-1-e4637880bb1d4a6e8938f4f0c306b2d5",
-      TermsOfService:
+      termsOfService:
         "https://www.notion.so/nadosunbae/V-1-0-2022-3-1-d1d15e411b0b417198b2405468894dea",
-      OpenSourceLicense: "https://www.notion.so/nadosunbae/V-1-0-2442b1af796041d09bc6e8729c172438",
+      openSourceLicense: "https://www.notion.so/nadosunbae/V-1-0-2442b1af796041d09bc6e8729c172438",
+      kakaoTalkChannel: "http://pf.kakao.com/_pxcFib",
     };
 
     res

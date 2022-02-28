@@ -12,5 +12,6 @@ router.use("/report", require("./report"));
 router.use("/notification", require("./notification"));
 router.use("/block", require("./block"));
 router.use("/inappropriate-review-post", require("./inappropriateReviewPost"));
+router.use("/app", require("./app"));
 
 module.exports = router;
