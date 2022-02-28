@@ -2,23 +2,23 @@ const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
-const db = require("../../../db/db");
-const { imageDB } = require("../../../db");
+const appVersion = require("../../../constants/appVersion");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  let client;
-
   try {
-    client = await db.connect(req);
+    const linkList = {
+      personalInformationPolicy:
+        "https://www.notion.so/nadosunbae/V-1-0-2022-3-1-e4637880bb1d4a6e8938f4f0c306b2d5",
+      termsOfService:
+        "https://www.notion.so/nadosunbae/V-1-0-2022-3-1-d1d15e411b0b417198b2405468894dea",
+      openSourceLicense: "https://www.notion.so/nadosunbae/V-1-0-2442b1af796041d09bc6e8729c172438",
+      kakaoTalkChannel: "http://pf.kakao.com/_pxcFib",
+    };
 
-    const backgroundImages = await imageDB.getReviewPostBackgroundImages(client);
-
-    res.status(statusCode.OK).send(
-      util.success(statusCode.OK, responseMessage.READ_BACKGROUND_IMAGE_SUCCESS, {
-        backgroundImageList: backgroundImages,
-      }),
-    );
+    res
+      .status(statusCode.OK)
+      .send(util.success(statusCode.OK, responseMessage.READ_APP_LINK, linkList));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
@@ -34,7 +34,5 @@ module.exports = async (req, res) => {
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
       .send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
-  } finally {
-    client.release();
   }
 };

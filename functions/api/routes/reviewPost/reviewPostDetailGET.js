@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, reviewPostDB, imageDB, likeDB } = require("../../../db");
+const { userDB, reviewPostDB, likeDB } = require("../../../db");
 const reviewPostContent = require("../../../constants/reviewPostContent");
 const slackAPI = require("../../../middlewares/slackAPI");
 const dateHandlers = require("../../../lib/dateHandlers");
@@ -98,7 +98,6 @@ module.exports = async (req, res) => {
 
     // 후기글 배경 이미지 가져오기
     const imageId = post.backgroundImageId;
-    let imageUrl = await imageDB.getImageUrlByImageId(client, imageId);
 
     // 후기글 내용 리스트로 보여주기
     let contentList = [];
@@ -130,7 +129,6 @@ module.exports = async (req, res) => {
 
     const backgroundImage = {
       imageId: post.backgroundImageId,
-      imageUrl: imageUrl.imageUrl,
     };
 
     post = {
