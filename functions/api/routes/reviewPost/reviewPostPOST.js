@@ -9,7 +9,6 @@ const {
   tagDB,
   relationReviewPostTagDB,
   majorDB,
-  imageDB,
   inappropriateReviewPostDB,
 } = require("../../../db");
 const {
@@ -23,6 +22,7 @@ const {
 const slackAPI = require("../../../middlewares/slackAPI");
 const dateHandlers = require("../../../lib/dateHandlers");
 const reportPeriodType = require("../../../constants/reportPeriodType");
+const backgroundImage = require("../../../constants/backgroundImage");
 
 module.exports = async (req, res) => {
   const {
@@ -42,6 +42,13 @@ module.exports = async (req, res) => {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+  }
+
+  // background image id가 정해진 id 범위에 맞지 않을 경우
+  if (backgroundImage.ID_RANGE.indexOf(backgroundImageId) === -1) {
+    return res
+      .status(statusCode.BAD_REQUEST)
+      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
   }
 
   // 신고당한 유저
@@ -177,13 +184,8 @@ module.exports = async (req, res) => {
       likeCount: 0,
     };
 
-    const backgroundImageUrl = await imageDB.getImageUrlByImageId(
-      client,
-      reviewPost.backgroundImageId,
-    );
     const backgroundImage = {
       imageId: reviewPost.backgroundImageId,
-      imageUrl: backgroundImageUrl,
     };
 
     const inappropriateReviewPost =
