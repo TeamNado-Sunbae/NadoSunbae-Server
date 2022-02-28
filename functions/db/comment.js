@@ -60,7 +60,7 @@ const getCommentListByPostId = async (client, postId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
       WITH USER_MAJOR AS (
-        SELECT u.id, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.is_deleted, m1.major_name first_major_name, m2.major_name seconde_major_name
+        SELECT u.id, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.is_deleted, m1.major_name first_major_name, m2.major_name second_major_name
         FROM "user" u
         INNER JOIN major m1
         ON u.first_major_id = m1.id
