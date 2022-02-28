@@ -103,11 +103,29 @@ const updateClassroomPost = async (client, title, content, postId) => {
 const getClassroomPostListByMajorId = async (client, majorId, postTypeId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-  SELECT * FROM "classroom_post" c
-  WHERE major_id = $1
-  AND post_type_id = $2
-  AND is_deleted = false
-  AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+  SELECT p.*, u.profile_image_id, u.nickname,
+  (
+    SELECT cast(count(c.*) as integer) comment_count FROM comment c
+    WHERE c.post_id = p.id
+    AND c.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    AND c.is_deleted = false
+    AND p.is_deleted = false
+  ),
+  (
+    SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
+    WHERE l.post_id = p.id
+    AND l.post_type_id = $2
+    AND l.is_liked = true
+    AND p.is_deleted = false
+  )
+  FROM "classroom_post" p
+  INNER JOIN "user" u
+  ON p.writer_id = u.id
+  AND u.is_deleted = false
+  AND p.major_id = $1
+  AND p.post_type_id = $2
+  AND p.is_deleted = false
+  AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   `,
     [majorId, postTypeId],
   );

@@ -69,6 +69,17 @@ const getLikeByPostId = async (client, postId, postTypeId, userId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getLikeListByUserId = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+        SELECT post_id, post_type_id, is_liked FROM "like"
+        WHERE user_id = $1
+        `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 const createLikeByPostId = async (client, postId, postTypeId, userId) => {
   const { rows } = await client.query(
     `
@@ -122,4 +133,5 @@ module.exports = {
   updateLikeByPostId,
   getLikeCountByUserId,
   deleteLikeByUserSecession,
+  getLikeListByUserId,
 };
