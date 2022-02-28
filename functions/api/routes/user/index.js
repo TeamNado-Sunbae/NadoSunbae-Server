@@ -4,6 +4,7 @@ const router = express.Router();
 
 router.get("/list/major/:majorId", checkUser, require("./userListMajorGET"));
 router.get("/app-version/recent", checkUser, require("./userMypageAppVersionRecentGET"));
+router.get("/app-information/link", checkUser, require("./userMypageAppInformationLinkGET"));
 router.get("/classroom-post/list", checkUser, require("./userMypageClassroomPostListGET"));
 router.get("/comment/list/:postTypeId", checkUser, require("./userMypageCommentListGET"));
 router.get("/like/list", checkUser, require("./userMypageLikeListGET"));
