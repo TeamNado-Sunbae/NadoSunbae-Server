@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // 로그인 한 유저가 알림 리스트 조회하는 유저가 아닌 경우 403 error 반환
-    if (receiverId !== req.user.id) {
+    if (Number(receiverId) !== req.user.id) {
       return res
         .status(statusCode.FORBIDDEN)
         .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
