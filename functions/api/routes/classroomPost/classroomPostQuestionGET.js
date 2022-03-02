@@ -139,7 +139,7 @@ module.exports = async (req, res) => {
     );
 
     messageList = messageList.map((comment) => {
-      const content = comment.isDeleted ? "(삭제된 답변입니다.)" : comment.content;
+      const content = comment.isDeleted ? "(삭제된 답글입니다.)" : comment.content;
 
       const commentWriter = {
         writerId: comment.writerId,
