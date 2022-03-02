@@ -139,6 +139,8 @@ module.exports = async (req, res) => {
     );
 
     commentList = commentList.map((comment) => {
+      const content = comment.isDeleted ? "(삭제된 답변입니다.)" : comment.content;
+
       const commentWriter = {
         writerId: comment.writerId,
         profileImageId: comment.profileImageId,
@@ -152,7 +154,7 @@ module.exports = async (req, res) => {
 
       return {
         commentId: comment.id,
-        content: comment.content,
+        content: content,
         createdAt: comment.createdAt,
         isDeleted: comment.isDeleted,
         writer: commentWriter,
