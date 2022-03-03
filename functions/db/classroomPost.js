@@ -167,7 +167,7 @@ const deleteClassroomPostByUserSecession = async (client, userId) => {
 const getClassroomPostListByLike = async (client, userId, postTypeIds, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-    SELECT p.id, p.writer_id, p.title, p.content, p.created_at
+    SELECT p.id, p.post_type_id, p.writer_id, p.title, p.content, p.created_at
     FROM classroom_post p
     INNER JOIN "like" l
     ON p.id = l.post_id
