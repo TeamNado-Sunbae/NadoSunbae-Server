@@ -6,6 +6,7 @@ router.post("/duplication-check/nickname", require("./authDuplicationCheckNickna
 router.post("/duplication-check/email", require("./authDuplicationCheckEmailPOST"));
 router.post("/signup", require("./authSignupPOST"));
 router.post("/login", require("./authLoginPOST"));
+router.post("/login/token", checkUser, require("./authLoginTokenPOST"));
 router.post("/logout", checkUser, require("./authLogoutPOST"));
 router.post("/renewal/token", require("./authRenewalTokenPOST"));
 router.post("/reset/password", require("./authResetPasswordPOST"));
