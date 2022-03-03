@@ -76,12 +76,6 @@ module.exports = async (req, res) => {
     // 유저가 신고 당해 권한 제한된 상태인지
     const isUserReported = updatedUserByExpiredReport.reportCreatedAt ? true : false;
 
-    // 부적절 후기 등록 유저인지
-    const inappropriateReviewPost =
-      await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, userData.id);
-
-    const isReviewInappropriate = inappropriateReviewPost ? true : false;
-
     const user = {
       userId: userData.id,
       email: userData.email,
@@ -98,7 +92,7 @@ module.exports = async (req, res) => {
         */
       isEmailVerified: true,
       isUserReported: isUserReported,
-      isReviewInappropriate: isReviewInappropriate,
+      isReviewInappropriate: userData.isReviewInappropriate,
     };
 
     res.status(statusCode.OK).send(
