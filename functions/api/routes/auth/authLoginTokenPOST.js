@@ -94,7 +94,7 @@ module.exports = async (req, res) => {
       /* 기존 로그인이랑 다른점
         이메일 인증 안된 경우 액세스 토큰 반환하지 않기 때문에
         자동 로그인은 이메일 인증 안된 유저일 가능성이 없음.
-        따라서 늘 ture로 반환한다.
+        따라서 늘 true로 반환한다.
         */
       isEmailVerified: true,
       isUserReported: isUserReported,
