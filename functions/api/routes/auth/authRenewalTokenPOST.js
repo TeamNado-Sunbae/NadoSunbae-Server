@@ -42,10 +42,24 @@ module.exports = async (req, res) => {
 
     // access token만 만료
     const userData = await userDB.getUserByRefreshToken(client, refreshtoken);
-    if (userData.id) {
+    if (userData) {
       // accesstoken, refreshtoken 재발급
       const { accesstoken } = jwtHandlers.access(userData);
       const { refreshtoken } = jwtHandlers.refresh();
+
+      // refreshtoken 저장
+      const updatedUserByRefreshToken = await userDB.updateUserByRefreshToken(
+        client,
+        userData.id,
+        refreshtoken,
+      );
+      if (!updatedUserByRefreshToken) {
+        return res
+          .status(statusCode.INTERNAL_SERVER_ERROR)
+          .send(
+            util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_DEVICE_TOKEN_FAIL),
+          );
+      }
 
       // 기본 userData로 초기화
       let updatedUserByExpiredReport = userData;
