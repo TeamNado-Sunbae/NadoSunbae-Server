@@ -60,6 +60,12 @@ module.exports = async (req, res) => {
 
     const userData = await userDB.getUserByFirebaseId(client, firebaseId);
 
+    if (!userData) {
+      return res
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
+    }
+
     // 로그인시 토큰 새로 발급
     const { accesstoken } = jwtHandlers.access(userData);
     const { refreshtoken } = jwtHandlers.refresh();
