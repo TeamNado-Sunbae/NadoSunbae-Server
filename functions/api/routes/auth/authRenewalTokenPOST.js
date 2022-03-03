@@ -43,8 +43,10 @@ module.exports = async (req, res) => {
     // access token만 만료
     const userData = await userDB.getUserByRefreshToken(client, refreshtoken);
     if (userData.id) {
-      // acesstoken 재발급
+      // accesstoken, refreshtoken 재발급
       const { accesstoken } = jwtHandlers.access(userData);
+      const { refreshtoken } = jwtHandlers.refresh();
+
       // 기본 userData로 초기화
       let updatedUserByExpiredReport = userData;
 
