@@ -243,9 +243,18 @@ const updateUserByMypage = async (
 const getUserByRefreshToken = async (client, refreshtoken) => {
   const { rows } = await client.query(
     `
-    SELECT * FROM "user"
-    WHERE refresh_token = $1
-    AND is_deleted = false
+    SELECT u.*, m1.major_name first_major_name, m2.major_name second_major_name
+    FROM "user" u
+    INNER JOIN major m1
+      ON u.first_major_id = m1.id
+      AND u.is_deleted = false
+      AND m1.is_deleted = false
+    INNER JOIN major m2
+      ON u.second_major_id = m2.id
+      AND u.is_deleted = false
+      AND m2.is_deleted = false
+    WHERE u.refresh_token = $1
+    AND u.is_deleted = false
     `,
     [refreshtoken],
   );
