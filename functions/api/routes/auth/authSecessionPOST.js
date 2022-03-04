@@ -96,7 +96,7 @@ module.exports = async (req, res) => {
       },
       block: blockUpdatedByUserSecession,
       classroomPost: classroomPostUpdatedByUserSecession,
-      Comment: commentUpdatedByUserSecession,
+      comment: commentUpdatedByUserSecession,
       like: likeUpdatedByUserSecession,
       notification: notificationUpdatedByUserSecession,
       report: reportUpdatedByUserSecession,
