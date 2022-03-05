@@ -45,7 +45,7 @@ module.exports = async (req, res) => {
           client,
           reviewPost.id,
           postType.REVIEW,
-          userId,
+          req.user.id,
         );
 
         const isLiked = likeData ? likeData.isLiked : false;
