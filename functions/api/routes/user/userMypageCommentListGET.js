@@ -42,12 +42,7 @@ module.exports = async (req, res) => {
         let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
 
         // 현재 주인장이 좋아요를 누른 상태인지(isLiked) 정보를 가져오기 위함
-        let like = await likeDB.getLikeByPostId(
-          client,
-          classroomPost.id,
-          postTypeId,
-          commentWriterId,
-        );
+        let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, req.user.id);
 
         const isLiked = like ? like.isLiked : false;
 
