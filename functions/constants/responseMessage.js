@@ -76,6 +76,7 @@ module.exports = {
   SEND_VERIFICATION_EMAIL_FAIL: "인증 메일 보내기 실패",
   SEND_RESET_PASSWORD_EMAIL_SUCCESS: "비밀번호 재설정 메일 보내기 성공",
   SEND_RESET_PASSWORD_EMAIL_FAIL: "비밀번호 재설정 메일 보내기 실패",
+  IS_NOT_EMAIL_VERIFICATION: "이메일 인증이 되지 않은 유저입니다.",
 
   // 전공 목록 조회
   READ_ALL_MAJORS_SUCCESS: "해당 학교의 학과 목록 조회 성공",

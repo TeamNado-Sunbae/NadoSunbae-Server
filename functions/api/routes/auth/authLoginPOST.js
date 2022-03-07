@@ -57,9 +57,17 @@ module.exports = async (req, res) => {
     } = userFirebase;
     // const firebaseId = userFirebase.user.uid;
     // const isEmailVerified = userFirebase.user.emailVerified; 와 동일
+    
+    if (!isEmailVerified) {
+      return res.status(statusCode.ACCEPTED).send(
+        util.success(statusCode.ACCEPTED, responseMessage.IS_NOT_EMAIL_VERIFICATION, {
+          userId: userData.id,
+          isEmailVerified: isEmailVerified,
+        }),
+      );
+    }
 
     const userData = await userDB.getUserByFirebaseId(client, firebaseId);
-
     if (!userData) {
       return res
         .status(statusCode.NOT_FOUND)
