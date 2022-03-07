@@ -67,9 +67,10 @@ module.exports = async (req, res) => {
 
     const testUserIdList = [];
 
-    for (let i = 0; i < 439; i++) {
+    for (let i = 1; i < 440; i++) {
       testUserIdList.push(i);
     }
+    console.log(testUserIdList);
 
     if (testUserIdList.indexOf(userData.id) === -1) {
       if (!isEmailVerified) {
