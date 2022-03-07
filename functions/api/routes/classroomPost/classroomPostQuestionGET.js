@@ -1,11 +1,14 @@
+const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const postType = require("../../../constants/postType");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, majorDB, likeDB, commentDB } = require("../../../db");
+const { classroomPostDB, userDB, likeDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
+const dateHandlers = require("../../../lib/dateHandlers");
+const reportPeriodType = require("../../../constants/reportPeriodType");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
@@ -30,10 +33,55 @@ module.exports = async (req, res) => {
     const questionerId = classroomPost.writerId;
     const answererId = classroomPost.answererId;
 
-    // 후기 미작성자는
-    if (req.user.isReviewed === false) {
-      // 전체질문이나 1:1 질문 상세조회 불가 - 답변자가 본인인 경우 제외
-      if (!(answererId && answererId === req.user.id)) {
+    // 전체질문이나 1:1 질문 상세조회 불가 - 답변자가 본인인 경우 제외
+    if (!(answererId && answererId === req.user.id)) {
+      // 신고당한 유저
+      if (req.user.reportCreatedAt) {
+        // 유저 신고 기간
+        let reportPeriod;
+
+        // 알럿 메세지
+        let reportResponseMessage;
+
+        if (req.user.reportCount === 1) {
+          reportPeriod = reportPeriodType.FIRST_PERIOD;
+        } else if (req.user.reportCount === 2) {
+          reportPeriod = reportPeriodType.SECOND_PERIOD;
+        } else if (req.user.reportCount === 3) {
+          reportPeriod = reportPeriodType.THIRD_PERIOD;
+        } else if (req.user.reportCount >= 4) {
+          reportResponseMessage = `신고 누적으로 글 열람 및 작성이 영구적으로 제한됩니다.`;
+        }
+
+        // 신고 만료 날짜
+        const expirationDate = dateHandlers.getExpirationDateByMonth(
+          req.user.reportCreatedAt,
+          reportPeriod,
+        );
+
+        reportResponseMessage = `신고 누적이용자로 ${expirationDate.format(
+          "YYYY년 MM월 DD일",
+        )}까지 글 열람 및 작성이 불가능합니다.`;
+
+        return res
+          .status(statusCode.FORBIDDEN)
+          .send(util.fail(statusCode.FORBIDDEN, reportResponseMessage));
+      }
+
+      // 부적절 후기글 등록 유저
+      if (req.user.isReviewInappropriate === true) {
+        return res
+          .status(statusCode.FORBIDDEN)
+          .send(
+            util.fail(
+              statusCode.FORBIDDEN,
+              responseMessage.FORBIDDEN_ACCESS_INAPPROPRIATE_REVIEW_POST,
+            ),
+          );
+      }
+
+      // 후기 미등록 유저
+      if (req.user.isReviewed === false) {
         return res
           .status(statusCode.FORBIDDEN)
           .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
@@ -42,45 +90,28 @@ module.exports = async (req, res) => {
 
     // post 좋아요 정보
 
-    // 1:1 질문인지, 전체 질문인지
-    let postTypeId;
+    // answererId 여부에 따라 1:1 질문인지, 전체 질문인지 판단
+    const postTypeId = answererId ? postType.QUESTION_TO_PERSON : postType.QUESTION_TO_EVERYONE;
 
-    // answererId 없을 때는 전체 질문
-    if (!answererId) {
-      postTypeId = postType.QUESTION_TO_EVERYONE;
-    } else {
-      postTypeId = postType.QUESTION_TO_PERSON;
-    }
+    // 로그인 유저가 좋아요한 상태인지
+    const like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, req.user.id);
 
-    let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, req.user.id);
-    let isLiked;
-    if (!like) {
-      isLiked = false;
-    } else {
-      isLiked = like.isLiked;
-    }
+    const isLiked = like ? like.isLiked : false;
 
     // post 좋아요 개수
     const likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
 
-    like = {
-      isLiked: isLiked,
-      likeCount: likeCount.likeCount,
-    };
-
     // post 작성자 정보
     let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
 
     writer = {
       writerId: writer.id,
       profileImageId: writer.profileImageId,
       isQuestioner: true,
       nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
+      firstMajorName: writer.firstMajorName,
       firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
+      secondMajorName: writer.secondMajorName,
       secondMajorStart: writer.secondMajorStart,
     };
 
@@ -96,42 +127,40 @@ module.exports = async (req, res) => {
 
     // post 댓글 정보
 
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     // post 댓글 리스트 - 삭제 댓글 포함
-    let messageList = await commentDB.getCommentListByPostId(client, classroomPost.id);
-
-    messageList = await Promise.all(
-      messageList.map(async (comment) => {
-        let commentWriter = await userDB.getUserByUserId(client, comment.writerId);
-        const firstMajorName = await majorDB.getMajorNameByMajorId(
-          client,
-          commentWriter.firstMajorId,
-        );
-        const secondMajorName = await majorDB.getMajorNameByMajorId(
-          client,
-          commentWriter.secondMajorId,
-        );
-
-        commentWriter = {
-          writerId: commentWriter.id,
-          profileImageId: commentWriter.profileImageId,
-          isQuestioner: commentWriter.id === classroomPost.writerId,
-          nickname: commentWriter.nickname,
-          firstMajorName: firstMajorName.majorName,
-          firstMajorStart: commentWriter.firstMajorStart,
-          secondMajorName: secondMajorName.majorName,
-          secondMajorStart: commentWriter.secondMajorStart,
-        };
-
-        return {
-          messageId: comment.id,
-          title: "",
-          content: comment.content,
-          createdAt: comment.createdAt,
-          isDeleted: comment.isDeleted,
-          writer: commentWriter,
-        };
-      }),
+    let messageList = await commentDB.getCommentListByPostId(
+      client,
+      classroomPost.id,
+      invisibleUserIds,
     );
+
+    messageList = messageList.map((comment) => {
+      const content = comment.isDeleted ? "(삭제된 답글입니다.)" : comment.content;
+
+      const commentWriter = {
+        writerId: comment.writerId,
+        profileImageId: comment.profileImageId,
+        isQuestioner: comment.writerId === classroomPost.writerId,
+        nickname: comment.nickname,
+        firstMajorName: comment.firstMajorName,
+        firstMajorStart: comment.firstMajorStart,
+        secondMajorName: comment.secondMajorName,
+        secondMajorStart: comment.secondMajorStart,
+      };
+
+      return {
+        messageId: comment.id,
+        title: "",
+        content: content,
+        createdAt: comment.createdAt,
+        isDeleted: comment.isDeleted,
+        writer: commentWriter,
+      };
+    });
 
     // 메세지 리스트 앞에 원글 포함
     messageList.unshift(post);
@@ -140,7 +169,10 @@ module.exports = async (req, res) => {
       util.success(statusCode.OK, responseMessage.READ_ONE_POST_SUCCESS, {
         questionerId,
         answererId,
-        like,
+        like: {
+          isLiked: isLiked,
+          likeCount: likeCount.likeCount,
+        },
         messageList,
       }),
     );

@@ -29,7 +29,7 @@ const getBlockByUserId = async (client, blockUserId, blockedUserId) => {
 const getBlockedUserListByBlockUserId = async (client, blockUserId) => {
   const { rows } = await client.query(
     `
-    SELECT u.id, u.profile_image_id ,u.nickname FROM block AS b
+    SELECT u.id AS user_id, u.profile_image_id ,u.nickname FROM block AS b
     INNER JOIN "user" AS u
     ON b.block_user_id = $1
     AND b.is_deleted = false
@@ -58,9 +58,40 @@ const updateBlockByUserId = async (client, blockUserId, blockedUserId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const deleteBlockByUserSecession = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE block
+    SET is_deleted = true, updated_at = now()
+    WHERE (block_user_id = $1 OR blocked_user_id = $1)
+    AND is_deleted = false
+    RETURNING id, is_deleted, updated_at
+    `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
+const getInvisibleUserListByUserId = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+      SELECT DISTINCT 
+      CASE WHEN blocked_user_id = $1 THEN block_user_id 
+      ELSE blocked_user_id END
+      AS user_id FROM "block"
+      WHERE (blocked_user_id = $1 OR block_user_id = $1)
+      AND is_deleted = false
+    `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createBlock,
   getBlockedUserListByBlockUserId,
   getBlockByUserId,
   updateBlockByUserId,
+  deleteBlockByUserSecession,
+  getInvisibleUserListByUserId,
 };

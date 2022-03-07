@@ -8,8 +8,9 @@ module.exports = {
   tagDB: require("./tag"),
   relationReviewPostTagDB: require("./relationReviewPostTag"),
   likeDB: require("./like"),
-  imageDB: require("./image"),
   commentDB: require("./comment"),
   notificationDB: require("./notification"),
+  reportDB: require("./report"),
   blockDB: require("./block"),
+  inappropriateReviewPostDB: require("./inappropriateReviewPost"),
 };

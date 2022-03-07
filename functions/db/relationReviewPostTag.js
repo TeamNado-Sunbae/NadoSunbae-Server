@@ -26,6 +26,20 @@ const getTagListByReviewPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+const getRelationReviewPostTagList = async (client) => {
+  const { rows } = await client.query(
+    `
+    SELECT r.post_id, t.tag_name
+    FROM relation_review_post_tag r
+    INNER JOIN tag t
+    ON t.id = r.tag_id
+    AND t.is_deleted = false
+    AND r.is_deleted = false
+    `,
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 const getTagListByPostId = async (client, postId) => {
   const { rows } = await client.query(
     `
@@ -60,7 +74,7 @@ const deleteRelationReviewPostTag = async (client, postId) => {
   const { rows } = await client.query(
     `
     UPDATE relation_review_post_tag
-    SET is_deleted = TRUE, updated_at = now()
+    SET is_deleted = true, updated_at = now()
     WHERE post_id = $1
     RETURNING *
     `,
@@ -75,4 +89,5 @@ module.exports = {
   deleteRelationReviewPostTag,
   deleteRelationReviewPostTagByTagList,
   getTagListByPostId,
+  getRelationReviewPostTagList,
 };

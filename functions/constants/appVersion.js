@@ -1,4 +1,4 @@
 module.exports = {
-  AOS: "v1.0.0",
-  iOS: "v1.0.0",
+  AOS: "1.0.0",
+  iOS: "1.0.0",
 };

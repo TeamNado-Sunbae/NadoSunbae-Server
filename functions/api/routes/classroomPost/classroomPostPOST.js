@@ -3,23 +3,23 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, majorDB, userDB, notificationDB } = require("../../../db");
+const { classroomPostDB, userDB, notificationDB } = require("../../../db");
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
 const pushAlarmHandlers = require("../../../lib/pushAlarmHandlers");
+const dateHandlers = require("../../../lib/dateHandlers");
+const reportPeriodType = require("../../../constants/reportPeriodType");
 
 module.exports = async (req, res) => {
   const { majorId, answererId, postTypeId, title, content } = req.body;
-  let writer = req.user;
-
   if (!majorId || !postTypeId || !title || !content) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
   }
 
-  if (postTypeId === 4) {
+  if (postTypeId === postType.QUESTION_TO_PERSON) {
     if (!answererId) {
       return res
         .status(statusCode.BAD_REQUEST)
@@ -27,7 +27,50 @@ module.exports = async (req, res) => {
     }
   }
 
-  if (writer.isReviewed === false) {
+  // 신고당한 유저
+  if (req.user.reportCreatedAt) {
+    // 유저 신고 기간
+    let reportPeriod;
+
+    // 알럿 메세지
+    let reportResponseMessage;
+
+    if (req.user.reportCount === 1) {
+      reportPeriod = reportPeriodType.FIRST_PERIOD;
+    } else if (req.user.reportCount === 2) {
+      reportPeriod = reportPeriodType.SECOND_PERIOD;
+    } else if (req.user.reportCount === 3) {
+      reportPeriod = reportPeriodType.THIRD_PERIOD;
+    } else if (req.user.reportCount >= 4) {
+      reportResponseMessage = `신고 누적으로 글 열람 및 작성이 영구적으로 제한됩니다.`;
+    }
+
+    // 신고 만료 날짜
+    const expirationDate = dateHandlers.getExpirationDateByMonth(
+      req.user.reportCreatedAt,
+      reportPeriod,
+    );
+
+    reportResponseMessage = `신고 누적이용자로 ${expirationDate.format(
+      "YYYY년 MM월 DD일",
+    )}까지 글 열람 및 작성이 불가능합니다.`;
+
+    return res
+      .status(statusCode.FORBIDDEN)
+      .send(util.fail(statusCode.FORBIDDEN, reportResponseMessage));
+  }
+
+  // 부적절 후기글 등록 유저
+  if (req.user.isReviewInappropriate === true) {
+    return res
+      .status(statusCode.FORBIDDEN)
+      .send(
+        util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS_INAPPROPRIATE_REVIEW_POST),
+      );
+  }
+
+  // 후기글 미등록 유저
+  if (req.user.isReviewed === false) {
     return res
       .status(statusCode.FORBIDDEN)
       .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
@@ -40,15 +83,12 @@ module.exports = async (req, res) => {
     let post = await classroomPostDB.createClassroomPost(
       client,
       majorId,
-      writer.id,
+      req.user.id,
       answererId,
       postTypeId,
       title,
       content,
     );
-
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
 
     post = {
       postId: post.id,
@@ -59,14 +99,14 @@ module.exports = async (req, res) => {
       postTypeId: post.postTypeId,
     };
 
-    writer = {
-      writerId: writer.id,
-      profileImageId: writer.profileImageId,
-      nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
-      firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
-      secondMajorStart: writer.secondMajorStart,
+    const writer = {
+      writerId: req.user.id,
+      profileImageId: req.user.profileImageId,
+      nickname: req.user.nickname,
+      firstMajorName: req.user.firstMajorName,
+      firstMajorStart: req.user.firstMajorStart,
+      secondMajorName: req.user.secondMajorName,
+      secondMajorStart: req.user.secondMajorStart,
     };
 
     res
@@ -83,7 +123,7 @@ module.exports = async (req, res) => {
 
       // receiver는 게시글의 answerer, sender는 게시글 작성자
       let receiver = await userDB.getUserByUserId(client, post.answererId);
-      let sender = await userDB.getUserByUserId(client, writer.writerId);
+      let sender = await userDB.getUserByUserId(client, req.user.id);
       let notificationContent = `마이페이지에 ${sender.nickname}님이 1:1 질문을 남겼습니다.`;
 
       if (receiver.id !== sender.id) {

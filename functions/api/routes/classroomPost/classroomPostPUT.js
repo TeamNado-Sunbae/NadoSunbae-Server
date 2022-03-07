@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, majorDB, likeDB, commentDB } = require("../../../db");
+const { classroomPostDB, likeDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -44,11 +44,6 @@ module.exports = async (req, res) => {
       postId,
     );
 
-    // 작성자 정보 가져오기
-    let writer = await userDB.getUserByUserId(client, updatedClassroomPost.writerId);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
-
     const post = {
       postId: updatedClassroomPost.id,
       title: updatedClassroomPost.title,
@@ -57,14 +52,14 @@ module.exports = async (req, res) => {
       updatedAt: updatedClassroomPost.updatedAt,
     };
 
-    writer = {
-      writerId: writer.id,
-      profileImageId: writer.profileImageId,
-      nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
-      firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
-      secondMajorStart: writer.secondMajorStart,
+    const writer = {
+      writerId: req.user.id,
+      profileImageId: req.user.profileImageId,
+      nickname: req.user.nickname,
+      firstMajorName: req.user.firstMajorName,
+      firstMajorStart: req.user.firstMajorStart,
+      secondMajorName: req.user.secondMajorName,
+      secondMajorStart: req.user.secondMajorStart,
     };
 
     // 좋아요 수
@@ -74,22 +69,19 @@ module.exports = async (req, res) => {
       updatedClassroomPost.postTypeId,
     );
     // 좋아요 상태
-    let likeStatus = await likeDB.getLikeByPostId(
+    const likeStatus = await likeDB.getLikeByPostId(
       client,
       postId,
       updatedClassroomPost.postTypeId,
       req.user.id,
     );
-    if (!likeStatus) {
-      likeStatus = false;
-    } else {
-      likeStatus = likeStatus.isLiked;
-    }
+
+    const isLiked = likeStatus ? likeStatus.isLiked : false;
 
     updatedClassroomPost = {
       post: post,
       writer: writer,
-      like: { isLiked: likeStatus, likeCount: likeCount.likeCount },
+      like: { isLiked: isLiked, likeCount: likeCount.likeCount },
     };
 
     res

@@ -1,4 +1,3 @@
-const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
@@ -9,8 +8,7 @@ const {
   userDB,
   tagDB,
   relationReviewPostTagDB,
-  majorDB,
-  imageDB,
+  inappropriateReviewPostDB,
 } = require("../../../db");
 const {
   PROS_CONS,
@@ -21,6 +19,9 @@ const {
   TIP,
 } = require("../../../constants/reviewPostContent");
 const slackAPI = require("../../../middlewares/slackAPI");
+const dateHandlers = require("../../../lib/dateHandlers");
+const reportPeriodType = require("../../../constants/reportPeriodType");
+const backgroundImage = require("../../../constants/backgroundImage");
 
 module.exports = async (req, res) => {
   const {
@@ -40,6 +41,46 @@ module.exports = async (req, res) => {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+  }
+
+  // background image id가 정해진 id 범위에 맞지 않을 경우
+  if (backgroundImage.ID_RANGE.indexOf(backgroundImageId) === -1) {
+    return res
+      .status(statusCode.BAD_REQUEST)
+      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
+  }
+
+  // 신고당한 유저
+  if (req.user.reportCreatedAt) {
+    // 유저 신고 기간
+    let reportPeriod;
+
+    // 알럿 메세지
+    let reportResponseMessage;
+
+    if (req.user.reportCount === 1) {
+      reportPeriod = reportPeriodType.FIRST_PERIOD;
+    } else if (req.user.reportCount === 2) {
+      reportPeriod = reportPeriodType.SECOND_PERIOD;
+    } else if (req.user.reportCount === 3) {
+      reportPeriod = reportPeriodType.THIRD_PERIOD;
+    } else if (req.user.reportCount >= 4) {
+      reportResponseMessage = `신고 누적으로 글 열람 및 작성이 영구적으로 제한됩니다.`;
+    }
+
+    // 신고 만료 날짜
+    const expirationDate = dateHandlers.getExpirationDateByMonth(
+      req.user.reportCreatedAt,
+      reportPeriod,
+    );
+
+    reportResponseMessage = `신고 누적이용자로 ${expirationDate.format(
+      "YYYY년 MM월 DD일",
+    )}까지 글 열람 및 작성이 불가능합니다.`;
+
+    return res
+      .status(statusCode.FORBIDDEN)
+      .send(util.fail(statusCode.FORBIDDEN, reportResponseMessage));
   }
 
   let client;
@@ -63,14 +104,11 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
     }
 
-    // writerId는 accesstoken을 디코딩하여 받은 id를 사용
-    const writerId = req.user.id;
-
-    // req.body로 받은 정보와 isFirstMajor, writerId를 가지고 reviewPost를 생성
+    // req.body로 받은 정보와 isFirstMajor를 가지고 reviewPost를 생성
     let reviewPost = await reviewPostDB.createReviewPost(
       client,
       majorId,
-      writerId,
+      req.user.id,
       backgroundImageId,
       isFirstMajor,
       oneLineReview,
@@ -100,7 +138,7 @@ module.exports = async (req, res) => {
     }
 
     // reviewPost를 작성한 writer는 isReviewed를 true로 업데이트
-    let updatedUser = await userDB.updateUserByIsReviewed(client, true, writerId);
+    let updatedUser = await userDB.updateUserByIsReviewed(client, true, req.user.id);
 
     // post, writer, like, backgroundImage 객체로 묶어서 보냄
     let contentList = [];
@@ -123,17 +161,15 @@ module.exports = async (req, res) => {
       createdAt: reviewPost.createdAt,
     };
 
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, updatedUser.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, updatedUser.secondMajorId);
     const writer = {
-      writerId: updatedUser.id,
-      nickname: updatedUser.nickname,
-      profileImageId: updatedUser.profileImageId,
-      firstMajorName: firstMajorName.majorName,
-      firstMajorStart: updatedUser.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
-      secondMajorStart: updatedUser.secondMajorStart,
-      isOnQuestion: updatedUser.isOnQuestion,
+      writerId: req.user.id,
+      nickname: req.user.nickname,
+      profileImageId: req.user.profileImageId,
+      firstMajorName: req.user.firstMajorName,
+      firstMajorStart: req.user.firstMajorStart,
+      secondMajorName: req.user.secondMajorName,
+      secondMajorStart: req.user.secondMajorStart,
+      isOnQuestion: req.user.isOnQuestion,
       isReviewed: updatedUser.isReviewed,
     };
 
@@ -142,14 +178,16 @@ module.exports = async (req, res) => {
       likeCount: 0,
     };
 
-    const backgroundImageUrl = await imageDB.getImageUrlByImageId(
-      client,
-      reviewPost.backgroundImageId,
-    );
     const backgroundImage = {
       imageId: reviewPost.backgroundImageId,
-      imageUrl: backgroundImageUrl,
     };
+
+    const inappropriateReviewPost =
+      await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, req.user.id);
+    if (inappropriateReviewPost) {
+      const deletedInappropriateReviewPost =
+        await inappropriateReviewPostDB.deleteInappropriateReviewPostList(client, req.user.id);
+    }
 
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, {

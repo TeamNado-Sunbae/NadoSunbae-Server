@@ -1,9 +1,10 @@
+const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, majorDB, likeDB, reviewPostDB } = require("../../../db");
+const { userDB, likeDB, reviewPostDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -27,15 +28,17 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
     }
 
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, user.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, user.secondMajorId);
-
     let count;
 
     // 본인 마이페이지, 타인 마이페이지 여부에 따라 다른 내용의 count 보냄
     if (Number(userId) === req.user.id) {
       // 좋아요 한 개수
-      const likeCount = await likeDB.getLikeCountByUserId(client, user.id);
+
+      // 내가 차단한 사람과 나를 차단한 사람을 block
+      const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+      const invisibleUserIds = _.map(invisibleUserList, "userId");
+
+      const likeCount = await likeDB.getLikeCountByUserId(client, user.id, invisibleUserIds);
       count = likeCount.likeCount;
     } else {
       // 작성한 후기글 개수
@@ -47,9 +50,11 @@ module.exports = async (req, res) => {
       userId: user.id,
       profileImageId: user.profileImageId,
       nickname: user.nickname,
-      firstMajorName: firstMajorName.majorName,
+      firstMajorId: user.firstMajorId,
+      firstMajorName: user.firstMajorName,
       firstMajorStart: user.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
+      secondMajorId: user.secondMajorId,
+      secondMajorName: user.secondMajorName,
       secondMajorStart: user.secondMajorStart,
       isOnQuestion: user.isOnQuestion,
       count: count,

@@ -66,7 +66,7 @@ const updateUserByIsReviewed = async (client, isReviewed, userId) => {
     `
     SELECT * FROM "user"
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     `,
     [userId],
   );
@@ -87,37 +87,21 @@ const updateUserByIsReviewed = async (client, isReviewed, userId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const updateUserByReport = async (client, userId) => {
-  const { rows: existingRows } = await client.query(
-    `
-    SELECT * FROM "user"
-    WHERE id = $1
-    AND is_deleted = FALSE
-    `,
-    [userId],
-  );
-
-  if (existingRows.length === 0) return false;
-
-  const { rows } = await client.query(
-    `
-    UPDATE "user"
-    SET report_count = report_count + 1, updated_at = now()
-    WHERE id = $1
-    AND is_deleted = FALSE
-    RETURNING *
-    `,
-    [userId],
-  );
-  return convertSnakeToCamel.keysToCamel(rows[0]);
-};
-
 const getUserByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
-      SELECT * FROM "user"
-      WHERE id = $1
-      AND is_deleted = FALSE
+      SELECT u.*, m1.major_name first_major_name, m2.major_name second_major_name
+      FROM "user" u
+      INNER JOIN major m1
+        ON u.first_major_id = m1.id
+        AND u.is_deleted = false
+        AND m1.is_deleted = false
+      INNER JOIN major m2
+        ON u.second_major_id = m2.id
+        AND u.is_deleted = false
+        AND m2.is_deleted = false
+      WHERE u.id = $1
+      AND u.is_deleted = false
       `,
     [userId],
   );
@@ -127,20 +111,30 @@ const getUserByUserId = async (client, userId) => {
 const getUserByFirebaseId = async (client, firebaseId) => {
   const { rows } = await client.query(
     `
-    SELECT * FROM "user" u
-    WHERE firebase_id = $1
-      AND is_deleted = FALSE
+    SELECT u.*, m1.major_name first_major_name, m2.major_name second_major_name
+    FROM "user" u
+    INNER JOIN major m1
+      ON u.first_major_id = m1.id
+      AND u.is_deleted = false
+      AND m1.is_deleted = false
+    INNER JOIN major m2
+      ON u.second_major_id = m2.id
+      AND u.is_deleted = false
+      AND m2.is_deleted = false
+    WHERE u.firebase_id = $1
+    AND u.is_deleted = false
     `,
     [firebaseId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUsersByMajorId = async (client, majorId) => {
+const getUsersByMajorId = async (client, majorId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
     SELECT * FROM "user" u
     WHERE (u.first_major_id = $1 OR u.second_major_id = $1)
+    AND id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
     AND is_deleted = false
         `,
     [majorId],
@@ -153,7 +147,7 @@ const updateUserByDeviceToken = async (client, userId, deviceToken) => {
     `
     SELECT * FROM "user"
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     `,
     [userId],
   );
@@ -165,7 +159,7 @@ const updateUserByDeviceToken = async (client, userId, deviceToken) => {
     UPDATE "user"
     SET device_token = $2, updated_at = now()
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     RETURNING *
     `,
     [userId, deviceToken],
@@ -178,7 +172,7 @@ const updateUserByRefreshToken = async (client, userId, refreshtoken) => {
     `
     SELECT * FROM "user"
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     `,
     [userId],
   );
@@ -190,7 +184,7 @@ const updateUserByRefreshToken = async (client, userId, refreshtoken) => {
     UPDATE "user"
     SET refresh_token = $2, updated_at = now()
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     RETURNING *
     `,
     [userId, refreshtoken],
@@ -198,11 +192,11 @@ const updateUserByRefreshToken = async (client, userId, refreshtoken) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUserListByCommentPostId = async (client, commentPostId) => {
+const getUserListByCommentPostId = async (client, commentPostId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
       SELECT DISTINCT u.id, u.device_token FROM "user" u
-      INNER JOIN (SELECT DISTINCT writer_id FROM comment WHERE post_id = $1 AND is_deleted = false) c
+      INNER JOIN (SELECT DISTINCT writer_id FROM comment WHERE post_id = $1 AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[]) AND is_deleted = false) c
       ON c.writer_id = u.id
       AND u.is_deleted = false
       `,
@@ -229,7 +223,7 @@ const updateUserByMypage = async (
     nickname_updated_at = (CASE WHEN $8 = true THEN now() ELSE nickname_updated_at END),
     updated_at = now()
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
     RETURNING *
     `,
     [
@@ -249,11 +243,45 @@ const updateUserByMypage = async (
 const getUserByRefreshToken = async (client, refreshtoken) => {
   const { rows } = await client.query(
     `
-    SELECT * FROM "user"
-    WHERE refresh_token = $1
-    AND is_deleted = FALSE
+    SELECT u.*, m1.major_name first_major_name, m2.major_name second_major_name
+    FROM "user" u
+    INNER JOIN major m1
+      ON u.first_major_id = m1.id
+      AND u.is_deleted = false
+      AND m1.is_deleted = false
+    INNER JOIN major m2
+      ON u.second_major_id = m2.id
+      AND u.is_deleted = false
+      AND m2.is_deleted = false
+    WHERE u.refresh_token = $1
+    AND u.is_deleted = false
     `,
     [refreshtoken],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+const updateUserByReport = async (client, userId, reportCount) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM "user"
+    WHERE id = $1
+    AND is_deleted = false
+    `,
+    [userId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET report_count = $2, report_created_at = now(), updated_at = now()
+    WHERE id = $1
+    AND is_deleted = false
+    RETURNING *
+    `,
+    [userId, reportCount],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
@@ -264,7 +292,46 @@ const updateUserByLogout = async (client, userId) => {
     UPDATE "user"
     SET refresh_token = null, updated_at = now()
     WHERE id = $1
-    AND is_deleted = FALSE
+    AND is_deleted = false
+    RETURNING *
+    `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+const updateUserByExpiredReport = async (client, userId, reportCreatedAt) => {
+  const { rows: existingRows } = await client.query(
+    `
+    SELECT * FROM "user"
+    WHERE id = $1
+    AND is_deleted = false
+    `,
+    [userId],
+  );
+
+  if (existingRows.length === 0) return false;
+
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET report_created_at = $2, updated_at = now()
+    WHERE id = $1
+    AND is_deleted = false
+    RETURNING *
+    `,
+    [userId, reportCreatedAt],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+const deleteUserByUserSecession = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE "user"
+    SET is_deleted = true, device_token = null, refresh_token = null, updated_at = now()
+    WHERE id = $1
+    AND is_deleted = false
     RETURNING *
     `,
     [userId],
@@ -277,7 +344,6 @@ module.exports = {
   getUserByNickname,
   getUserByEmail,
   updateUserByIsReviewed,
-  updateUserByReport,
   getUserByUserId,
   getUserByFirebaseId,
   getUsersByMajorId,
@@ -286,5 +352,8 @@ module.exports = {
   getUserListByCommentPostId,
   updateUserByMypage,
   getUserByRefreshToken,
+  updateUserByReport,
+  updateUserByExpiredReport,
   updateUserByLogout,
+  deleteUserByUserSecession,
 };

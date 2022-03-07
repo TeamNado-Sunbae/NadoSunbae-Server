@@ -23,13 +23,18 @@ const createNotification = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getNotificationListByReceiverId = async (client, receiverId) => {
+const getNotificationListByReceiverId = async (client, receiverId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-  SELECT * FROM notification
-  WHERE receiver_id = $1
-  AND is_deleted = false
-  ORDER BY created_at desc
+  SELECT n.*, u.nickname sender_nickname, u.profile_image_id sender_profile_image_id
+  FROM notification n
+  INNER JOIN "user" u
+  ON n.sender_id = u.id
+  AND u.is_deleted = false
+  AND n.receiver_id = $1
+  AND n.is_deleted = false
+  AND n.sender_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+  ORDER BY n.created_at desc
   `,
     [receiverId],
   );
@@ -48,29 +53,20 @@ const getNotificationByNotificationId = async (client, notificationId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const updateNotificationByIsRead = async (client, notificationId, isRead) => {
-  const { rows: existingRows } = await client.query(
-    `
-      SELECT * FROM notification
-      WHERE id = $1
-      AND is_deleted = FALSE
-      `,
-    [notificationId],
-  );
-
-  if (existingRows.length === 0) return false;
-
+const updateNotificationsByIsRead = async (client, postId, receiverId, isRead) => {
   const { rows } = await client.query(
     `
     UPDATE notification
-    SET is_read = $2, updated_at = now()
-    WHERE id = $1
+    SET is_read = $3, updated_at = now()
+    WHERE post_id = $1
+    AND receiver_id = $2
     AND is_deleted = false
+    AND is_read = false
     RETURNING *
       `,
-    [notificationId, isRead],
+    [postId, receiverId, isRead],
   );
-  return convertSnakeToCamel.keysToCamel(rows[0]);
+  return convertSnakeToCamel.keysToCamel(rows);
 };
 
 const deleteNotificationByNotificationId = async (client, notificationId) => {
@@ -86,10 +82,25 @@ const deleteNotificationByNotificationId = async (client, notificationId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const deleteNotificationByUserSecession = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE notification
+    SET is_deleted = true, updated_at = now()
+    WHERE (sender_id = $1 OR receiver_id = $1)
+    AND is_deleted = false
+    RETURNING id, is_deleted, updated_at
+    `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   createNotification,
   getNotificationListByReceiverId,
   getNotificationByNotificationId,
-  updateNotificationByIsRead,
+  updateNotificationsByIsRead,
   deleteNotificationByNotificationId,
+  deleteNotificationByUserSecession,
 };

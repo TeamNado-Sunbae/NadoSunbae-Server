@@ -4,8 +4,9 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, likeDB, commentDB } = require("../../../db");
+const { classroomPostDB, likeDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
+const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
   const { postTypeId, majorId } = req.params;
@@ -17,7 +18,10 @@ module.exports = async (req, res) => {
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
   }
 
-  if (postTypeId < 2 || postTypeId > 4) {
+  if (
+    Number(postTypeId) !== postType.INFORMATION &&
+    Number(postTypeId) !== postType.QUESTION_TO_EVERYONE
+  ) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_POSTTYPEID));
@@ -28,61 +32,45 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     let classroomPostList = await classroomPostDB.getClassroomPostListByMajorId(
       client,
       majorId,
       postTypeId,
+      invisibleUserIds,
     );
 
-    // 해당 과에 정보 또는 질문 글이 없을 경우
-    if (!classroomPostList) {
-      return res
-        .status(statusCode.OK)
-        .send(util.success(statusCode.OK, responseMessage.NO_CONTENT, classroomPostList));
-    }
+    const likeList = await likeDB.getLikeListByUserId(client, req.user.id);
 
-    classroomPostList = await Promise.all(
-      classroomPostList.map(async (classroomPost) => {
-        let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
+    classroomPostList = classroomPostList.map((classroomPost) => {
+      // 좋아요 정보
+      const likeData = _.find(likeList, {
+        postId: classroomPost.id,
+        postTypeId: classroomPost.postTypeId,
+      });
 
-        writer = {
-          writerId: writer.id,
-          profileImageId: writer.profileImageId,
-          nickname: writer.nickname,
-        };
+      const isLiked = likeData ? likeData.isLiked : false;
 
-        const commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
-
-        // 좋아요 정보
-        const likeData = await likeDB.getLikeByPostId(
-          client,
-          classroomPost.id,
-          postTypeId,
-          req.user.id,
-        );
-        let isLiked;
-        if (!likeData) {
-          isLiked = false;
-        } else {
-          isLiked = likeData.isLiked;
-        }
-        const likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
-        const like = {
+      return {
+        postId: classroomPost.id,
+        title: classroomPost.title,
+        content: classroomPost.content,
+        createdAt: classroomPost.createdAt,
+        writer: {
+          writerId: classroomPost.writerId,
+          profileImageId: classroomPost.profileImageId,
+          nickname: classroomPost.nickname,
+        },
+        like: {
           isLiked: isLiked,
-          likeCount: likeCount.likeCount,
-        };
-
-        return {
-          postId: classroomPost.id,
-          title: classroomPost.title,
-          content: classroomPost.content,
-          createdAt: classroomPost.createdAt,
-          writer: writer,
-          like: like,
-          commentCount: commentCount.commentCount,
-        };
-      }),
-    );
+          likeCount: classroomPost.likeCount,
+        },
+        commentCount: classroomPost.commentCount,
+      };
+    });
 
     if (sort === "recent") {
       classroomPostList = _.sortBy(classroomPostList, "createdAt").reverse();
@@ -91,7 +79,7 @@ module.exports = async (req, res) => {
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_SORT));
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
     }
 
     res

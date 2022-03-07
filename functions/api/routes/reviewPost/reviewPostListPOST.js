@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reviewPostDB, userDB, likeDB, majorDB, relationReviewPostTagDB } = require("../../../db");
+const { reviewPostDB, likeDB, relationReviewPostTagDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
@@ -22,6 +22,11 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
+
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     let reviewPostList;
     if (writerFilter === 1) {
       // 전체 목록 조회
@@ -30,6 +35,8 @@ module.exports = async (req, res) => {
         majorId,
         [true, false],
         tagFilter,
+        invisibleUserIds,
+        postType.REVIEW,
       );
     } else if (writerFilter === 2) {
       // 본전공 필터만 선택
@@ -38,6 +45,8 @@ module.exports = async (req, res) => {
         majorId,
         [true],
         tagFilter,
+        invisibleUserIds,
+        postType.REVIEW,
       );
     } else if (writerFilter === 3) {
       // 제 2전공 필터만 선택
@@ -46,6 +55,8 @@ module.exports = async (req, res) => {
         majorId,
         [false],
         tagFilter,
+        invisibleUserIds,
+        postType.REVIEW,
       );
     } else {
       return res
@@ -57,60 +68,54 @@ module.exports = async (req, res) => {
     if (reviewPostList.length === 0) {
       return res
         .status(statusCode.OK)
-        .send(util.success(statusCode.OK, responseMessage.NO_CONTENT, reviewPostList));
+        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, reviewPostList));
     }
 
-    reviewPostList = await Promise.all(
-      reviewPostList.map(async (reviewPost) => {
-        let writer = await userDB.getUserByUserId(client, reviewPost.writerId);
-        const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-        const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
-
-        writer = {
-          writerId: writer.id,
-          profileImageId: writer.profileImageId,
-          nickname: writer.nickname,
-          firstMajorName: firstMajorName.majorName,
-          firstMajorStart: writer.firstMajorStart,
-          secondMajorName: secondMajorName.majorName,
-          secondMajorStart: writer.secondMajorStart,
-        };
-
-        const tagList = await relationReviewPostTagDB.getTagListByPostId(client, reviewPost.postId);
-
-        // 좋아요 정보
-        const likeData = await likeDB.getLikeByPostId(
-          client,
-          reviewPost.postId,
-          postType.REVIEW,
-          req.user.id,
-        );
-        let isLiked;
-        if (!likeData) {
-          isLiked = false;
-        } else {
-          isLiked = likeData.isLiked;
-        }
-        const likeCount = await likeDB.getLikeCountByPostId(
-          client,
-          reviewPost.postId,
-          postType.REVIEW,
-        );
-        const like = {
-          isLiked: isLiked,
-          likeCount: likeCount.likeCount,
-        };
-
-        return {
-          postId: reviewPost.postId,
-          oneLineReview: reviewPost.oneLineReview,
-          createdAt: reviewPost.createdAt,
-          writer: writer,
-          tagList: tagList,
-          like: like,
-        };
-      }),
+    const relationReviewPostTagList = await relationReviewPostTagDB.getRelationReviewPostTagList(
+      client,
     );
+
+    const likeList = await likeDB.getLikeListByUserId(client, req.user.id);
+
+    reviewPostList = reviewPostList.map((reviewPost) => {
+      const writer = {
+        writerId: reviewPost.writerId,
+        profileImageId: reviewPost.profileImageId,
+        nickname: reviewPost.nickname,
+        firstMajorName: reviewPost.firstMajorName,
+        firstMajorStart: reviewPost.firstMajorStart,
+        secondMajorName: reviewPost.secondMajorName,
+        secondMajorStart: reviewPost.secondMajorStart,
+      };
+
+      // 태그 정보
+      reviewPost.tagList = _.filter(
+        relationReviewPostTagList,
+        (r) => r.postId === reviewPost.id,
+      ).map((o) => {
+        return { tagName: o.tagName };
+      });
+
+      // 좋아요 정보
+      const likeData = _.find(likeList, {
+        postId: reviewPost.id,
+        postTypeId: postType.REVIEW,
+      });
+
+      const isLiked = likeData ? likeData.isLiked : false;
+
+      return {
+        postId: reviewPost.id,
+        oneLineReview: reviewPost.oneLineReview,
+        createdAt: reviewPost.createdAt,
+        writer: writer,
+        tagList: reviewPost.tagList,
+        like: {
+          isLiked: isLiked,
+          likeCount: reviewPost.likeCount,
+        },
+      };
+    });
 
     if (sort === "recent") {
       reviewPostList = _.sortBy(reviewPostList, "createdAt").reverse();

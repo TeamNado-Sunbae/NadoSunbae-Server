@@ -1,11 +1,10 @@
-const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
 const getTagList = async (client) => {
   const { rows } = await client.query(
     `
       SELECT id as tag_id, tag_name FROM tag
-      WHERE is_deleted = FALSE
+      WHERE is_deleted = false
       ORDER BY id
       `,
   );
@@ -17,7 +16,7 @@ const getTagByTagName = async (client, tagName) => {
     `
       SELECT * FROM tag
       WHERE tag_name = $1
-      AND is_deleted = FALSE
+      AND is_deleted = false
       `,
     [tagName],
   );

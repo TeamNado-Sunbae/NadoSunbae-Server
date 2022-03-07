@@ -1,9 +1,10 @@
+const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, likeDB, commentDB } = require("../../../db");
+const { userDB, likeDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -22,19 +23,17 @@ module.exports = async (req, res) => {
     // 마이페이지 주인장 id
     const commentWriterId = req.user.id;
 
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     // 주인장이 작성한 답글이 있는 전체 질문글 or 정보글 조회 (postTypeId가 3 또는 2로 올것임.)
     let classroomPostList = await commentDB.getClassroomPostListByMyCommentList(
       client,
       commentWriterId,
       postTypeId,
+      invisibleUserIds,
     );
-
-    // 주인장이 작성한 답글이 있는 게시글이 없다면 NO_POST 반환
-    if (!classroomPostList) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
-    }
 
     // 게시글 목록 조회
     const classroomPostListByMyCommentList = await Promise.all(
@@ -43,18 +42,10 @@ module.exports = async (req, res) => {
         let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
 
         // 현재 주인장이 좋아요를 누른 상태인지(isLiked) 정보를 가져오기 위함
-        let like = await likeDB.getLikeByPostId(
-          client,
-          classroomPost.id,
-          postTypeId,
-          commentWriterId,
-        );
-        let isLiked;
-        if (!like) {
-          isLiked = false;
-        } else {
-          isLiked = like.isLiked;
-        }
+        let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, req.user.id);
+
+        const isLiked = like ? like.isLiked : false;
+
         // 해당 게시글의 좋아요 수
         let likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
 
@@ -64,7 +55,12 @@ module.exports = async (req, res) => {
         };
 
         // 해당 게시글의 댓글 수
-        let commentCount = await commentDB.getCommentCountByPostId(client, classroomPost.id);
+
+        let commentCount = await commentDB.getCommentCountByPostId(
+          client,
+          classroomPost.id,
+          invisibleUserIds,
+        );
 
         return {
           postId: classroomPost.id,

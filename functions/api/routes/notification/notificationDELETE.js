@@ -20,34 +20,11 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 로그인 한 유저가 알림 삭제하는 유저가 아닌 경우 403 error 반환
-    const notification = await notificationDB.getNotificationByNotificationId(
-      client,
-      notificationId,
-    );
-    if (!notification) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
-    }
-
-    if (notification.receiverId !== req.user.id) {
-      return res
-        .status(statusCode.FORBIDDEN)
-        .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
-    }
-
     // 알림 삭제
     const deletedNotification = await notificationDB.deleteNotificationByNotificationId(
       client,
       notificationId,
     );
-
-    if (!deletedNotification) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
-    }
 
     // response로 보낼 isDeleted
     const isDeleted = deletedNotification.isDeleted;

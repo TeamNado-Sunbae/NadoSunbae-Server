@@ -1,19 +1,56 @@
 const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const getReviewPostListByFilters = async (client, majorId, writerFilter, tagFilter) => {
+const getReviewPostListByFilters = async (
+  client,
+  majorId,
+  writerFilter,
+  tagFilter,
+  invisibleUserIds,
+  postTypeId,
+) => {
   const { rows } = await client.query(
     `
-    SELECT DISTINCT ON (review_post.id) *
-    FROM review_post
-    left join relation_review_post_tag rrpt on review_post.id = rrpt.post_id
-    WHERE major_id = $1
-    AND is_first_major IN (${writerFilter.join()})
-    AND rrpt.tag_id IN (${tagFilter.join()})
-    AND review_post.is_deleted = false
-    AND rrpt.is_deleted = false
+    WITH USER_MAJOR AS (
+      SELECT u.id, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.is_deleted, m1.major_name first_major_name, m2.major_name second_major_name
+      FROM "user" u
+      INNER JOIN major m1
+      ON u.first_major_id = m1.id
+      AND u.is_deleted = false
+      AND m1.is_deleted = false
+      INNER JOIN major m2
+      ON u.second_major_id = m2.id
+      AND u.is_deleted = false
+      AND m2.is_deleted = false
+    )
+
+    SELECT DISTINCT ON (p.id) p.*, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.first_major_name, u.second_major_name,
+    (
+      SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
+      WHERE l.post_id = p.id
+      AND l.post_type_id = $2
+      AND l.is_liked = true
+      AND p.is_deleted = false
+    )
+      FROM review_post p
+      INNER JOIN USER_MAJOR u
+      ON u.id = p.writer_id
+      AND u.is_deleted = false
+      AND p.is_deleted = false
+      AND p.major_id = $1
+      AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+      AND p.is_first_major IN (${writerFilter.join()})
+      AND p.id = ANY (
+        SELECT r.post_id
+        FROM relation_review_post_tag r
+        INNER JOIN "tag" t
+        ON t.id = r.tag_id
+        AND t.id IN (${tagFilter.join()})
+        AND r.is_deleted = false
+        AND t.is_deleted = false
+       )
       `,
-    [majorId],
+    [majorId, postTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -70,38 +107,13 @@ const createReviewPost = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const updateReviewPostByReport = async (client, postId) => {
-  const { rows: existingRows } = await client.query(
-    `
-    SELECT * FROM review_post p
-    WHERE id = $1
-       AND is_deleted = FALSE
-    `,
-    [postId],
-  );
-
-  if (existingRows.length === 0) return false;
-
-  const { rows } = await client.query(
-    `
-    UPDATE review_post p
-    SET report_count = report_count + 1, updated_at = now()
-    WHERE id = $1
-    AND is_deleted = FALSE
-    RETURNING id as post_id, report_count
-    `,
-    [postId],
-  );
-  return convertSnakeToCamel.keysToCamel(rows[0]);
-};
-
 const deleteReviewPost = async (client, postId) => {
   const { rows } = await client.query(
     `
     UPDATE review_post
-    SET is_deleted = TRUE, updated_at = now()
+    SET is_deleted = true, updated_at = now()
     WHERE id = $1
-    RETURNING id as post_id, is_deleted
+    RETURNING id as post_id, is_deleted, writer_id
     `,
     [postId],
   );
@@ -111,10 +123,13 @@ const deleteReviewPost = async (client, postId) => {
 const getReviewPostByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
-      SELECT * 
-      FROM review_post
-      WHERE writer_id = $1
-        AND is_deleted = false
+      SELECT r.*, m.major_name
+      FROM review_post r
+      INNER JOIN major m
+      ON r.major_id = m.id
+      AND m.is_deleted = false
+      AND r.writer_id = $1
+      AND r.is_deleted = false
       `,
     [userId],
   );
@@ -150,7 +165,7 @@ const updateReviewPost = async (
     `
       SELECT * FROM review_post
       WHERE id = $1
-      AND is_deleted = FALSE
+      AND is_deleted = false
       `,
     [postId],
   );
@@ -194,13 +209,48 @@ const updateReviewPost = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const deleteReviewPostByUserSecession = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+    UPDATE review_post
+    SET is_deleted = true, updated_at = now()
+    WHERE writer_id = $1
+    AND is_deleted = false
+    RETURNING id, is_deleted, updated_at
+    `,
+    [userId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
+const getReviewPostListByLike = async (client, userId, postTypeId, invisibleUserIds) => {
+  const { rows } = await client.query(
+    `
+    SELECT p.id, p.writer_id, p.one_line_review, p.created_at
+    FROM review_post p
+    INNER JOIN "like" l
+    ON p.id = l.post_id
+    AND l.user_id = $1
+    AND l.is_liked = true
+    AND l.post_type_id = $2
+    AND p.writer_id != $1
+    AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    AND p.is_deleted = false
+    ORDER BY l.updated_at desc
+  `,
+    [userId, postTypeId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   getReviewPostListByFilters,
   getReviewPostByPostId,
   createReviewPost,
   deleteReviewPost,
   updateReviewPost,
-  updateReviewPostByReport,
   getReviewPostByUserId,
   getReviewPostCountByUserId,
+  deleteReviewPostByUserSecession,
+  getReviewPostListByLike,
 };

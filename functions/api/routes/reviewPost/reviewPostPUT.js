@@ -3,16 +3,11 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const {
-  reviewPostDB,
-  userDB,
-  majorDB,
-  imageDB,
-  likeDB,
-  relationReviewPostTagDB,
-} = require("../../../db");
+const { reviewPostDB, likeDB, relationReviewPostTagDB } = require("../../../db");
 const reviewPostContent = require("../../../constants/reviewPostContent");
 const slackAPI = require("../../../middlewares/slackAPI");
+const postType = require("../../../constants/postType");
+const backgroundImage = require("../../../constants/backgroundImage");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
@@ -33,6 +28,13 @@ module.exports = async (req, res) => {
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
   }
 
+  // background image id가 정해진 id 범위에 맞지 않을 경우
+  if (backgroundImage.ID_RANGE.indexOf(backgroundImageId) === -1) {
+    return res
+      .status(statusCode.BAD_REQUEST)
+      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
+  }
+
   let client;
 
   try {
@@ -44,6 +46,13 @@ module.exports = async (req, res) => {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
+    }
+
+    // 수정하려는 유저와 작성자 정보가 일치하는지 확인
+    if (reviewPost.writerId !== req.user.id) {
+      return res
+        .status(statusCode.FORBIDDEN)
+        .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
     }
 
     let updatedReviewPost = await reviewPostDB.updateReviewPost(
@@ -58,10 +67,6 @@ module.exports = async (req, res) => {
       career,
       tip,
     );
-
-    let writer = await userDB.getUserByUserId(client, updatedReviewPost.writerId);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
 
     let contentList = [];
     const content = [
@@ -98,34 +103,26 @@ module.exports = async (req, res) => {
       updatedAt: updatedReviewPost.updatedAt,
     };
 
-    writer = {
-      writerId: writer.id,
-      profileImageId: writer.profileImageId,
-      nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
-      firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
-      secondMajorStart: writer.secondMajorStart,
+    const writer = {
+      writerId: req.user.id,
+      profileImageId: req.user.profileImageId,
+      nickname: req.user.nickname,
+      firstMajorName: req.user.firstMajorName,
+      firstMajorStart: req.user.firstMajorStart,
+      secondMajorName: req.user.secondMajorName,
+      secondMajorStart: req.user.secondMajorStart,
     };
 
     const likeCount = await likeDB.getLikeCountByPostId(client, updatedReviewPost.id);
-    let likeStatus = await likeDB.getLikeByPostId(client, postId, 1, req.user.id);
-    if (!likeStatus) {
-      likeStatus = false;
-    } else {
-      likeStatus = likeStatus.isLiked;
-    }
+    const likeStatus = await likeDB.getLikeByPostId(client, postId, postType.REVIEW, req.user.id);
 
-    const backgroundImage = await imageDB.getImageUrlByImageId(
-      client,
-      updatedReviewPost.backgroundImageId,
-    );
+    const isLiked = likeStatus ? likeStatus.isLiked : false;
 
     updatedReviewPost = {
       post: post,
       writer: writer,
-      like: { isLiked: likeStatus, likeCount: likeCount.likeCount },
-      backgroundImage: { imageId: backgroundImageId, imageUrl: backgroundImage.imageUrl },
+      like: { isLiked: isLiked, likeCount: likeCount.likeCount },
+      backgroundImage: { imageId: backgroundImageId },
     };
 
     // 현재 릴레이션 태그

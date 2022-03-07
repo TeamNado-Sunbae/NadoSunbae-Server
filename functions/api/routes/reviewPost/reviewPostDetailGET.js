@@ -3,9 +3,12 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, reviewPostDB, imageDB, majorDB, likeDB } = require("../../../db");
+const { userDB, reviewPostDB, likeDB } = require("../../../db");
 const reviewPostContent = require("../../../constants/reviewPostContent");
 const slackAPI = require("../../../middlewares/slackAPI");
+const dateHandlers = require("../../../lib/dateHandlers");
+const reportPeriodType = require("../../../constants/reportPeriodType");
+const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
@@ -17,6 +20,49 @@ module.exports = async (req, res) => {
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
   }
 
+  // 신고당한 유저
+  if (req.user.reportCreatedAt) {
+    // 유저 신고 기간
+    let reportPeriod;
+
+    // 알럿 메세지
+    let reportResponseMessage;
+
+    if (req.user.reportCount === 1) {
+      reportPeriod = reportPeriodType.FIRST_PERIOD;
+    } else if (req.user.reportCount === 2) {
+      reportPeriod = reportPeriodType.SECOND_PERIOD;
+    } else if (req.user.reportCount === 3) {
+      reportPeriod = reportPeriodType.THIRD_PERIOD;
+    } else if (req.user.reportCount >= 4) {
+      reportResponseMessage = `신고 누적으로 글 열람 및 작성이 영구적으로 제한됩니다.`;
+    }
+
+    // 신고 만료 날짜
+    const expirationDate = dateHandlers.getExpirationDateByMonth(
+      req.user.reportCreatedAt,
+      reportPeriod,
+    );
+
+    reportResponseMessage = `신고 누적이용자로 ${expirationDate.format(
+      "YYYY년 MM월 DD일",
+    )}까지 글 열람 및 작성이 불가능합니다.`;
+
+    return res
+      .status(statusCode.FORBIDDEN)
+      .send(util.fail(statusCode.FORBIDDEN, reportResponseMessage));
+  }
+
+  // 부적절 후기글 등록 유저
+  if (req.user.isReviewInappropriate === true) {
+    return res
+      .status(statusCode.FORBIDDEN)
+      .send(
+        util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS_INAPPROPRIATE_REVIEW_POST),
+      );
+  }
+
+  // 후기글 미등록 유저
   if (req.user.isReviewed === false) {
     return res
       .status(statusCode.FORBIDDEN)
@@ -41,24 +87,17 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
     // 현재 뷰어의 좋아요 정보 가져오기 (후기글의 postTypeId는 1 )
-    let likeCount = await likeDB.getLikeCountByPostId(client, postId, 1);
-    let likeData = await likeDB.getLikeByPostId(client, postId, 1, req.user.id);
-    let isLiked;
-    if (!likeData) {
-      isLiked = false;
-    } else {
-      isLiked = likeData.isLiked;
-    }
+    let likeCount = await likeDB.getLikeCountByPostId(client, postId, postType.REVIEW);
+    let likeData = await likeDB.getLikeByPostId(client, postId, postType.REVIEW, req.user.id);
+
+    const isLiked = likeData ? likeData.isLiked : false;
 
     // 후기글 작성자 정보 가져오기
     const writerId = post.writerId;
     let writer = await userDB.getUserByUserId(client, writerId);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
 
     // 후기글 배경 이미지 가져오기
     const imageId = post.backgroundImageId;
-    let imageUrl = await imageDB.getImageUrlByImageId(client, imageId);
 
     // 후기글 내용 리스트로 보여주기
     let contentList = [];
@@ -90,7 +129,6 @@ module.exports = async (req, res) => {
 
     const backgroundImage = {
       imageId: post.backgroundImageId,
-      imageUrl: imageUrl.imageUrl,
     };
 
     post = {
@@ -104,9 +142,9 @@ module.exports = async (req, res) => {
       writerId: writer.id,
       profileImageId: writer.profileImageId,
       nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
+      firstMajorName: writer.firstMajorName,
       firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
+      secondMajorName: writer.secondMajorName,
       secondMajorStart: writer.secondMajorStart,
       isOnQuestion: writer.isOnQuestion,
       isReviewed: writer.isReviewed,

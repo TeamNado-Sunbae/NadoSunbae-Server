@@ -14,6 +14,7 @@
 
 > SOPT 29th APPJAM <br>
 > 프로젝트 기간: 2021.12.18 ~ 2022.01.22
+> 릴리즈 준비 기간: 2022.02.06 ~
 <br>
 
 ### 🌲 Menu Tree 
@@ -57,14 +58,14 @@
 | localdevelop_feature/#issue | 각자 기능 추가 브랜치 |
 <br>
 
-### 📌 Commit Convention
-
-* **[태그] 내용** 의 형태로 작성 <br>
-ex) [FEAT] implement postGET
+### 📌 Conventions
 
 <details>
-<summary>Tags</summary>
-<div markdown="1">   
+<summary>Commit Convention</summary>
+<div markdown="1"> 
+
+* **[태그] 내용** 의 형태로 작성 <br>
+ex) [FEAT] implement postGET 
   
 | 태그 이름| 설명 |
 | :--: | :-----: |
@@ -83,67 +84,42 @@ ex) [FEAT] implement postGET
   
 </div>
 </details>
-<br>
 
-### 📌 Issue, PR Convention
-
-<div markdown="1">       
-      
+<details>
+<summary>Issue, PR Convention</summary>
+<div markdown="1">     
  
 * 변수나 폴더명은 영어로 쓰되, 설명은 한글로 작성
-<details>
-<summary>Issue</summary>
-<div mardown="1">
-  [영어 대문자] 내용
-</div>
-</details>
-<details>
-<summary>PR</summary>
-<div mardown="1">
-  [영어 대문자] #이슈 번호 - 해당 이슈 내용 <br>
-  * 이슈와 내용이 동일할 필요는 없음 <br>
-  * 이슈 번호는 동일 해야 함
-</div>
-</details>
- 
-</div>
-<br>
-
-### 📌 Coding Convention
-
-<details>
-<summary>변수명</summary>   
-<div markdown="1">       
-      
- 
- 1. Camel Case 사용 
-   - lower Camel Case
- 2. 함수의 경우 동사+명사 사용 
-   - ex) getInformation()
- 3. 길이는 20자로 제한한다. 
-   - 부득이한 경우 팀원과의 상의를 거친다.
- 4. flag로 사용 되는 변수는 조동사 + flag 종류로 구성 
-   - ex) isNumber
- 5. 약어는 되도록 사용하지 않는다.
+* Issue
+  * [영어 대문자] 내용
+* PR
+  * [영어 대문자] #이슈 번호 - 해당 이슈 내용 <br>
+    * 이슈와 내용이 동일할 필요는 없음 <br>
+    * 이슈 번호는 동일 해야 함
  
 </div>
 </details>
-
-<details>
-<summary>주석</summary>
-<div markdown="1">       
-
- 1. 한줄 주석은 // 를 사용한다.
- 2. 그 이상은 /** */ 를 사용한다.
- 3. 함수 설명 주석은 2번을 사용한다.
  
-</div>
-</details>
-
 <details>
-<summary>Bracket</summary>
-<div markdown="1">       
+<summary>Coding Convention</summary>
+<div markdown="1">  
 
+ * 변수명
+   * Camel Case 사용 
+   * 함수의 경우 동사+명사 사용 ex) getInformation()
+   * 길이는 20자로 제한
+   * flag로 사용 되는 변수는 조동사 + flag 종류로 구성 
+   * 약어는 되도록 사용하지 않는다. 
+ <br>
+ 
+ * 주석
+   * 한줄 주석은 // 를 사용한다.
+   * 그 이상은 /** */ 를 사용한다.
+   * 함수 설명 주석은 2번을 사용한다.
+ <br>
+ 
+ * Bracket
+ 
  ``` javascript
  // 한줄 if 문 - 여러 줄로 작성
   if(trigger) {
@@ -162,22 +138,22 @@ ex) [FEAT] implement postGET
      return;  
   }
  ```
+ <br>
  
-</div>
-</details>
-
-<details>
-<summary>비동기 함수의 사용</summary>
-<div markdown="1">       
-
- 1. async, await 함수 사용을 지향한다.
- 2. Promise 사용은 지양한다.
+  * 비동기 함수의 사용    
+    * async, await 함수 사용을 지향한다.
+    * Promise 사용은 지양한다.
  
-</div>
+ </div>
 </details>
-<br>
+</br>
 
 ### 🗂 Foldering
+
+<details>
+<summary>펼쳐보기</summary>
+<div markdown="1"> 
+
 ```markdown
 |-📋 firebaserc
 |-📋 firebase.json
@@ -197,9 +173,12 @@ ex) [FEAT] implement postGET
                |            |- 📋 firebaseClient.js
                |
                |- 📁 constants_
+               |               |- 📋 appVersion.js
                |               |- 📋 jwt.js
                |               |- 📋 notificationType.js
                |               |- 📋 postType.js
+               |               |- 📋 reportPeriodType.js
+               |               |- 📋 reportType.js
                |               |- 📋 responseMessage.js
                |               |- 📋 reviewPostContent.js
                |               |- 📋 statusCode.js
@@ -207,19 +186,41 @@ ex) [FEAT] implement postGET
                |- 📁 db_ 
                |        |- 📋 db.js
                |        |- 📋 index.js
+               |        |- 📋 block.js
+               |        |- 📋 classroomPost.js
+               |        |- 📋 comment.js
+               |        |- 📋 image.js
+               |        |- 📋 like.js
+               |        |- 📋 major.js
+               |        |- 📋 notification.js
+               |        |- 📋 relationReviewPostTag.js
+               |        |- 📋 report.js
+               |        |- 📋 reviewPost.js
+               |        |- 📋 tag.js
+               |        |- 📋 university.js
+               |        |- 📋 user.js
                |
                |- 📁 lib_
                |         |- 📋 convertSnakeToCamel.js
-               |         |- 📋 jwtHandler.js
+               |         |- 📋 dateHandlers.js
+               |         |- 📋 jwtHandlers.js
+               |         |- 📋 pushAlarmHandlers.js
                |         |- 📋 util.js
                |
                |- 📁 middlewares_
                                  |- 📋 auth.js
+                                 |- 📋 slackAPI.js
                
 ```
+</details>
 <br>
 
 ### ⚙️ Dependencies Module
+ 
+<details>
+<summary>펼쳐보기</summary>
+<div markdown="1"> 
+ 
 ```
 {
   "name": "functions",
@@ -246,7 +247,7 @@ ex) [FEAT] implement postGET
     "express": "^4.17.2",
     "firebase": "^9.6.2",
     "firebase-admin": "^9.8.0",
-    "firebase-functions": "^3.14.1",
+    "firebase-functions": "^3.18.1",
     "floor": "^0.0.0",
     "helmet": "^5.0.1",
     "hpp": "^0.2.3",
@@ -263,6 +264,7 @@ ex) [FEAT] implement postGET
   "private": true
 }
 ```
+</details>
 <br>
 
 ### 🧩 Role
@@ -271,45 +273,6 @@ ex) [FEAT] implement postGET
 | juhyeon | DB 설계, API 명세서 작성, API 구현, README 작성 |
 | eunji | DB 설계, API 명세서 작성, API 구현, 자동 테스트 환경 구축 |
 | seol | DB 설계, API 명세서 작성, 초기 세팅, API 구현 |
-<br>
-
-### 💻 Current Progress
-| 기능명 | 담당자 | 완료 여부 |
-| :-----: | :---: | :---: |
-| 회원가입 | `김은지` | v |
-| 닉네임 중복 확인 | `설지원` | v |
-| 이메일 중복 확인 | `변주현` | v |
-| 로그인 | `변주현` | v |
-| 액세스 토큰으로 로그인 | `변주현` | v |
-| 선택한 학과의 홈페이지와 이수과목 일람표 조회 | `변주현` | v |
-| 해당 학교의 학과들 목록 조회 | `변주현` | v |
-| 후기글 전체 목록 조회 및 정렬 | `변주현` | v |
-| 후기글 상세 조회 | `김은지` | v |
-| 후기글 등록 | `설지원` | v |
-| 후기글 수정 | `변주현` | v |
-| 후기글 삭제 | `설지원` | v |
-| 후기 내용 필터 목록 조회 | `김은지` | v |
-| 후기 배경 이미지 목록 조회 | `변주현` | v |
-| 선택한 학과 user 구성원 목록 조회 | `설지원` | v |
-| 전체 질문, 정보글 전체 목록 조회 및 정렬 | `변주현` | v |
-| 정보글 상세 조회 | `설지원` | v |
-| 1:1 질문, 전체 질문 상세 조회 | `설지원` | v |
-| 1:1 질문, 전체 질문, 정보글 등록 | `김은지` | v |
-| 1:1 질문, 전체 질문, 정보글 수정 | `김은지` | v |
-| 1:1 질문, 전체 질문, 정보글 삭제 | `김은지` | v |
-| 1:1 질문, 전체 질문, 정보글에 댓글 등록 | `김은지` | v |
-| 1:1 질문, 전체 질문, 정보글에 있는 특정 댓글 수정 | `설지원` | v |
-| 1:1 질문, 전체 질문, 정보글에 있는 특정 댓글 삭제 | `변주현` | v |
-| 게시글(후기, 1:1 질문, 전체 질문, 정보글) 좋아요/좋아요취소 | `변주현` | v |
-| (마이페이지) 특정 user 정보 조회 | `김은지` | v |
-| (마이페이지) 현재 user 정보 조회 | `김은지, 설지원` | v |
-| (마이페이지) 내게 온 1:1 질문글 리스트 조회 | `설지원` | v |
-| 게시글(후기, 1:1 질문, 전체 질문, 정보글) 신고 | `김은지` | v |
-| 댓글 신고 | `변주현` | v |
-| 유저 신고 | `설지원` | v |
-| 전체 알림 리스트 조회 | `설지원, 김은지` | v |
-| 특정 알림 읽음 처리 | `설지원, 김은지` | v |
-| 특정 알림 삭제 | `설지원, 김은지` | v |
 <br>
 
 ### 👩🏻‍💻 Developers   

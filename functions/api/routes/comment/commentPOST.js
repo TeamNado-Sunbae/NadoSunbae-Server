@@ -1,9 +1,10 @@
+const _ = require("lodash");
 const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { commentDB, userDB, majorDB, classroomPostDB, notificationDB } = require("../../../db");
+const { commentDB, userDB, classroomPostDB, notificationDB, blockDB } = require("../../../db");
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
@@ -22,7 +23,6 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
-    const commentWriterId = req.user.id;
 
     // 1대 1 질문글인 경우
     // 원글 작성자와 답변자만 댓글 등록 가능
@@ -32,8 +32,9 @@ module.exports = async (req, res) => {
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
-    if (postData.postTypeId === 4) {
-      if (postData.writerId !== commentWriterId && postData.answererId !== commentWriterId) {
+
+    if (postData.postTypeId === postType.QUESTION_TO_PERSON) {
+      if (postData.writerId !== req.user.id && postData.answererId !== req.user.id) {
         return res
           .status(statusCode.FORBIDDEN)
           .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
@@ -41,21 +42,16 @@ module.exports = async (req, res) => {
     }
 
     // 댓글 등록
-    let comment = await commentDB.createComment(client, postId, commentWriterId, content);
+    let comment = await commentDB.createComment(client, postId, req.user.id, content);
 
-    // 댓글 작성자 정보 가져오기
-    let writer = await userDB.getUserByUserId(client, commentWriterId);
-    const firstMajorName = await majorDB.getMajorNameByMajorId(client, writer.firstMajorId);
-    const secondMajorName = await majorDB.getMajorNameByMajorId(client, writer.secondMajorId);
-
-    writer = {
-      writerId: writer.id,
-      profileImageId: writer.profileImageId,
-      nickname: writer.nickname,
-      firstMajorName: firstMajorName.majorName,
-      firstMajorStart: writer.firstMajorStart,
-      secondMajorName: secondMajorName.majorName,
-      secondMajorStart: writer.secondMajorStart,
+    const writer = {
+      writerId: req.user.id,
+      profileImageId: req.user.profileImageId,
+      nickname: req.user.nickname,
+      firstMajorName: req.user.firstMajorName,
+      firstMajorStart: req.user.firstMajorStart,
+      secondMajorName: req.user.secondMajorName,
+      secondMajorStart: req.user.secondMajorStart,
     };
 
     comment = {
@@ -92,8 +88,16 @@ module.exports = async (req, res) => {
 
     // ******** 댓글 작성자들에게 보내는 Multicast Alarm 을 위한 변수 설정********
 
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
     // receiver는 게시글에 달린 댓글 작성자들 (중복된 작성자 제외)
-    const receivers = await userDB.getUserListByCommentPostId(client, comment.postId);
+    const receivers = await userDB.getUserListByCommentPostId(
+      client,
+      comment.postId,
+      invisibleUserIds,
+    );
 
     let MulticastNotificationTypeId;
     let MulticastNotificationContent;

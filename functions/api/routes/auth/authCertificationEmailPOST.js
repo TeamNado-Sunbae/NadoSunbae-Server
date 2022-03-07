@@ -21,18 +21,23 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // 로그인 및 메일 전송
-    await signInWithEmailAndPassword(firebaseAuth, email, password)
-      .then(() => sendEmailVerification(firebaseAuth.currentUser))
+    const sentEmail = await signInWithEmailAndPassword(firebaseAuth, email, password)
+      .then(() => {
+        sendEmailVerification(firebaseAuth.currentUser);
+        return { err: false };
+      })
       .catch((e) => {
-        return res
-          .status(statusCode.INTERNAL_SERVER_ERROR)
-          .send(
-            util.fail(
-              statusCode.INTERNAL_SERVER_ERROR,
-              responseMessage.SEND_VERIFICATION_EMAIL_FAIL,
-            ),
-          );
+        console.log(e);
+        return { err: true, error: e };
       });
+
+    if (sentEmail.err) {
+      return res
+        .status(statusCode.INTERNAL_SERVER_ERROR)
+        .send(
+          util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.SEND_VERIFICATION_EMAIL_FAIL),
+        );
+    }
 
     res
       .status(statusCode.OK)
