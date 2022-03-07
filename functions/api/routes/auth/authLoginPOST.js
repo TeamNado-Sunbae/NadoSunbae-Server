@@ -57,7 +57,14 @@ module.exports = async (req, res) => {
     } = userFirebase;
     // const firebaseId = userFirebase.user.uid;
     // const isEmailVerified = userFirebase.user.emailVerified; 와 동일
-    
+
+    const userData = await userDB.getUserByFirebaseId(client, firebaseId);
+    if (!userData) {
+      return res
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
+    }
+
     if (!isEmailVerified) {
       return res.status(statusCode.ACCEPTED).send(
         util.success(statusCode.ACCEPTED, responseMessage.IS_NOT_EMAIL_VERIFICATION, {
@@ -65,13 +72,6 @@ module.exports = async (req, res) => {
           isEmailVerified: isEmailVerified,
         }),
       );
-    }
-
-    const userData = await userDB.getUserByFirebaseId(client, firebaseId);
-    if (!userData) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
     }
 
     // 로그인시 토큰 새로 발급
