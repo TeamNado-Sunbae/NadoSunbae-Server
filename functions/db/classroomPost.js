@@ -175,9 +175,7 @@ const getClassroomPostListByLike = async (client, userId, postTypeIds, invisible
     AND l.user_id = $1
     AND l.is_liked = true
     AND l.post_type_id IN (${postTypeIds.join()})
-    AND p.writer_id != $1
     AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-    AND (p.answerer_id != $1 OR p.answerer_id IS NULL)
     AND p.is_deleted = false
     ORDER BY l.updated_at desc
   `,

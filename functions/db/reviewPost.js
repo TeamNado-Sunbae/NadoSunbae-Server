@@ -233,7 +233,6 @@ const getReviewPostListByLike = async (client, userId, postTypeId, invisibleUser
     AND l.user_id = $1
     AND l.is_liked = true
     AND l.post_type_id = $2
-    AND p.writer_id != $1
     AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
     AND p.is_deleted = false
     ORDER BY l.updated_at desc
