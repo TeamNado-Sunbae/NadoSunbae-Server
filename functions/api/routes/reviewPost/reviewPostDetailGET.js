@@ -96,9 +96,6 @@ module.exports = async (req, res) => {
     const writerId = post.writerId;
     let writer = await userDB.getUserByUserId(client, writerId);
 
-    // 후기글 배경 이미지 가져오기
-    const imageId = post.backgroundImageId;
-
     // 후기글 내용 리스트로 보여주기
     let contentList = [];
     let content = [
@@ -127,6 +124,7 @@ module.exports = async (req, res) => {
       }
     }
 
+    // 후기글 배경 이미지 가져오기
     const backgroundImage = {
       imageId: post.backgroundImageId,
     };
