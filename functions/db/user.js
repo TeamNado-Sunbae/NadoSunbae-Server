@@ -129,7 +129,7 @@ const getUserByFirebaseId = async (client, firebaseId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUsersByMajorId = async (client, majorId, invisibleUserIds) => {
+const getUserListByMajorId = async (client, majorId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
     SELECT * FROM "user" u
@@ -346,7 +346,7 @@ module.exports = {
   updateUserByIsReviewed,
   getUserByUserId,
   getUserByFirebaseId,
-  getUsersByMajorId,
+  getUserListByMajorId,
   updateUserByDeviceToken,
   updateUserByRefreshToken,
   getUserListByCommentPostId,
