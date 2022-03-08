@@ -32,7 +32,6 @@ const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
           AND l.user_id = $1
           AND l.post_type_id = $2
           AND l.is_liked = true
-          AND p.writer_id != $1
           AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
           AND p.is_deleted = false
           UNION
@@ -43,9 +42,7 @@ const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
           AND l.user_id = $1
           AND l.is_liked = true
           AND l.post_type_id IN (${classroomPostPostTypeIds.join()})
-          AND p.writer_id != $1
           AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-          AND (p.answerer_id != $1 OR p.answerer_id IS NULL)
           AND p.is_deleted = false
         )
 
@@ -112,7 +109,7 @@ const updateLikeByPostId = async (client, postId, postTypeId, userId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const deleteLikeByUserSecession = async (client, userId) => {
+const deleteLikeListByUserSecession = async (client, userId) => {
   const { rows } = await client.query(
     `
     UPDATE "like"
@@ -132,6 +129,6 @@ module.exports = {
   createLikeByPostId,
   updateLikeByPostId,
   getLikeCountByUserId,
-  deleteLikeByUserSecession,
+  deleteLikeListByUserSecession,
   getLikeListByUserId,
 };
