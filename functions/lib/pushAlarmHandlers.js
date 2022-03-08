@@ -10,6 +10,7 @@ const sendUnicast = function (token, notificationTitle, notificationContent) {
     },
     android: {
       notification: {
+        click_action: ".MainActivity",
         sound: "default",
       },
     },
@@ -47,6 +48,7 @@ const sendMulticast = function (tokens, notificationTitle, notificationContent) 
       },
       android: {
         notification: {
+          click_action: ".MainActivity",
           sound: "default",
         },
       },
