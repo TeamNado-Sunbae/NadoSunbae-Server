@@ -25,6 +25,7 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
+    // 본인은 선배 찾기 리스트에 보이지 않도록
     invisibleUserIds.push(req.user.id);
 
     // get userList
