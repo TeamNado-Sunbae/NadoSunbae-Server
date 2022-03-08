@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
     // get userList
-    let userList = await userDB.getUsersByMajorId(client, majorId, invisibleUserIds);
+    let userList = await userDB.getUsersByMajorId(client, majorId, req.user.id, invisibleUserIds);
 
     // userList를 랜덤으로 섞기
     userList = _.shuffle(userList);
