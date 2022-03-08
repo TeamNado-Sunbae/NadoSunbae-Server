@@ -130,6 +130,7 @@ const getReviewPostListByUserId = async (client, userId) => {
       AND m.is_deleted = false
       AND r.writer_id = $1
       AND r.is_deleted = false
+      ORDER BY created_at desc
       `,
     [userId],
   );
