@@ -7,7 +7,6 @@ const sendUnicast = function (token, notificationTitle, notificationContent) {
     notification: {
       title: notificationTitle,
       body: notificationContent,
-      click_action: ".MainActivity",
     },
     android: {
       notification: {
@@ -45,7 +44,6 @@ const sendMulticast = function (tokens, notificationTitle, notificationContent) 
       notification: {
         title: notificationTitle,
         body: notificationContent,
-        click_action: ".MainActivity",
       },
       android: {
         notification: {
