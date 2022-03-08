@@ -7,10 +7,10 @@ const sendUnicast = function (token, notificationTitle, notificationContent) {
     notification: {
       title: notificationTitle,
       body: notificationContent,
+      click_action: ".MainActivity",
     },
     android: {
       notification: {
-        click_action: ".MainActivity",
         sound: "default",
       },
     },
@@ -45,10 +45,10 @@ const sendMulticast = function (tokens, notificationTitle, notificationContent) 
       notification: {
         title: notificationTitle,
         body: notificationContent,
+        click_action: ".MainActivity",
       },
       android: {
         notification: {
-          click_action: ".MainActivity",
           sound: "default",
         },
       },
