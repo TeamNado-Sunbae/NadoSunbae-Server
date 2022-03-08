@@ -163,7 +163,8 @@ const getClassroomPostListByMyCommentList = async (
     AND p.writer_id != $1
     AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
     AND p.post_type_id = $2
-    AND p.is_deleted = false;
+    AND p.is_deleted = false
+    ORDER BY c.updated_at desc;
       `,
     [commentWriterId, postTypeId],
   );
