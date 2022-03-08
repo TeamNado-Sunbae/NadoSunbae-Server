@@ -129,15 +129,16 @@ const getUserByFirebaseId = async (client, firebaseId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUsersByMajorId = async (client, majorId, invisibleUserIds) => {
+const getUsersByMajorId = async (client, majorId, userId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
     SELECT * FROM "user" u
     WHERE (u.first_major_id = $1 OR u.second_major_id = $1)
     AND id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    AND id != $2
     AND is_deleted = false
         `,
-    [majorId],
+    [majorId, userId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
