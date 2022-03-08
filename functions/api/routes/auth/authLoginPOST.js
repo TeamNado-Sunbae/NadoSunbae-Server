@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
       }
     }
 
-    const {
+    let {
       user: { uid: firebaseId, emailVerified: isEmailVerified },
     } = userFirebase;
     // const firebaseId = userFirebase.user.uid;
@@ -81,6 +81,10 @@ module.exports = async (req, res) => {
           }),
         );
       }
+    }
+
+    if (testUserIdList.indexOf(userData.id) > -1) {
+      isEmailVerified = true;
     }
 
     // 로그인시 토큰 새로 발급
