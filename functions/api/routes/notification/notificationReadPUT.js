@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
 
     // 해당 알림과 postId가 같은 알림은 모두 업데이트함
 
-    let updatedNotifications = await notificationDB.updateNotificationsByIsRead(
+    let updatedNotifications = await notificationDB.updateNotificationListByIsRead(
       client,
       notification.postId,
       notification.receiverId,

@@ -34,7 +34,8 @@ const getBlockedUserListByBlockUserId = async (client, blockUserId) => {
     ON b.block_user_id = $1
     AND b.is_deleted = false
     AND b.blocked_user_id = u.id
-    AND u.is_deleted = false;
+    AND u.is_deleted = false
+    ORDER BY u.nickname
           `,
     [blockUserId],
   );
@@ -58,7 +59,7 @@ const updateBlockByUserId = async (client, blockUserId, blockedUserId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const deleteBlockByUserSecession = async (client, userId) => {
+const deleteBlockListByUserSecession = async (client, userId) => {
   const { rows } = await client.query(
     `
     UPDATE block
@@ -92,6 +93,6 @@ module.exports = {
   getBlockedUserListByBlockUserId,
   getBlockByUserId,
   updateBlockByUserId,
-  deleteBlockByUserSecession,
+  deleteBlockListByUserSecession,
   getInvisibleUserListByUserId,
 };

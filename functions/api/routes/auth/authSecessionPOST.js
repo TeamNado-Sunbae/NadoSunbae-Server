@@ -71,18 +71,24 @@ module.exports = async (req, res) => {
 
     // DB에서 유저 관련 정보 모두 삭제
     const userUpdatedByUserSecession = await userDB.deleteUserByUserSecession(client, userId);
-    const blockUpdatedByUserSecession = await blockDB.deleteBlockByUserSecession(client, userId);
-    const classroomPostUpdatedByUserSecession =
-      await classroomPostDB.deleteClassroomPostByUserSecession(client, userId);
-    const commentUpdatedByUserSecession = await commentDB.deleteCommentByUserSecession(
+    const blockUpdatedByUserSecession = await blockDB.deleteBlockListByUserSecession(
       client,
       userId,
     );
-    const likeUpdatedByUserSecession = await likeDB.deleteLikeByUserSecession(client, userId);
+    const classroomPostUpdatedByUserSecession =
+      await classroomPostDB.deleteClassroomPostListByUserSecession(client, userId);
+    const commentUpdatedByUserSecession = await commentDB.deleteCommentListByUserSecession(
+      client,
+      userId,
+    );
+    const likeUpdatedByUserSecession = await likeDB.deleteLikeListByUserSecession(client, userId);
     const notificationUpdatedByUserSecession =
-      await notificationDB.deleteNotificationByUserSecession(client, userId);
-    const reportUpdatedByUserSecession = await reportDB.deleteReportByUserSecession(client, userId);
-    const reviewPostUpdatedByUserSecession = await reviewPostDB.deleteReviewPostByUserSecession(
+      await notificationDB.deleteNotificationListByUserSecession(client, userId);
+    const reportUpdatedByUserSecession = await reportDB.deleteReportListByUserSecession(
+      client,
+      userId,
+    );
+    const reviewPostUpdatedByUserSecession = await reviewPostDB.deleteReviewPostListByUserSecession(
       client,
       userId,
     );

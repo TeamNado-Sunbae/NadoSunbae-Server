@@ -55,7 +55,7 @@ module.exports = async (req, res) => {
     }
 
     // 후기글을 삭제 후, 해당 user가 작성한 다른 후기글이 없다면 isReviewed false로
-    const reviewPostByUser = await reviewPostDB.getReviewPostByUserId(client, req.user.id);
+    const reviewPostByUser = await reviewPostDB.getReviewPostListByUserId(client, req.user.id);
     let isReviewed = true;
     if (reviewPostByUser.length === 0) {
       const updatedUser = await userDB.updateUserByIsReviewed(client, false, req.user.id);

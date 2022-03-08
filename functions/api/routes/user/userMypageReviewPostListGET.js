@@ -19,7 +19,7 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
-    let reviewPostList = await reviewPostDB.getReviewPostByUserId(client, userId);
+    let reviewPostList = await reviewPostDB.getReviewPostListByUserId(client, userId);
 
     // 해당 유저의 후기글이 하나도 없을 경우
     if (reviewPostList.length === 0) {

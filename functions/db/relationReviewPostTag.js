@@ -35,6 +35,7 @@ const getRelationReviewPostTagList = async (client) => {
     ON t.id = r.tag_id
     AND t.is_deleted = false
     AND r.is_deleted = false
+    ORDER BY t.id
     `,
   );
   return convertSnakeToCamel.keysToCamel(rows);
@@ -49,6 +50,7 @@ const getTagListByPostId = async (client, postId) => {
     WHERE post_id = $1
     AND relation_review_post_tag.is_deleted = false
     AND t.is_deleted = false
+    ORDER BY t.id
     `,
     [postId],
   );

@@ -120,7 +120,7 @@ const deleteReviewPost = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getReviewPostByUserId = async (client, userId) => {
+const getReviewPostListByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
       SELECT r.*, m.major_name
@@ -130,6 +130,7 @@ const getReviewPostByUserId = async (client, userId) => {
       AND m.is_deleted = false
       AND r.writer_id = $1
       AND r.is_deleted = false
+      ORDER BY created_at desc
       `,
     [userId],
   );
@@ -209,7 +210,7 @@ const updateReviewPost = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const deleteReviewPostByUserSecession = async (client, userId) => {
+const deleteReviewPostListByUserSecession = async (client, userId) => {
   const { rows } = await client.query(
     `
     UPDATE review_post
@@ -248,8 +249,8 @@ module.exports = {
   createReviewPost,
   deleteReviewPost,
   updateReviewPost,
-  getReviewPostByUserId,
+  getReviewPostListByUserId,
   getReviewPostCountByUserId,
-  deleteReviewPostByUserSecession,
+  deleteReviewPostListByUserSecession,
   getReviewPostListByLike,
 };
