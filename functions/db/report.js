@@ -106,7 +106,7 @@ const deleteReportList = async (client, reportedUserId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const deleteReportByUserSecession = async (client, userId) => {
+const deleteReportListByUserSecession = async (client, userId) => {
   const { rows } = await client.query(
     `
     UPDATE report
@@ -127,5 +127,5 @@ module.exports = {
   getReportListByReportedTarget,
   updateReportListByIsReported,
   deleteReportList,
-  deleteReportByUserSecession,
+  deleteReportListByUserSecession,
 };

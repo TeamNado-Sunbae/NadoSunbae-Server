@@ -53,7 +53,7 @@ const getNotificationByNotificationId = async (client, notificationId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const updateNotificationsByIsRead = async (client, postId, receiverId, isRead) => {
+const updateNotificationListByIsRead = async (client, postId, receiverId, isRead) => {
   const { rows } = await client.query(
     `
     UPDATE notification
@@ -82,7 +82,7 @@ const deleteNotificationByNotificationId = async (client, notificationId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const deleteNotificationByUserSecession = async (client, userId) => {
+const deleteNotificationListByUserSecession = async (client, userId) => {
   const { rows } = await client.query(
     `
     UPDATE notification
@@ -100,7 +100,7 @@ module.exports = {
   createNotification,
   getNotificationListByReceiverId,
   getNotificationByNotificationId,
-  updateNotificationsByIsRead,
+  updateNotificationListByIsRead,
   deleteNotificationByNotificationId,
-  deleteNotificationByUserSecession,
+  deleteNotificationListByUserSecession,
 };

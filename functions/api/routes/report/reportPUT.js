@@ -94,7 +94,7 @@ module.exports = async (req, res) => {
       }
 
       // 후기글을 삭제 후, 해당 user가 작성한 다른 후기글이 없다면 isReviewed false로
-      const reviewPostByUser = await reviewPostDB.getReviewPostByUserId(
+      const reviewPostByUser = await reviewPostDB.getReviewPostListByUserId(
         client,
         deletedReportedTarget.writerId,
       );
@@ -121,7 +121,7 @@ module.exports = async (req, res) => {
 
       // 과방글과 관련된 삭제 로직
       // 관련된 댓글 삭제
-      const deletedComment = await commentDB.deleteCommentByPostId(
+      const deletedComment = await commentDB.deleteCommentListByPostId(
         client,
         updatedReport.reportedTargetId,
       );
