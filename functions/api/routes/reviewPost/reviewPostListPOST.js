@@ -104,6 +104,11 @@ module.exports = async (req, res) => {
 
       const isLiked = likeData ? likeData.isLiked : false;
 
+      // for test
+      if (reviewPost.id === 8) {
+        reviewPost.likeCount = 123;
+      }
+
       return {
         postId: reviewPost.id,
         oneLineReview: reviewPost.oneLineReview,
