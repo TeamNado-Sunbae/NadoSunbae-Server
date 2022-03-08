@@ -21,6 +21,7 @@ const getClassroomPostListByUserId = async (client, userId, invisibleUserIds) =>
       WHERE answerer_id = $1
       AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
       AND is_deleted = false
+      ORDER BY created_at desc
           `,
     [userId],
   );
@@ -126,6 +127,7 @@ const getClassroomPostListByMajorId = async (client, majorId, postTypeId, invisi
   AND p.post_type_id = $2
   AND p.is_deleted = false
   AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+  ORDER BY p.created_at desc
   `,
     [majorId, postTypeId],
   );
@@ -150,7 +152,7 @@ const getMyClassroomPostListByPostTypeIds = async (client, userId, postTypeIds) 
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const deleteClassroomPostByUserSecession = async (client, userId) => {
+const deleteClassroomPostListByUserSecession = async (client, userId) => {
   const { rows } = await client.query(
     `
     UPDATE classroom_post
@@ -192,7 +194,7 @@ module.exports = {
   getClassroomPostByPostId,
   updateClassroomPost,
   getMyClassroomPostListByPostTypeIds,
-  deleteClassroomPostByUserSecession,
+  deleteClassroomPostListByUserSecession,
   getClassroomPostListByLike,
   getClassroomPostListByNotification,
 };
