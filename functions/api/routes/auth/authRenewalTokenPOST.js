@@ -45,7 +45,6 @@ module.exports = async (req, res) => {
     if (userData) {
       // accesstoken, refreshtoken 재발급
       const { accesstoken } = jwtHandlers.access(userData);
-      const { refreshtoken } = jwtHandlers.refresh();
 
       // refreshtoken 저장
       const updatedUserByRefreshToken = await userDB.updateUserByRefreshToken(
@@ -137,7 +136,6 @@ module.exports = async (req, res) => {
           {
             user,
             accesstoken,
-            refreshtoken,
           },
         ),
       );
