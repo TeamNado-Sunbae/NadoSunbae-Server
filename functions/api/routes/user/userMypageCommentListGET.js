@@ -64,7 +64,7 @@ module.exports = async (req, res) => {
 
         return {
           postId: classroomPost.id,
-          postTypeId: classroomPost.postTypeId,
+          postTypeId: postTypeId,
           title: classroomPost.title,
           content: classroomPost.content,
           createdAt: classroomPost.createdAt,
