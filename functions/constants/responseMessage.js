@@ -47,6 +47,7 @@ module.exports = {
   READ_ONE_COMMENT_SUCCESS: "댓글 조회 성공",
   READ_ALL_COMMENTS_SUCCESS: "모든 댓글 조회 성공",
   UPDATE_ONE_COMMENT_SUCCESS: "댓글 수정 성공",
+  UPDATE_ONE_COMMENT_FAIL: "댓글 수정 실패",
   DELETE_ONE_COMMENT_SUCCESS: "댓글 삭제 성공",
   NO_COMMENT: "존재하지 않는 댓글입니다.",
 
