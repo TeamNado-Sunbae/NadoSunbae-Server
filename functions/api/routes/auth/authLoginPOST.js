@@ -70,6 +70,7 @@ module.exports = async (req, res) => {
     for (let i = 1; i < 440; i++) {
       testUserIdList.push(i);
     }
+    testUserIdList.push(458);
     console.log(testUserIdList);
 
     if (testUserIdList.indexOf(userData.id) === -1) {
