@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
     let deletedClassroomPost = await classroomPostDB.deleteClassroomPostByPostId(client, postId);
 
     // 관련된 댓글 삭제
-    const deletedComment = await commentDB.deleteCommentByPostId(client, postId);
+    const deletedComment = await commentDB.deleteCommentListByPostId(client, postId);
 
     if (!deletedComment) {
       return res
