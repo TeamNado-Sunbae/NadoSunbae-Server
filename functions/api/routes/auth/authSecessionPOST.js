@@ -53,7 +53,7 @@ module.exports = async (req, res) => {
       }
     }
 
-    const deletedUser = await deleteUser(firebaseAuth.currentUser)
+    const deletedUser = await deleteUser(loginUser.user)
       .then(() => {
         console.log("firebase 계정 삭제 성공");
         return { err: false };
