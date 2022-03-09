@@ -79,7 +79,7 @@ module.exports = async (req, res) => {
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_SORT));
     }
 
     res
