@@ -19,7 +19,6 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 삭제하려는 유저와 게시글의 작성자가 같은지 확인
     let classroomPost = await classroomPostDB.getClassroomPostByPostId(client, postId);
 
     if (!classroomPost) {
@@ -37,14 +36,8 @@ module.exports = async (req, res) => {
     // 게시글 삭제
     let deletedClassroomPost = await classroomPostDB.deleteClassroomPostByPostId(client, postId);
 
-    if (!deletedClassroomPost) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
-    }
-
     // 관련된 댓글 삭제
-    const deletedComment = await commentDB.deleteCommentListByPostId(client, postId);
+    const deletedComment = await commentDB.deleteCommentByPostId(client, postId);
 
     if (!deletedComment) {
       return res

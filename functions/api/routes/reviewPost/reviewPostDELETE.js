@@ -20,7 +20,6 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 로그인 한 유저가 reviewPost의 작성자가 아니면 403 error
     const reviewPost = await reviewPostDB.getReviewPostByPostId(client, postId);
     if (!reviewPost) {
       return res
@@ -28,6 +27,7 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
 
+    // 로그인 한 유저가 reviewPost의 작성자가 아니면 403 error
     if (reviewPost.writerId !== req.user.id) {
       return res
         .status(statusCode.FORBIDDEN)
@@ -36,12 +36,6 @@ module.exports = async (req, res) => {
 
     // reviewPost 삭제
     let deletedReviewPost = await reviewPostDB.deleteReviewPost(client, postId);
-
-    if (!deletedReviewPost) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
-    }
 
     // 삭제된 reviewPost와 연계된 relationReviewPostTag 삭제
     let deletedRelationReviewPostTag = await relationReviewPostTagDB.deleteRelationReviewPostTag(
