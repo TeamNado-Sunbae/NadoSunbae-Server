@@ -290,7 +290,7 @@ const updateUserByLogout = async (client, userId) => {
   const { rows } = await client.query(
     `
     UPDATE "user"
-    SET refresh_token = null, updated_at = now()
+    SET refresh_token = null, device_token = null, updated_at = now()
     WHERE id = $1
     AND is_deleted = false
     RETURNING *
