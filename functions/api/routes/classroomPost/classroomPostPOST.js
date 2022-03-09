@@ -27,57 +27,6 @@ module.exports = async (req, res) => {
     }
   }
 
-  // 신고당한 유저
-  if (req.user.reportCreatedAt) {
-    // 유저 신고 기간
-    let reportPeriod;
-
-    // 알럿 메세지
-    let reportResponseMessage;
-
-    if (req.user.reportCount === 1) {
-      reportPeriod = reportPeriodType.FIRST_PERIOD;
-    } else if (req.user.reportCount === 2) {
-      reportPeriod = reportPeriodType.SECOND_PERIOD;
-    } else if (req.user.reportCount === 3) {
-      reportPeriod = reportPeriodType.THIRD_PERIOD;
-    }
-
-    // 신고 만료 날짜
-    const expirationDate = dateHandlers.getExpirationDateByMonth(
-      req.user.reportCreatedAt,
-      reportPeriod,
-    );
-
-    reportResponseMessage = `신고 누적이용자로 ${expirationDate.format(
-      "YYYY년 MM월 DD일",
-    )}까지 글 열람 및 작성이 불가능합니다.`;
-
-    if (req.user.reportCount >= 4) {
-      reportResponseMessage = `신고 누적으로 글 열람 및 작성이 영구적으로 제한됩니다.`;
-    }
-
-    return res
-      .status(statusCode.FORBIDDEN)
-      .send(util.fail(statusCode.FORBIDDEN, reportResponseMessage));
-  }
-
-  // 부적절 후기글 등록 유저
-  if (req.user.isReviewInappropriate === true) {
-    return res
-      .status(statusCode.FORBIDDEN)
-      .send(
-        util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS_INAPPROPRIATE_REVIEW_POST),
-      );
-  }
-
-  // 후기글 미등록 유저
-  if (req.user.isReviewed === false) {
-    return res
-      .status(statusCode.FORBIDDEN)
-      .send(util.fail(statusCode.FORBIDDEN, responseMessage.IS_REVIEWED_FALSE));
-  }
-
   let client;
 
   try {
