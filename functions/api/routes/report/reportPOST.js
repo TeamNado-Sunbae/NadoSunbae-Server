@@ -34,8 +34,8 @@ module.exports = async (req, res) => {
 
     if (existingReport) {
       return res
-        .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.ALREADY_REPORT));
+        .status(statusCode.CONFLICT)
+        .send(util.fail(statusCode.CONFLICT, responseMessage.ALREADY_REPORT));
     }
 
     // 신고 당하는 유저 - 글 or 댓글의 작성자
