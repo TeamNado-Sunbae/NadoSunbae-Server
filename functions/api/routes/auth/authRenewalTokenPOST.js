@@ -136,6 +136,7 @@ module.exports = async (req, res) => {
           {
             user,
             accesstoken,
+            refreshtoken: userData.refreshToken,
           },
         ),
       );
