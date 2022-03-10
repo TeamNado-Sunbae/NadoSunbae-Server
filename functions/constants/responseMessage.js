@@ -1,6 +1,6 @@
 module.exports = {
   NULL_VALUE: "필요한 값이 없습니다.",
-  OUT_OF_VALUE: "요청한 값이 잘못되었습니다",
+  OUT_OF_VALUE: "요청한 값이 잘못되었습니다.",
   NO_RELATION: "존재하지 않는 릴레이션입니다.",
 
   // 회원가입
