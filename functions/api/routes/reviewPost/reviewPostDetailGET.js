@@ -6,8 +6,6 @@ const db = require("../../../db/db");
 const { userDB, reviewPostDB, likeDB } = require("../../../db");
 const reviewPostContent = require("../../../constants/reviewPostContent");
 const slackAPI = require("../../../middlewares/slackAPI");
-const dateHandlers = require("../../../lib/dateHandlers");
-const reportPeriodType = require("../../../constants/reportPeriodType");
 const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
