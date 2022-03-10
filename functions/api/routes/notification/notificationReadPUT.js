@@ -30,13 +30,6 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
     }
 
-    // 로그인 한 유저가 알림 읽는 유저가 아닌 경우 403 error 반환
-    if (notification.receiverId !== req.user.id) {
-      return res
-        .status(statusCode.FORBIDDEN)
-        .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
-    }
-
     // 알림 읽으면 isRead 업데이트
 
     // 해당 알림과 postId가 같은 알림은 모두 업데이트함
