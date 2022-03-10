@@ -20,7 +20,6 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 로그인 한 유저가 reviewPost의 작성자가 아니면 403 error
     const reviewPost = await reviewPostDB.getReviewPostByPostId(client, postId);
     if (!reviewPost) {
       return res
@@ -28,6 +27,7 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
 
+    // 로그인 한 유저가 reviewPost의 작성자가 아니면 403 error
     if (reviewPost.writerId !== req.user.id) {
       return res
         .status(statusCode.FORBIDDEN)
@@ -37,12 +37,6 @@ module.exports = async (req, res) => {
     // reviewPost 삭제
     let deletedReviewPost = await reviewPostDB.deleteReviewPost(client, postId);
 
-    if (!deletedReviewPost) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
-    }
-
     // 삭제된 reviewPost와 연계된 relationReviewPostTag 삭제
     let deletedRelationReviewPostTag = await relationReviewPostTagDB.deleteRelationReviewPostTag(
       client,
@@ -51,7 +45,7 @@ module.exports = async (req, res) => {
     if (!deletedRelationReviewPostTag) {
       return res
         .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_RELATION));
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST_TAG_RELATION));
     }
 
     // 후기글을 삭제 후, 해당 user가 작성한 다른 후기글이 없다면 isReviewed false로

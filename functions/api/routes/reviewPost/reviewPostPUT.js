@@ -155,7 +155,7 @@ module.exports = async (req, res) => {
       if (!deletedRelation) {
         return res
           .status(statusCode.NOT_FOUND)
-          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_RELATION_POST_TAG));
+          .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST_TAG_RELATION));
       }
     }
 

@@ -100,7 +100,7 @@ const deleteCommentListByPostId = async (client, postId) => {
   const { rows } = await client.query(
     `
       UPDATE comment 
-      SET is_deleted = TRUE, updated_at = now()
+      SET is_deleted = true, updated_at = now()
       WHERE post_id = $1
       RETURNING *
       `,

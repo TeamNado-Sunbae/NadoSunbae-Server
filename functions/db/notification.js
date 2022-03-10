@@ -73,7 +73,7 @@ const deleteNotificationByNotificationId = async (client, notificationId) => {
   const { rows } = await client.query(
     `
     UPDATE notification
-    SET is_deleted = TRUE, updated_at = now()
+    SET is_deleted = true, updated_at = now()
     WHERE id = $1
     RETURNING *
     `,

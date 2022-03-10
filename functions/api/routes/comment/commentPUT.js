@@ -20,7 +20,6 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 로그인 한 유저가 댓글 작성자가 아니면 403 error 반환
     const comment = await commentDB.getCommentByCommentId(client, commentId);
     if (!comment) {
       return res
@@ -28,6 +27,7 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
     }
 
+    // 로그인 한 유저가 댓글 작성자가 아니면 403 error 반환
     if (comment.writerId !== req.user.id) {
       return res
         .status(statusCode.FORBIDDEN)

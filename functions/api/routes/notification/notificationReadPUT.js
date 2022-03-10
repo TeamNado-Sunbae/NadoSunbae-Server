@@ -20,7 +20,6 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 로그인 한 유저가 알림 읽는 유저가 아닌 경우 403 error 반환
     const notification = await notificationDB.getNotificationByNotificationId(
       client,
       notificationId,
@@ -29,12 +28,6 @@ module.exports = async (req, res) => {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
-    }
-
-    if (notification.receiverId !== req.user.id) {
-      return res
-        .status(statusCode.FORBIDDEN)
-        .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
     }
 
     // 알림 읽으면 isRead 업데이트
