@@ -123,6 +123,23 @@ module.exports = async (req, res) => {
     // 알럿 메세지
     let message = "";
 
+    // 후기글 미등록 유저
+    if (!userData.isReviewed) {
+      message = "후기 미등록자입니다.";
+    }
+
+    // 부적절 후기 등록 유저인지
+    const inappropriateReviewPost =
+      await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, userData.id);
+
+    const isReviewInappropriate = inappropriateReviewPost ? true : false;
+
+    // 부적절 후기글 등록 유저
+    if (isReviewInappropriate) {
+      message =
+        "부적절한 후기 작성이 확인되어,\n열람 권한이 제한되었습니다.\n권한을 얻고 싶다면다시\n 학과후기를 작성해주세요.";
+    }
+
     // 기본 userData로 초기화
     let updatedUserByExpiredReport = userData;
 
@@ -175,23 +192,6 @@ module.exports = async (req, res) => {
 
     // 유저가 신고 당해 권한 제한된 상태인지
     const isUserReported = updatedUserByExpiredReport.reportCreatedAt ? true : false;
-
-    // 부적절 후기 등록 유저인지
-    const inappropriateReviewPost =
-      await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, userData.id);
-
-    const isReviewInappropriate = inappropriateReviewPost ? true : false;
-
-    // 부적절 후기글 등록 유저
-    if (isReviewInappropriate) {
-      message =
-        "부적절한 후기 작성이 확인되어,\n열람 권한이 제한되었습니다.\n권한을 얻고 싶다면다시\n 학과후기를 작성해주세요.";
-    }
-
-    // 후기글 미등록 유저
-    if (!userData.isReviewed) {
-      message = "후기 미등록자입니다.";
-    }
 
     const user = {
       userId: userData.id,
