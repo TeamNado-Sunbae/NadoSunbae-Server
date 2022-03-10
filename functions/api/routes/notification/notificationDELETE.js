@@ -20,23 +20,6 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const notification = await notificationDB.getNotificationByNotificationId(
-      client,
-      notificationId,
-    );
-    if (!notification) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
-    }
-
-    // 자신의 알림이 아니면 403 error
-    if (notification.receiverId !== req.user.id) {
-      return res
-        .status(statusCode.FORBIDDEN)
-        .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
-    }
-
     // 알림 삭제
     const deletedNotification = await notificationDB.deleteNotificationByNotificationId(
       client,
