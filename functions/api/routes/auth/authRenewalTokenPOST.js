@@ -60,17 +60,31 @@ module.exports = async (req, res) => {
           );
       }
 
+      // 알럿 메세지
+      let message = "";
+
+      // 후기글 미등록 유저
+      if (!userData.isReviewed) {
+        message = "후기 미등록자입니다.";
+      }
+
+      // 부적절 후기 등록 유저인지
+      const inappropriateReviewPost =
+        await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, userData.id);
+
+      const isReviewInappropriate = inappropriateReviewPost ? true : false;
+
+      // 부적절 후기글 등록 유저
+      if (isReviewInappropriate) {
+        message =
+          "부적절한 후기 작성이 확인되어,\n열람 권한이 제한되었습니다.\n권한을 얻고 싶다면다시\n 학과후기를 작성해주세요.";
+      }
+
       // 기본 userData로 초기화
       let updatedUserByExpiredReport = userData;
 
       // 신고로 인해 제재 중인 유저의 경우 - 신고 만료 확인
       if (userData.reportCreatedAt) {
-        // 한국 표준시 현재 날짜
-        const today = dateHandlers.getCurrentKSTDate();
-
-        // 신고 접수된 날짜 - 기준 날짜
-        const reportCreatedDate = userData.reportCreatedAt;
-
         // 유저 신고 기간
         let reportPeriod;
 
@@ -82,15 +96,27 @@ module.exports = async (req, res) => {
           reportPeriod = reportPeriodType.THIRD_PERIOD;
         }
 
+        // 신고 만료 날짜
         const expirationDate = dateHandlers.getExpirationDateByMonth(
-          reportCreatedDate,
+          userData.reportCreatedAt,
           reportPeriod,
         );
+
+        message = `신고 누적이용자로\n${expirationDate.format(
+          "YYYY년 MM월 DD일",
+        )}까지\n글 열람 및 작성이 불가능합니다.`;
+
+        if (userData.reportCount >= 4) {
+          message = `신고 누적으로\n글 열람 및 작성이\n영구적으로 제한됩니다.`;
+        }
+
+        // 한국 표준시 현재 날짜
+        const today = dateHandlers.getCurrentKSTDate();
 
         // 신고 만료 날짜 지났으면
         if (expirationDate.format("YYYY.MM.DD HH:mm:ss") < today.format("YYYY.MM.DD HH:mm:ss")) {
           // 신고 테이블에서 유저에게 온 접수된 신고들을 만료시킴
-          await reportDB.deleteReportList(client, userData.id);
+          const deletedReportList = await reportDB.deleteReportList(client, userData.id);
 
           // 유저의 신고 시작 기간을 null로 초기화해줌
           updatedUserByExpiredReport = await userDB.updateUserByExpiredReport(
@@ -98,17 +124,14 @@ module.exports = async (req, res) => {
             userData.id,
             null,
           );
+
+          // message는 빈 문자열로 변환
+          message = "";
         }
       }
 
       // 유저가 신고 당해 권한 제한된 상태인지
       const isUserReported = updatedUserByExpiredReport.reportCreatedAt ? true : false;
-
-      // 부적절 후기 등록 유저인지
-      const inappropriateReviewPost =
-        await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, userData.id);
-
-      userData.isReviewInappropriate = inappropriateReviewPost ? true : false;
 
       const user = {
         userId: userData.id,
@@ -118,15 +141,16 @@ module.exports = async (req, res) => {
         firstMajorName: userData.firstMajorName,
         secondMajorId: userData.secondMajorId,
         secondMajorName: userData.secondMajorName,
-        isReviewed: userData.isReviewed,
         /* 기존 로그인이랑 다른점
         이메일 인증 안된 경우 액세스 토큰 반환하지 않기 때문에
         자동 로그인은 이메일 인증 안된 유저일 가능성이 없음.
         따라서 늘 true로 반환한다.
         */
         isEmailVerified: true,
+        isReviewed: userData.isReviewed,
         isUserReported: isUserReported,
         isReviewInappropriate: userData.isReviewInappropriate,
+        message: message,
       };
 
       return res.status(statusCode.OK).send(
