@@ -21,13 +21,6 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
     let reviewPostList = await reviewPostDB.getReviewPostListByUserId(client, userId);
 
-    // 해당 유저의 후기글이 하나도 없을 경우
-    if (reviewPostList.length === 0) {
-      return res
-        .status(statusCode.OK)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, reviewPostList));
-    }
-
     let writer = await userDB.getUserByUserId(client, userId);
 
     // 해당 유저 정보
@@ -35,6 +28,16 @@ module.exports = async (req, res) => {
       writerId: writer.id,
       nickname: writer.nickname,
     };
+
+    // 해당 유저의 후기글이 하나도 없을 경우
+    if (reviewPostList.length === 0) {
+      return res.status(statusCode.OK).send(
+        util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, {
+          writer,
+          reviewPostList,
+        }),
+      );
+    }
 
     reviewPostList = await Promise.all(
       reviewPostList.map(async (reviewPost) => {
