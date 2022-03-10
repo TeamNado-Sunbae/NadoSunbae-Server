@@ -35,21 +35,21 @@ module.exports = {
   AVAILABLE_MAIL: "사용 가능한 이메일입니다.",
   AVAILABLE_NICKNAME: "사용 가능한 닉네임입니다.",
 
-  // 포스트
-  CREATE_ONE_POST_SUCCESS: "포스트 추가 성공",
-  READ_ONE_POST_SUCCESS: "포스트 조회 성공",
-  READ_ALL_POSTS_SUCCESS: "모든 포스트 조회 성공",
-  UPDATE_ONE_POST_SUCCESS: "포스트 수정 성공",
-  DELETE_ONE_POST_SUCCESS: "포스트 삭제 성공",
-  NO_POST: "존재하지 않는 포스트입니다.",
+  // 게시글
+  CREATE_ONE_POST_SUCCESS: "게시글 추가 성공",
+  READ_ONE_POST_SUCCESS: "게시글 조회 성공",
+  READ_ALL_POSTS_SUCCESS: "모든 게시글 조회 성공",
+  UPDATE_ONE_POST_SUCCESS: "게시글 수정 성공",
+  DELETE_ONE_POST_SUCCESS: "게시글 삭제 성공",
+  NO_POST: "존재하지 않는 게시글입니다.",
   NO_POST_TAG_RELATION: "존재하지 않는 릴레이션입니다.",
-  INCORRECT_POST_TYPE_ID: "올바르지 않은 포스트 타입 아이디입니다.",
+  INCORRECT_POST_TYPE_ID: "올바르지 않은 게시글 타입 아이디입니다.",
 
-  // 댓글
-  CREATE_ONE_COMMENT_SUCCESS: "댓글 추가 성공",
-  UPDATE_ONE_COMMENT_SUCCESS: "댓글 수정 성공",
-  DELETE_ONE_COMMENT_SUCCESS: "댓글 삭제 성공",
-  NO_COMMENT: "존재하지 않는 댓글입니다.",
+  // 답글
+  CREATE_ONE_COMMENT_SUCCESS: "답글 추가 성공",
+  UPDATE_ONE_COMMENT_SUCCESS: "답글 수정 성공",
+  DELETE_ONE_COMMENT_SUCCESS: "답글 삭제 성공",
+  NO_COMMENT: "존재하지 않는 답글입니다.",
 
   // 태그
   READ_ALL_TAGS_SUCCESS: "후기 내용 태그 리스트 조회 성공",
@@ -77,13 +77,13 @@ module.exports = {
   READ_ALL_MAJORS_SUCCESS: "해당 학교의 학과 목록 조회 성공",
 
   // 좋아요
-  UPDATE_LIKE_SUCCESS: "포스트 좋아요 업데이트 성공",
+  UPDATE_LIKE_SUCCESS: "게시글 좋아요 업데이트 성공",
 
   // 신고 및 부적절 후기
   REPORT_SUCCESS: "신고 성공",
   IS_REPORTED_SUCCESS: "신고 접수 성공",
-  ALREADY_REPORT: "이미 신고한 글/댓글입니다.",
-  NO_REPORT_TARGET: "존재하지 않는 글/댓글입니다.",
+  ALREADY_REPORT: "이미 신고한 글/답글입니다.",
+  NO_REPORT_TARGET: "존재하지 않는 글/답글입니다.",
   NO_REPORT: "존재하지 않는(혹은 만료된) 신고입니다.",
   CREATE_ONE_INAPPROPRIATE_REVIEW_POST_SUCCESS: "부적절 후기 등록 성공",
 
