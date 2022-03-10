@@ -19,8 +19,6 @@ const {
   TIP,
 } = require("../../../constants/reviewPostContent");
 const slackAPI = require("../../../middlewares/slackAPI");
-const dateHandlers = require("../../../lib/dateHandlers");
-const reportPeriodType = require("../../../constants/reportPeriodType");
 const backgroundImage = require("../../../constants/backgroundImage");
 
 module.exports = async (req, res) => {

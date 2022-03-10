@@ -8,8 +8,6 @@ const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
 const pushAlarmHandlers = require("../../../lib/pushAlarmHandlers");
-const dateHandlers = require("../../../lib/dateHandlers");
-const reportPeriodType = require("../../../constants/reportPeriodType");
 
 module.exports = async (req, res) => {
   const { majorId, answererId, postTypeId, title, content } = req.body;

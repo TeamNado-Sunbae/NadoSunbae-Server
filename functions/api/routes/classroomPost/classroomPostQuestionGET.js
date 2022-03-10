@@ -7,8 +7,6 @@ const postType = require("../../../constants/postType");
 const db = require("../../../db/db");
 const { classroomPostDB, userDB, likeDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
-const dateHandlers = require("../../../lib/dateHandlers");
-const reportPeriodType = require("../../../constants/reportPeriodType");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
