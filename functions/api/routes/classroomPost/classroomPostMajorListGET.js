@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
   ) {
     return res
       .status(statusCode.BAD_REQUEST)
-      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_POSTTYPEID));
+      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_POST_TYPE_ID));
   }
 
   let client;

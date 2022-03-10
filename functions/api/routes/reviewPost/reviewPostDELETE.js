@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
     if (!deletedRelationReviewPostTag) {
       return res
         .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_RELATION));
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST_TAG_RELATION));
     }
 
     // 후기글을 삭제 후, 해당 user가 작성한 다른 후기글이 없다면 isReviewed false로
