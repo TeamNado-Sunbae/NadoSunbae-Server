@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
       }
     }
 
-    let {
+    const {
       user: { uid: firebaseId, emailVerified: isEmailVerified },
     } = userFirebase;
     // const firebaseId = userFirebase.user.uid;
@@ -65,24 +65,13 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
     }
 
-    const testUserIdList = [];
-
-    testUserIdList.push(80);
-    console.log(testUserIdList);
-
-    if (testUserIdList.indexOf(userData.id) === -1) {
-      if (!isEmailVerified) {
-        return res.status(statusCode.ACCEPTED).send(
-          util.success(statusCode.ACCEPTED, responseMessage.IS_NOT_EMAIL_VERIFICATION, {
-            userId: userData.id,
-            isEmailVerified: isEmailVerified,
-          }),
-        );
-      }
-    }
-
-    if (testUserIdList.indexOf(userData.id) > -1) {
-      isEmailVerified = true;
+    if (!isEmailVerified) {
+      return res.status(statusCode.ACCEPTED).send(
+        util.success(statusCode.ACCEPTED, responseMessage.IS_NOT_EMAIL_VERIFICATION, {
+          userId: userData.id,
+          isEmailVerified: isEmailVerified,
+        }),
+      );
     }
 
     // 로그인시 토큰 새로 발급
