@@ -67,10 +67,7 @@ module.exports = async (req, res) => {
 
     const testUserIdList = [];
 
-    for (let i = 1; i < 440; i++) {
-      testUserIdList.push(i);
-    }
-    testUserIdList.push(458);
+    testUserIdList.push(80);
     console.log(testUserIdList);
 
     if (testUserIdList.indexOf(userData.id) === -1) {
