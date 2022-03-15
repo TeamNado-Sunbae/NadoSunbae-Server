@@ -20,19 +20,6 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // const comment = await commentDB.getCommentByCommentId(client, commentId);
-    // if (!comment) {
-    //   return res
-    //     .status(statusCode.NOT_FOUND)
-    //     .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
-    // }
-
-    // if (comment.writerId !== req.user.id) {
-    //   return res
-    //     .status(statusCode.FORBIDDEN)
-    //     .send(util.fail(statusCode.NOT_FOUND, responseMessage.FORBIDDEN_ACCESS));
-    // }
-
     let deletedComment = await commentDB.deleteCommentByCommentId(client, commentId);
 
     res
