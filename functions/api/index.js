@@ -18,8 +18,8 @@ const app = express();
 app.use(cors());
 
 //  보안을 위한 미들웨어들
-//  process.env.NODE_ENV는 배포된 서버에서는 'production'으로, 로컬에서 돌아가는 서버에서는 'development'로 고정됨.
-if (process.env.NODE_ENV === "production") {
+//  process.env.NODE_ENV는 배포된 서버에서는 'production'혹은 'development'으로, 로컬에서 돌아가는 서버에서는 'local'로 고정됨.
+if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "development") {
   app.use(hpp());
   app.use(helmet());
 }

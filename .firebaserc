@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "nadosunbae-server"
-  }
+    "prod": "nadosunbae-server",
+    "dev": "nadosunbae-server-dev-90ac3",
+    "default": "nadosunbae-server-dev-90ac3"
+  },
+  "targets": {}
 }
