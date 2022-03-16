@@ -1,5 +1,8 @@
 const { initializeApp } = require("firebase/app");
 const { getAuth } = require("firebase/auth");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const prodFirebaseConfig = {
   apiKey: "AIzaSyBEqiqaiIR7czG5XLBgxgbFERioHa6kGJ0",
