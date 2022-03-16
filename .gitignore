@@ -64,5 +64,12 @@ node_modules/
 
 # dotenv environment variables file
 .env
+.env.dev
+.env.prod
 
+# firebase key
 nadosunbae-server-firebase-adminsdk-lzgu9-7c653db78a.json
+nadosunbae-server-dev-90ac3-firebase-adminsdk-r7b4s-10d004f02b.json
+
+# mac OS file
+.DS_Store

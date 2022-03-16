@@ -1,0 +1,6 @@
+module.exports = {
+  REVIEW: 1,
+  INFORMATION: 2,
+  QUESTION_TO_EVERYONE: 3,
+  QUESTION_TO_PERSON: 4,
+};

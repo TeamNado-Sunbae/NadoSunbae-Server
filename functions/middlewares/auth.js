@@ -4,7 +4,7 @@ const db = require("../db/db");
 const util = require("../lib/util");
 const statusCode = require("../constants/statusCode");
 const responseMessage = require("../constants/responseMessage");
-const { userDB } = require("../db");
+const { userDB, inappropriateReviewPostDB } = require("../db");
 const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../constants/jwt");
 
 const checkUser = async (req, res, next) => {
@@ -28,15 +28,11 @@ const checkUser = async (req, res, next) => {
     if (decodedToken === TOKEN_EXPIRED)
       return res
         .status(statusCode.UNAUTHORIZED)
-        .send(
-          util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_EXPIRED)
-        );
+        .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_EXPIRED));
     if (decodedToken === TOKEN_INVALID)
       return res
         .status(statusCode.UNAUTHORIZED)
-        .send(
-          util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID)
-        );
+        .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID));
 
     // 해독된 jwt에 담긴 id 값이 우리가 DB에서 찾고자 하는 user의 id입니다.
     const userId = decodedToken.id;
@@ -44,12 +40,10 @@ const checkUser = async (req, res, next) => {
     if (!userId)
       return res
         .status(statusCode.UNAUTHORIZED)
-        .send(
-          util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID)
-        );
+        .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID));
 
     // 위의 id 값으로 유저를 조회합니다.
-    const user = await userDB.getUserById(client, userId);
+    const user = await userDB.getUserByUserId(client, userId);
 
     // 유저가 없을 시의 에러 처리입니다.
     if (!user)
@@ -60,21 +54,23 @@ const checkUser = async (req, res, next) => {
     // 유저를 찾았으면, req.user에 유저 객체를 담아서 next()를 이용해 다음 middleware로 보냅니다.
     // 다음 middleware는 req.user에 담긴 유저 정보를 활용할 수 있습니다.
     req.user = user;
+
+    // 부적절 후기 등록 유저인지
+    const inappropriateReviewPost =
+      await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, req.user.id);
+
+    user.isReviewInappropriate = inappropriateReviewPost ? true : false;
+
     next();
   } catch (error) {
     console.log(error);
     functions.logger.error(
       `[AUTH ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      accesstoken
+      accesstoken,
     );
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
-      .send(
-        util.fail(
-          statusCode.INTERNAL_SERVER_ERROR,
-          responseMessage.INTERNAL_SERVER_ERROR
-        )
-      );
+      .send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
   } finally {
     client.release();
   }
