@@ -149,7 +149,7 @@ module.exports = async (req, res) => {
         isEmailVerified: true,
         isReviewed: userData.isReviewed,
         isUserReported: isUserReported,
-        isReviewInappropriate: userData.isReviewInappropriate,
+        isReviewInappropriate: isReviewInappropriate,
         message: message,
       };
 
