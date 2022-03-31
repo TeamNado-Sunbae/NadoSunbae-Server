@@ -92,9 +92,6 @@ module.exports = async (req, res) => {
       firebaseId,
     );
 
-    const firstMajor = await majorDB.getMajorByMajorId(client, firstMajorId);
-    const secondMajor = await majorDB.getMajorByMajorId(client, secondMajorId);
-
     user = {
       userId: user.id,
       createdAt: user.createdAt,
@@ -114,6 +111,10 @@ module.exports = async (req, res) => {
     await signInWithEmailAndPassword(firebaseAuth, email, password).then(() =>
       sendEmailVerification(firebaseAuth.currentUser),
     );
+
+    // 슬랙에 유저 정보 전송
+    const firstMajor = await majorDB.getMajorByMajorId(client, firstMajorId);
+    const secondMajor = await majorDB.getMajorByMajorId(client, secondMajorId);
 
     const slackMessage = `[NEW USER]\n Id: ${user.userId}\n닉네임: ${nickname}\n본전공: ${firstMajor.majorName} ${firstMajorStart}\n제2전공: ${secondMajor.majorName} ${secondMajorStart} `;
     slackAPI.sendMessageToSlackByUserSignup(slackMessage, slackAPI.DEV_WEB_HOOK_USER_MONITORING);
