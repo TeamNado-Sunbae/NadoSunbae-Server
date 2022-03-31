@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, notificationDB } = require("../../../db");
+const { classroomPostDB, userDB, notificationDB, majorDB } = require("../../../db");
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
@@ -97,6 +97,17 @@ module.exports = async (req, res) => {
           );
         }
       }
+    }
+
+    // 더미 데이터에 1:1 질문 들어왔을 경우 슬랙에 메세지 전송
+    if (answererId >= 1 && answererId <= 63) {
+      const answerer = await userDB.getUserByUserId(client, answererId);
+      const major = await majorDB.getMajorByMajorId(client, majorId);
+      const slackMessage = `[NEW QUESTION TO DUMMY USER]\n answererId: ${answererId}\n nickname: ${answerer.nickname}\n major: ${major.majorName}\n title: ${title}\n content: ${content} `;
+      slackAPI.sendMessageToSlackByQuestionToDummy(
+        slackMessage,
+        slackAPI.DEV_WEB_HOOK_DUMMY_MONITORING,
+      );
     }
   } catch (error) {
     functions.logger.error(
