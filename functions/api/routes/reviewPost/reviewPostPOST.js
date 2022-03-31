@@ -7,6 +7,7 @@ const {
   reviewPostDB,
   userDB,
   tagDB,
+  majorDB,
   relationReviewPostTagDB,
   inappropriateReviewPostDB,
 } = require("../../../db");
@@ -162,6 +163,11 @@ module.exports = async (req, res) => {
         backgroundImage,
       }),
     );
+
+    // 슬랙에 알림 전송
+    const major = await majorDB.getMajorByMajorId(client, majorId);
+    const slackMessage = `[NEW REVIEW POST]\npostId: ${post.postId}\nmajor: ${major.majorName}\nwriterId: ${writer.writerId} `;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_USER_MONITORING);
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
