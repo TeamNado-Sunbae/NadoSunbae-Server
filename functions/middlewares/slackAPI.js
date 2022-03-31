@@ -11,44 +11,7 @@ const DEV_WEB_HOOK_ERROR_MONITORING = process.env.DEV_WEB_HOOK_ERROR_MONITORING;
 const DEV_WEB_HOOK_USER_MONITORING = process.env.DEV_WEB_HOOK_USER_MONITORING;
 const DEV_WEB_HOOK_DUMMY_MONITORING = process.env.DEV_WEB_HOOK_DUMMY_MONITORING;
 
-const sendMessageToSlack = (message, apiEndPoint = DEV_WEB_HOOK_ERROR_MONITORING) => {
-  // 슬랙 Webhook을 이용해 슬랙에 메시지를 보내는 코드
-  try {
-    axios
-      .post(apiEndPoint, { text: message })
-      .then((response) => {})
-      .catch((e) => {
-        throw e;
-      });
-  } catch (e) {
-    console.error(e);
-    // 슬랙 Webhook 자체에서 에러가 났을 경우,
-    // Firebase 콘솔에 에러를 찍는 코드
-    functions.logger.error("[slackAPI 에러]", { error: e });
-  }
-};
-
-const sendMessageToSlackByUserSignup = (message, apiEndPoint = DEV_WEB_HOOK_USER_MONITORING) => {
-  // 슬랙 Webhook을 이용해 슬랙에 메시지를 보내는 코드
-  try {
-    axios
-      .post(apiEndPoint, { text: message })
-      .then((response) => {})
-      .catch((e) => {
-        throw e;
-      });
-  } catch (e) {
-    console.error(e);
-    // 슬랙 Webhook 자체에서 에러가 났을 경우,
-    // Firebase 콘솔에 에러를 찍는 코드
-    functions.logger.error("[slackAPI 에러]", { error: e });
-  }
-};
-
-const sendMessageToSlackByQuestionToDummy = (
-  message,
-  apiEndPoint = DEV_WEB_HOOK_DUMMY_MONITORING,
-) => {
+const sendMessageToSlack = (message, apiEndPoint) => {
   // 슬랙 Webhook을 이용해 슬랙에 메시지를 보내는 코드
   try {
     axios
@@ -69,8 +32,6 @@ const sendMessageToSlackByQuestionToDummy = (
 module.exports = {
   sendMessageToSlack,
   DEV_WEB_HOOK_ERROR_MONITORING,
-  sendMessageToSlackByUserSignup,
   DEV_WEB_HOOK_USER_MONITORING,
-  sendMessageToSlackByQuestionToDummy,
   DEV_WEB_HOOK_DUMMY_MONITORING,
 };

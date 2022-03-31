@@ -103,11 +103,8 @@ module.exports = async (req, res) => {
     if (answererId >= 1 && answererId <= 63) {
       const answerer = await userDB.getUserByUserId(client, answererId);
       const major = await majorDB.getMajorByMajorId(client, majorId);
-      const slackMessage = `[NEW QUESTION TO DUMMY USER]\n answererId: ${answererId}\n nickname: ${answerer.nickname}\n major: ${major.majorName}\n title: ${title}\n content: ${content} `;
-      slackAPI.sendMessageToSlackByQuestionToDummy(
-        slackMessage,
-        slackAPI.DEV_WEB_HOOK_DUMMY_MONITORING,
-      );
+      const slackMessage = `[NEW QUESTION]\n answererId: ${answererId}\n nickname: ${answerer.nickname}\n major: ${major.majorName}\n title: ${title}\n content: ${content} `;
+      slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_DUMMY_MONITORING);
     }
   } catch (error) {
     functions.logger.error(
