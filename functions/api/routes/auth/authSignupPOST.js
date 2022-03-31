@@ -4,9 +4,10 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB } = require("../../../db");
+const { userDB, majorDB } = require("../../../db");
 const { firebaseAuth } = require("../../../config/firebaseClient");
 const { sendEmailVerification, signInWithEmailAndPassword } = require("firebase/auth");
+const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
   const {
@@ -110,12 +111,24 @@ module.exports = async (req, res) => {
     await signInWithEmailAndPassword(firebaseAuth, email, password).then(() =>
       sendEmailVerification(firebaseAuth.currentUser),
     );
+
+    // 슬랙에 유저 정보 전송
+    const firstMajor = await majorDB.getMajorByMajorId(client, firstMajorId);
+    const secondMajor = await majorDB.getMajorByMajorId(client, secondMajorId);
+
+    const slackMessage = `[NEW USER]\nId: ${user.userId}\n닉네임: ${nickname}\n본전공: ${firstMajor.majorName} ${firstMajorStart}\n제2전공: ${secondMajor.majorName} ${secondMajorStart} `;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_USER_MONITORING);
   } catch (error) {
     console.log(error);
     functions.logger.error(
       `[EMAIL SIGNUP ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
       `[CONTENT] email:${email} ${error}`,
     );
+
+    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
+      req.originalUrl
+    } ${error} ${JSON.stringify(error)}`;
+    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
