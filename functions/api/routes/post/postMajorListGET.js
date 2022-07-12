@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, likeDB, blockDB } = require("../../../db");
+const { postDB, likeDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
@@ -36,46 +36,41 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let classroomPostList = await classroomPostDB.getClassroomPostListByMajorId(
-      client,
-      majorId,
-      postTypeId,
-      invisibleUserIds,
-    );
+    let postList = await postDB.getPostListByMajorId(client, majorId, postTypeId, invisibleUserIds);
 
     const likeList = await likeDB.getLikeListByUserId(client, req.user.id);
 
-    classroomPostList = classroomPostList.map((classroomPost) => {
+    postList = postList.map((post) => {
       // 좋아요 정보
       const likeData = _.find(likeList, {
-        postId: classroomPost.id,
-        postTypeId: classroomPost.postTypeId,
+        postId: post.id,
+        postTypeId: post.postTypeId,
       });
 
       const isLiked = likeData ? likeData.isLiked : false;
 
       return {
-        postId: classroomPost.id,
-        title: classroomPost.title,
-        content: classroomPost.content,
-        createdAt: classroomPost.createdAt,
+        postId: post.id,
+        title: post.title,
+        content: post.content,
+        createdAt: post.createdAt,
         writer: {
-          writerId: classroomPost.writerId,
-          profileImageId: classroomPost.profileImageId,
-          nickname: classroomPost.nickname,
+          writerId: post.writerId,
+          profileImageId: post.profileImageId,
+          nickname: post.nickname,
         },
         like: {
           isLiked: isLiked,
-          likeCount: classroomPost.likeCount,
+          likeCount: post.likeCount,
         },
-        commentCount: classroomPost.commentCount,
+        commentCount: post.commentCount,
       };
     });
 
     if (sort === "recent") {
-      classroomPostList = _.sortBy(classroomPostList, "createdAt").reverse();
+      postList = _.sortBy(postList, "createdAt").reverse();
     } else if (sort === "like") {
-      classroomPostList = _.sortBy(classroomPostList, ["like.likeCount", "like.isLiked"]).reverse();
+      postList = _.sortBy(postList, ["like.likeCount", "like.isLiked"]).reverse();
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
@@ -84,7 +79,7 @@ module.exports = async (req, res) => {
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, classroomPostList));
+      .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, postList));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

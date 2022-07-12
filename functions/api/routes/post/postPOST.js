@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, userDB, notificationDB, majorDB } = require("../../../db");
+const { postDB, userDB, notificationDB, majorDB } = require("../../../db");
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
-    let post = await classroomPostDB.createClassroomPost(
+    let post = await postDB.createPost(
       client,
       majorId,
       req.user.id,

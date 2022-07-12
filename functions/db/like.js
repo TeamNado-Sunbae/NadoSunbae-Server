@@ -17,7 +17,7 @@ const getLikeCountByPostId = async (client, postId, postTypeId) => {
 
 const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
   const reviewPostPostTypeId = postType.REVIEW;
-  const classroomPostPostTypeIds = [
+  const postTypeIds = [
     postType.INFORMATION,
     postType.QUESTION_TO_EVERYONE,
     postType.QUESTION_TO_PERSON,
@@ -36,12 +36,12 @@ const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
           AND p.is_deleted = false
           UNION
           SELECT l.id FROM "like" l
-          INNER JOIN classroom_post p
+          INNER JOIN post p
           ON l.post_id = p.id
           AND l.post_type_id = p.post_type_id
           AND l.user_id = $1
           AND l.is_liked = true
-          AND l.post_type_id IN (${classroomPostPostTypeIds.join()})
+          AND l.post_type_id IN (${postTypeIds.join()})
           AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
           AND p.is_deleted = false
         )

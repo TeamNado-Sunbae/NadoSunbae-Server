@@ -8,7 +8,7 @@ const db = require("../../../db/db");
 const {
   userDB,
   blockDB,
-  classroomPostDB,
+  postDB,
   commentDB,
   likeDB,
   notificationDB,
@@ -75,8 +75,7 @@ module.exports = async (req, res) => {
       client,
       userId,
     );
-    const classroomPostUpdatedByUserSecession =
-      await classroomPostDB.deleteClassroomPostListByUserSecession(client, userId);
+    const postUpdatedByUserSecession = await postDB.deletePostListByUserSecession(client, userId);
     const commentUpdatedByUserSecession = await commentDB.deleteCommentListByUserSecession(
       client,
       userId,
@@ -101,7 +100,7 @@ module.exports = async (req, res) => {
         updatedAt: userUpdatedByUserSecession.updatedAt,
       },
       block: blockUpdatedByUserSecession,
-      classroomPost: classroomPostUpdatedByUserSecession,
+      post: postUpdatedByUserSecession,
       comment: commentUpdatedByUserSecession,
       like: likeUpdatedByUserSecession,
       notification: notificationUpdatedByUserSecession,

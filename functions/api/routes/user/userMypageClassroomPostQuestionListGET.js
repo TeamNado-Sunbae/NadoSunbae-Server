@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, likeDB, userDB, commentDB, blockDB } = require("../../../db");
+const { postDB, likeDB, userDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
@@ -27,16 +27,12 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let classroomPostList = await classroomPostDB.getClassroomPostListByUserId(
-      client,
-      userId,
-      invisibleUserIds,
-    );
+    let postList = await postDB.getPostListByUserId(client, userId, invisibleUserIds);
 
-    // classroomPostList에 작성자 정보와 댓글 개수, 좋아요 개수를 붙임
-    classroomPostList = await Promise.all(
-      classroomPostList.map(async (classroomPost) => {
-        let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
+    // postList에 작성자 정보와 댓글 개수, 좋아요 개수를 붙임
+    postList = await Promise.all(
+      postList.map(async (post) => {
+        let writer = await userDB.getUserByUserId(client, post.writerId);
         // 작성자 정보
         writer = {
           writerId: writer.id,
@@ -47,14 +43,14 @@ module.exports = async (req, res) => {
         // 댓글 개수
         const commentCount = await commentDB.getCommentCountByPostId(
           client,
-          classroomPost.id,
+          post.id,
           invisibleUserIds,
         );
 
         // 좋아요 정보
         const likeData = await likeDB.getLikeByPostId(
           client,
-          classroomPost.id,
+          post.id,
           postType.QUESTION_TO_PERSON,
           req.user.id,
         );
@@ -63,7 +59,7 @@ module.exports = async (req, res) => {
 
         const likeCount = await likeDB.getLikeCountByPostId(
           client,
-          classroomPost.id,
+          post.id,
           postType.QUESTION_TO_PERSON,
         );
         const like = {
@@ -72,10 +68,10 @@ module.exports = async (req, res) => {
         };
 
         return {
-          postId: classroomPost.id,
-          title: classroomPost.title,
-          content: classroomPost.content,
-          createdAt: classroomPost.createdAt,
+          postId: post.id,
+          title: post.title,
+          content: post.content,
+          createdAt: post.createdAt,
           writer: writer,
           commentCount: commentCount.commentCount,
           like: like,
@@ -84,9 +80,9 @@ module.exports = async (req, res) => {
     );
 
     if (sort === "recent") {
-      classroomPostList = _.sortBy(classroomPostList, "createdAt").reverse();
+      postList = _.sortBy(postList, "createdAt").reverse();
     } else if (sort === "like") {
-      classroomPostList = _.sortBy(classroomPostList, ["like.likeCount", "like.isLiked"]).reverse();
+      postList = _.sortBy(postList, ["like.likeCount", "like.isLiked"]).reverse();
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
@@ -95,9 +91,7 @@ module.exports = async (req, res) => {
 
     res
       .status(statusCode.OK)
-      .send(
-        util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, { classroomPostList }),
-      );
+      .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, { postList }));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

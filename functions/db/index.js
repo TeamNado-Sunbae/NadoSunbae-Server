@@ -4,7 +4,7 @@ module.exports = {
   universityDB: require("./university"),
   majorDB: require("./major"),
   reviewPostDB: require("./reviewPost"),
-  classroomPostDB: require("./classroomPost"),
+  postDB: require("./post"),
   tagDB: require("./tag"),
   relationReviewPostTagDB: require("./relationReviewPostTag"),
   likeDB: require("./like"),

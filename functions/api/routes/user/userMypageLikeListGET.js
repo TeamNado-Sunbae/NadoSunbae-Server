@@ -7,7 +7,7 @@ const db = require("../../../db/db");
 const {
   reviewPostDB,
   relationReviewPostTagDB,
-  classroomPostDB,
+  postDB,
   likeDB,
   commentDB,
   userDB,
@@ -90,7 +90,7 @@ module.exports = async (req, res) => {
         postTypeIds = [postType.QUESTION_TO_EVERYONE, postType.QUESTION_TO_PERSON];
       }
 
-      likePostList = await classroomPostDB.getClassroomPostListByLike(
+      likePostList = await postDB.getPostListByLike(
         client,
         req.user.id,
         postTypeIds,
@@ -98,33 +98,29 @@ module.exports = async (req, res) => {
       );
 
       likePostList = await Promise.all(
-        likePostList.map(async (classroomPost) => {
+        likePostList.map(async (post) => {
           // 게시글 작성자 정보
-          const writer = await userDB.getUserByUserId(client, classroomPost.writerId);
+          const writer = await userDB.getUserByUserId(client, post.writerId);
 
           // 댓글 개수
           const commentCount = await commentDB.getCommentCountByPostId(
             client,
-            classroomPost.id,
+            post.id,
             invisibleUserIds,
           );
 
           // 좋아요 정보
-          const likeCount = await likeDB.getLikeCountByPostId(
-            client,
-            classroomPost.id,
-            classroomPost.postTypeId,
-          );
+          const likeCount = await likeDB.getLikeCountByPostId(client, post.id, post.postTypeId);
           const like = {
             isLiked: true, // 좋아요 목록이므로 모두 true
             likeCount: likeCount.likeCount,
           };
           return {
-            postId: classroomPost.id,
-            postTypeId: classroomPost.postTypeId,
-            title: classroomPost.title,
-            content: classroomPost.content,
-            createdAt: classroomPost.createdAt,
+            postId: post.id,
+            postTypeId: post.postTypeId,
+            title: post.title,
+            content: post.content,
+            createdAt: post.createdAt,
             writer: {
               writerId: writer.id,
               nickname: writer.nickname,

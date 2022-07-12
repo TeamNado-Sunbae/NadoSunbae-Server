@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { commentDB, userDB, classroomPostDB, notificationDB, blockDB } = require("../../../db");
+const { commentDB, userDB, postDB, notificationDB, blockDB } = require("../../../db");
 const notificationType = require("../../../constants/notificationType");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
 
     // 1대 1 질문글인 경우
     // 원글 작성자와 답변자만 댓글 등록 가능
-    const postData = await classroomPostDB.getClassroomPostByPostId(client, postId);
+    const postData = await postDB.getPostByPostId(client, postId);
     if (!postData) {
       return res
         .status(statusCode.NOT_FOUND)
@@ -73,7 +73,7 @@ module.exports = async (req, res) => {
     const notificationTitle = "나도선배";
 
     // 댓글이 작성된 게시글, 추후 댓글 생성 시 댓글 객체만 받아와도 기능할 수 있도록 구현
-    const commentPost = await classroomPostDB.getClassroomPostByPostId(client, comment.postId);
+    const commentPost = await postDB.getPostByPostId(client, comment.postId);
 
     // sender는 댓글 작성자
     const sender = await userDB.getUserByUserId(client, comment.writer.writerId);

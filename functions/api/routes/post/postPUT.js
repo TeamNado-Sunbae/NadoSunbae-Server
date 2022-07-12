@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, likeDB } = require("../../../db");
+const { postDB, likeDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -22,34 +22,29 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // 해당 글이 있는지 확인
-    const classroomPost = await classroomPostDB.getClassroomPostByPostId(client, postId);
-    if (!classroomPost) {
+    let post = await postDB.getPostByPostId(client, postId);
+    if (!post) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
 
     // 수정하려는 유저와 작성자 정보가 일치하는지 확인
-    if (classroomPost.writerId !== req.user.id) {
+    if (post.writerId !== req.user.id) {
       return res
         .status(statusCode.FORBIDDEN)
         .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
     }
 
     // 과방글 수정
-    let updatedClassroomPost = await classroomPostDB.updateClassroomPost(
-      client,
-      title,
-      content,
-      postId,
-    );
+    let updatedPost = await postDB.updatePost(client, title, content, postId);
 
-    const post = {
-      postId: updatedClassroomPost.id,
-      title: updatedClassroomPost.title,
-      content: updatedClassroomPost.content,
-      createdAt: updatedClassroomPost.createdAt,
-      updatedAt: updatedClassroomPost.updatedAt,
+    post = {
+      postId: updatedPost.id,
+      title: updatedPost.title,
+      content: updatedPost.content,
+      createdAt: updatedPost.createdAt,
+      updatedAt: updatedPost.updatedAt,
     };
 
     const writer = {
@@ -63,22 +58,18 @@ module.exports = async (req, res) => {
     };
 
     // 좋아요 수
-    const likeCount = await likeDB.getLikeCountByPostId(
-      client,
-      postId,
-      updatedClassroomPost.postTypeId,
-    );
+    const likeCount = await likeDB.getLikeCountByPostId(client, postId, updatedPost.postTypeId);
     // 좋아요 상태
     const likeStatus = await likeDB.getLikeByPostId(
       client,
       postId,
-      updatedClassroomPost.postTypeId,
+      updatedPost.postTypeId,
       req.user.id,
     );
 
     const isLiked = likeStatus ? likeStatus.isLiked : false;
 
-    updatedClassroomPost = {
+    updatedPost = {
       post: post,
       writer: writer,
       like: { isLiked: isLiked, likeCount: likeCount.likeCount },
@@ -86,9 +77,7 @@ module.exports = async (req, res) => {
 
     res
       .status(statusCode.OK)
-      .send(
-        util.success(statusCode.OK, responseMessage.UPDATE_ONE_POST_SUCCESS, updatedClassroomPost),
-      );
+      .send(util.success(statusCode.OK, responseMessage.UPDATE_ONE_POST_SUCCESS, updatedPost));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

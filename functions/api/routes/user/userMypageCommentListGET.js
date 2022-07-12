@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
     // 주인장이 작성한 답글이 있는 전체 질문글 or 정보글 조회 (postTypeId가 3 또는 2로 올것임.)
-    let classroomPostList = await commentDB.getClassroomPostListByMyCommentList(
+    let postList = await commentDB.getPostListByMyCommentList(
       client,
       commentWriterId,
       postTypeId,
@@ -36,18 +36,18 @@ module.exports = async (req, res) => {
     );
 
     // 게시글 목록 조회
-    const classroomPostListByMyCommentList = await Promise.all(
-      classroomPostList.map(async (classroomPost) => {
+    const postListByMyCommentList = await Promise.all(
+      postList.map(async (post) => {
         // 게시글 작성자 정보
-        let writer = await userDB.getUserByUserId(client, classroomPost.writerId);
+        let writer = await userDB.getUserByUserId(client, post.writerId);
 
         // 현재 주인장이 좋아요를 누른 상태인지(isLiked) 정보를 가져오기 위함
-        let like = await likeDB.getLikeByPostId(client, classroomPost.id, postTypeId, req.user.id);
+        let like = await likeDB.getLikeByPostId(client, post.id, postTypeId, req.user.id);
 
         const isLiked = like ? like.isLiked : false;
 
         // 해당 게시글의 좋아요 수
-        let likeCount = await likeDB.getLikeCountByPostId(client, classroomPost.id, postTypeId);
+        let likeCount = await likeDB.getLikeCountByPostId(client, post.id, postTypeId);
 
         like = {
           isLiked: isLiked,
@@ -58,16 +58,16 @@ module.exports = async (req, res) => {
 
         let commentCount = await commentDB.getCommentCountByPostId(
           client,
-          classroomPost.id,
+          post.id,
           invisibleUserIds,
         );
 
         return {
-          postId: classroomPost.id,
-          postTypeId: classroomPost.postTypeId,
-          title: classroomPost.title,
-          content: classroomPost.content,
-          createdAt: classroomPost.createdAt,
+          postId: post.id,
+          postTypeId: post.postTypeId,
+          title: post.title,
+          content: post.content,
+          createdAt: post.createdAt,
           writer: {
             writerId: writer.id,
             nickname: writer.nickname,
@@ -80,7 +80,7 @@ module.exports = async (req, res) => {
 
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, {
-        classroomPostListByMyCommentList,
+        postListByMyCommentList,
       }),
     );
   } catch (error) {

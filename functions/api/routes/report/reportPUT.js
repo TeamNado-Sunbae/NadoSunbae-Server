@@ -7,7 +7,7 @@ const {
   reportDB,
   userDB,
   reviewPostDB,
-  classroomPostDB,
+  postDB,
   commentDB,
   relationReviewPostTagDB,
 } = require("../../../db");
@@ -112,9 +112,9 @@ module.exports = async (req, res) => {
             .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
         }
       }
-    } else if (updatedReport.reportedTargetTypeId === reportType.CLASSROOM_POST) {
+    } else if (updatedReport.reportedTargetTypeId === reportType.POST) {
       // 과방글(질문글, 정보글) 삭제
-      deletedReportedTarget = await classroomPostDB.deleteClassroomPostByPostId(
+      deletedReportedTarget = await postDB.deletePostByPostId(
         client,
         updatedReport.reportedTargetId,
       );
