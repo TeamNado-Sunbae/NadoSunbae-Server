@@ -13,7 +13,7 @@ const {
   likeDB,
   notificationDB,
   reportDB,
-  reviewPostDB,
+  reviewDB,
 } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
@@ -87,7 +87,7 @@ module.exports = async (req, res) => {
       client,
       userId,
     );
-    const reviewPostUpdatedByUserSecession = await reviewPostDB.deleteReviewPostListByUserSecession(
+    const reviewUpdatedByUserSecession = await reviewDB.deleteReviewListByUserSecession(
       client,
       userId,
     );
@@ -105,7 +105,7 @@ module.exports = async (req, res) => {
       like: likeUpdatedByUserSecession,
       notification: notificationUpdatedByUserSecession,
       report: reportUpdatedByUserSecession,
-      reviewPost: reviewPostUpdatedByUserSecession,
+      review: reviewUpdatedByUserSecession,
     };
 
     res

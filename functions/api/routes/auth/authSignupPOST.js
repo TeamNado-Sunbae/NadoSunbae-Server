@@ -51,7 +51,6 @@ module.exports = async (req, res) => {
         return { err: true, error: e };
       });
 
-    // 에러 검증
     if (userFirebase.err) {
       if (userFirebase.error.code === "auth/email-already-exists") {
         return res
@@ -73,7 +72,6 @@ module.exports = async (req, res) => {
       }
     }
 
-    // RDS DB에 유저 생성
     const firebaseId = userFirebase.uid;
 
     // 유저 프로필 이미지 난수 생성

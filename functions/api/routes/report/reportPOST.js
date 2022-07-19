@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reportDB, reviewPostDB, postDB, commentDB } = require("../../../db");
+const { reportDB, reviewDB, postDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const reportType = require("../../../constants/reportType");
 
@@ -41,9 +41,9 @@ module.exports = async (req, res) => {
     // 신고 당하는 유저 - 글 or 댓글의 작성자
     let reportedTarget;
 
-    if (reportedTargetTypeId === reportType.REVIEW_POST) {
+    if (reportedTargetTypeId === reportType.REVIEW) {
       // 후기글 신고
-      reportedTarget = await reviewPostDB.getReviewPostByPostId(client, reportedTargetId);
+      reportedTarget = await reviewDB.getReviewByPostId(client, reportedTargetId);
     } else if (reportedTargetTypeId === reportType.POST) {
       // 과방글(질문글, 정보글) 신고
       reportedTarget = await postDB.getPostByPostId(client, reportedTargetId);

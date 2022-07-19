@@ -3,14 +3,14 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reviewPostDB, likeDB, relationReviewPostTagDB } = require("../../../db");
-const reviewPostContent = require("../../../constants/reviewPostContent");
+const { reviewDB, likeDB, relationReviewTagDB } = require("../../../db");
+const reviewContent = require("../../../constants/reviewContent");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 const backgroundImage = require("../../../constants/backgroundImage");
 
 module.exports = async (req, res) => {
-  const { postId } = req.params;
+  const { id } = req.params;
   const {
     backgroundImageId,
     oneLineReview,
@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
     tip,
   } = req.body;
 
-  if (!postId || !backgroundImageId || !oneLineReview || !prosCons) {
+  if (!id || !backgroundImageId || !oneLineReview || !prosCons) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -40,24 +40,23 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 해당 글이 있는지 확인
-    const reviewPost = await reviewPostDB.getReviewPostByPostId(client, postId);
-    if (!reviewPost) {
+    const review = await reviewDB.getReviewByPostId(client, id);
+    if (!review) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
 
     // 수정하려는 유저와 작성자 정보가 일치하는지 확인
-    if (reviewPost.writerId !== req.user.id) {
+    if (review.writerId !== req.user.id) {
       return res
         .status(statusCode.FORBIDDEN)
         .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
     }
 
-    let updatedReviewPost = await reviewPostDB.updateReviewPost(
+    let updatedReview = await reviewDB.updateReview(
       client,
-      postId,
+      id,
       backgroundImageId,
       oneLineReview,
       prosCons,
@@ -70,20 +69,20 @@ module.exports = async (req, res) => {
 
     let contentList = [];
     const content = [
-      updatedReviewPost.prosCons,
-      updatedReviewPost.curriculum,
-      updatedReviewPost.recommendLecture,
-      updatedReviewPost.nonRecommendLecture,
-      updatedReviewPost.career,
-      updatedReviewPost.tip,
+      updatedReview.prosCons,
+      updatedReview.curriculum,
+      updatedReview.recommendLecture,
+      updatedReview.nonRecommendLecture,
+      updatedReview.career,
+      updatedReview.tip,
     ];
     const tagName = [
-      reviewPostContent.PROS_CONS,
-      reviewPostContent.CURRICULUM,
-      reviewPostContent.RECOMMEND_LECTURE,
-      reviewPostContent.NON_RECOMMEND_LECTURE,
-      reviewPostContent.CAREER,
-      reviewPostContent.TIP,
+      reviewContent.PROS_CONS,
+      reviewContent.CURRICULUM,
+      reviewContent.RECOMMEND_LECTURE,
+      reviewContent.NON_RECOMMEND_LECTURE,
+      reviewContent.CAREER,
+      reviewContent.TIP,
     ];
 
     for (let i = 0; i < tagName.length; i++) {
@@ -96,11 +95,11 @@ module.exports = async (req, res) => {
     }
 
     const post = {
-      postId: updatedReviewPost.id,
-      oneLineReview: updatedReviewPost.oneLineReview,
+      postId: updatedReview.id,
+      oneLineReview: updatedReview.oneLineReview,
       contentList: contentList,
-      createdAt: updatedReviewPost.createdAt,
-      updatedAt: updatedReviewPost.updatedAt,
+      createdAt: updatedReview.createdAt,
+      updatedAt: updatedReview.updatedAt,
     };
 
     const writer = {
@@ -113,12 +112,12 @@ module.exports = async (req, res) => {
       secondMajorStart: req.user.secondMajorStart,
     };
 
-    const likeCount = await likeDB.getLikeCountByPostId(client, updatedReviewPost.id);
-    const likeStatus = await likeDB.getLikeByPostId(client, postId, postType.REVIEW, req.user.id);
+    const likeCount = await likeDB.getLikeCountByPostId(client, updatedReview.id);
+    const likeStatus = await likeDB.getLikeByPostId(client, id, postType.REVIEW, req.user.id);
 
     const isLiked = likeStatus ? likeStatus.isLiked : false;
 
-    updatedReviewPost = {
+    updatedReview = {
       post: post,
       writer: writer,
       like: { isLiked: isLiked, likeCount: likeCount.likeCount },
@@ -126,10 +125,7 @@ module.exports = async (req, res) => {
     };
 
     // 현재 릴레이션 태그
-    const originalTagListData = await relationReviewPostTagDB.getTagListByReviewPostId(
-      client,
-      postId,
-    );
+    const originalTagListData = await relationReviewTagDB.getTagListByReviewId(client, id);
     let originalTagList = [];
     originalTagListData.map((tag) => {
       originalTagList.push(tag.tagId);
@@ -147,9 +143,9 @@ module.exports = async (req, res) => {
     let deleteTagList = originalTagList.filter((x) => !newTagList.includes(x));
     // 차집합이 있으면
     if (deleteTagList.length !== 0) {
-      const deletedRelation = await relationReviewPostTagDB.deleteRelationReviewPostTagByTagList(
+      const deletedRelation = await relationReviewTagDB.deleteRelationReviewTagByTagList(
         client,
-        postId,
+        id,
         deleteTagList,
       );
       if (!deletedRelation) {
@@ -162,14 +158,12 @@ module.exports = async (req, res) => {
     // 새롭게 만들어야하는 후기 - 태그 릴레이션 추가
     let createTagList = newTagList.filter((x) => !originalTagList.includes(x));
     createTagList.map(async (tag) => {
-      await relationReviewPostTagDB.createRelationReviewPostTag(client, postId, tag);
+      await relationReviewTagDB.createRelationReviewTag(client, id, tag);
     });
 
     res
       .status(statusCode.OK)
-      .send(
-        util.success(statusCode.OK, responseMessage.UPDATE_ONE_POST_SUCCESS, updatedReviewPost),
-      );
+      .send(util.success(statusCode.OK, responseMessage.UPDATE_ONE_POST_SUCCESS, updatedReview));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

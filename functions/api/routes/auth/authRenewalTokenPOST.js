@@ -4,7 +4,7 @@ const db = require("../../../db/db");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
-const { userDB, reportDB, inappropriateReviewPostDB } = require("../../../db");
+const { userDB, reportDB, inappropriateReviewDB } = require("../../../db");
 const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../../../constants/jwt");
 const dateHandlers = require("../../../lib/dateHandlers");
 const reportPeriodType = require("../../../constants/reportPeriodType");
@@ -69,10 +69,12 @@ module.exports = async (req, res) => {
       }
 
       // 부적절 후기 등록 유저인지
-      const inappropriateReviewPost =
-        await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, userData.id);
+      const inappropriateReview = await inappropriateReviewDB.getInappropriateReviewByUser(
+        client,
+        userData.id,
+      );
 
-      const isReviewInappropriate = inappropriateReviewPost ? true : false;
+      const isReviewInappropriate = inappropriateReview ? true : false;
 
       // 부적절 후기글 등록 유저
       if (isReviewInappropriate) {
@@ -141,11 +143,6 @@ module.exports = async (req, res) => {
         firstMajorName: userData.firstMajorName,
         secondMajorId: userData.secondMajorId,
         secondMajorName: userData.secondMajorName,
-        /* 기존 로그인이랑 다른점
-        이메일 인증 안된 경우 액세스 토큰 반환하지 않기 때문에
-        자동 로그인은 이메일 인증 안된 유저일 가능성이 없음.
-        따라서 늘 true로 반환한다.
-        */
         isEmailVerified: true,
         isReviewed: userData.isReviewed,
         isUserReported: isUserReported,

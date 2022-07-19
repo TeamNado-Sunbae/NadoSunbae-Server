@@ -24,14 +24,11 @@ module.exports = async (req, res) => {
 
     let postList;
 
-    // 정보글일 경우 postypeId === 2
     if (type === "information") {
       postList = await postDB.getMyPostListByPostTypeIds(client, req.user.id, [
         postType.INFORMATION,
       ]);
-    }
-    // 질문글일 경우 postypeId === 3(전체) or 4(1:1)
-    else if (type === "question") {
+    } else if (type === "question") {
       postList = await postDB.getMyPostListByPostTypeIds(client, req.user.id, [
         postType.QUESTION_TO_EVERYONE,
         postType.QUESTION_TO_PERSON,
@@ -44,12 +41,11 @@ module.exports = async (req, res) => {
 
     postList = await Promise.all(
       postList.map(async (post) => {
-        // 댓글 개수
-
         // 내가 차단한 사람과 나를 차단한 사람을 block
         const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
         const invisibleUserIds = _.map(invisibleUserList, "userId");
 
+        // 댓글 개수
         const commentCount = await commentDB.getCommentCountByPostId(
           client,
           post.id,

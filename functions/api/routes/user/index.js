@@ -7,7 +7,7 @@ router.get("/app-version/recent", checkUser, require("./userMypageAppVersionRece
 router.get("/post/list", checkUser, require("./userMypagePostListGET"));
 router.get("/comment/list/:postTypeId", checkUser, require("./userMypageCommentListGET"));
 router.get("/like/list", checkUser, require("./userMypageLikeListGET"));
-router.get("/:userId/review-post/list", checkUser, require("./userMypageReviewPostListGET"));
+router.get("/:userId/review/list", checkUser, require("./userMypageReviewListGET"));
 router.get("/:userId/post/list", checkUser, require("./userMypagePostQuestionListGET"));
 router.get("/:userId", checkUser, require("./userMypageGET"));
 router.put("/", checkUser, require("./userMypagePUT"));

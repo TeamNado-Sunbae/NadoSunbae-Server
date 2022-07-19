@@ -3,14 +3,13 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reviewPostDB, relationReviewPostTagDB, userDB } = require("../../../db");
+const { reviewDB, relationReviewTagDB, userDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { postId } = req.params;
+  const { id } = req.params;
 
-  // params 값이 없을 경우
-  if (!postId) {
+  if (!id) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -20,38 +19,35 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const reviewPost = await reviewPostDB.getReviewPostByPostId(client, postId);
-    if (!reviewPost) {
+    const review = await reviewDB.getReviewByPostId(client, id);
+    if (!review) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
 
-    // 로그인 한 유저가 reviewPost의 작성자가 아니면 403 error
-    if (reviewPost.writerId !== req.user.id) {
+    // 로그인 한 유저가 review의 작성자가 아니면 403 error
+    if (review.writerId !== req.user.id) {
       return res
         .status(statusCode.FORBIDDEN)
         .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
     }
 
-    // reviewPost 삭제
-    let deletedReviewPost = await reviewPostDB.deleteReviewPost(client, postId);
+    // review 삭제
+    let deletedReview = await reviewDB.deleteReview(client, id);
 
-    // 삭제된 reviewPost와 연계된 relationReviewPostTag 삭제
-    let deletedRelationReviewPostTag = await relationReviewPostTagDB.deleteRelationReviewPostTag(
-      client,
-      postId,
-    );
-    if (!deletedRelationReviewPostTag) {
+    // 삭제된 review와 연계된 relationReviewTag 삭제
+    let deletedRelationReviewTag = await relationReviewTagDB.deleteRelationReviewTag(client, id);
+    if (!deletedRelationReviewTag) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST_TAG_RELATION));
     }
 
     // 후기글을 삭제 후, 해당 user가 작성한 다른 후기글이 없다면 isReviewed false로
-    const reviewPostByUser = await reviewPostDB.getReviewPostListByUserId(client, req.user.id);
+    const reviewByUser = await reviewDB.getReviewListByUserId(client, req.user.id);
     let isReviewed = true;
-    if (reviewPostByUser.length === 0) {
+    if (reviewByUser.length === 0) {
       const updatedUser = await userDB.updateUserByIsReviewed(client, false, req.user.id);
       isReviewed = updatedUser.isReviewed;
       if (!updatedUser) {
@@ -61,11 +57,11 @@ module.exports = async (req, res) => {
       }
     }
 
-    // deletedReviewPost에 isReviewed 추가해서 response 보냄
+    // deletedReview에 isReviewed 추가해서 response 보냄
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, {
-        postId: deletedReviewPost.postId,
-        isDeleted: deletedReviewPost.isDeleted,
+        postId: deletedReview.postId,
+        isDeleted: deletedReview.isDeleted,
         isReviewed: isReviewed,
       }),
     );

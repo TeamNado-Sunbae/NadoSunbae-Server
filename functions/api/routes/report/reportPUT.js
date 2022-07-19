@@ -6,10 +6,10 @@ const db = require("../../../db/db");
 const {
   reportDB,
   userDB,
-  reviewPostDB,
+  reviewDB,
   postDB,
   commentDB,
-  relationReviewPostTagDB,
+  relationReviewTagDB,
 } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const reportType = require("../../../constants/reportType");
@@ -74,32 +74,29 @@ module.exports = async (req, res) => {
     // 1. 신고된 report의 글 or 댓글은 삭제함
 
     let deletedReportedTarget;
-    if (updatedReport.reportedTargetTypeId === reportType.REVIEW_POST) {
+    if (updatedReport.reportedTargetTypeId === reportType.REVIEW) {
       // 후기글 삭제
-      deletedReportedTarget = await reviewPostDB.deleteReviewPost(
-        client,
-        updatedReport.reportedTargetId,
-      );
+      deletedReportedTarget = await reviewDB.deleteReview(client, updatedReport.reportedTargetId);
 
       // 후기글과 관련된 삭제 로직
-      // 삭제된 reviewPost와 연계된 relationReviewPostTag 삭제
-      let deletedRelationReviewPostTag = await relationReviewPostTagDB.deleteRelationReviewPostTag(
+      // 삭제된 review와 연계된 relationReviewTag 삭제
+      let deletedRelationReviewTag = await relationReviewTagDB.deleteRelationReviewTag(
         client,
         updatedReport.reportedTargetId,
       );
-      if (!deletedRelationReviewPostTag) {
+      if (!deletedRelationReviewTag) {
         return res
           .status(statusCode.NOT_FOUND)
           .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST_TAG_RELATION));
       }
 
       // 후기글을 삭제 후, 해당 user가 작성한 다른 후기글이 없다면 isReviewed false로
-      const reviewPostByUser = await reviewPostDB.getReviewPostListByUserId(
+      const reviewByUser = await reviewDB.getReviewListByUserId(
         client,
         deletedReportedTarget.writerId,
       );
       let isReviewed = true;
-      if (reviewPostByUser.length === 0) {
+      if (reviewByUser.length === 0) {
         const updatedUser = await userDB.updateUserByIsReviewed(
           client,
           false,

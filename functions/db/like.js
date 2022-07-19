@@ -16,7 +16,7 @@ const getLikeCountByPostId = async (client, postId, postTypeId) => {
 };
 
 const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
-  const reviewPostPostTypeId = postType.REVIEW;
+  const reviewTypeId = postType.REVIEW;
   const postTypeIds = [
     postType.INFORMATION,
     postType.QUESTION_TO_EVERYONE,
@@ -27,7 +27,7 @@ const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
     `
         WITH LIKE_ID AS (
           SELECT l.id FROM "like" l
-          INNER JOIN review_post p
+          INNER JOIN review p
           ON l.post_id = p.id
           AND l.user_id = $1
           AND l.post_type_id = $2
@@ -48,7 +48,7 @@ const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
 
         SELECT cast(count(*) as integer) AS like_count FROM LIKE_ID
         `,
-    [userId, reviewPostPostTypeId],
+    [userId, reviewTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };

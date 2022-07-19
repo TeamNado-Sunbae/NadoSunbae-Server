@@ -5,8 +5,8 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const {
-  reviewPostDB,
-  relationReviewPostTagDB,
+  reviewDB,
+  relationReviewTagDB,
   postDB,
   likeDB,
   commentDB,
@@ -34,12 +34,11 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    // 좋아요 목록 게시글 리스트
     let likePostList;
 
     // 후기글일 경우
     if (type === "review") {
-      likePostList = await reviewPostDB.getReviewPostListByLike(
+      likePostList = await reviewDB.getReviewListByLike(
         client,
         req.user.id,
         postType.REVIEW,
@@ -47,30 +46,23 @@ module.exports = async (req, res) => {
       );
 
       likePostList = await Promise.all(
-        likePostList.map(async (reviewPost) => {
+        likePostList.map(async (review) => {
           // 게시글 작성자 정보
-          const writer = await userDB.getUserByUserId(client, reviewPost.writerId);
+          const writer = await userDB.getUserByUserId(client, review.writerId);
 
           // 태그 정보
-          const tagNameList = await relationReviewPostTagDB.getTagListByPostId(
-            client,
-            reviewPost.id,
-          );
+          const tagNameList = await relationReviewTagDB.getTagListByPostId(client, review.id);
 
           // 좋아요 정보
-          const likeCount = await likeDB.getLikeCountByPostId(
-            client,
-            reviewPost.id,
-            postType.REVIEW,
-          );
+          const likeCount = await likeDB.getLikeCountByPostId(client, review.id, postType.REVIEW);
           const like = {
             isLiked: true, // 좋아요 목록이므로 모두 true
             likeCount: likeCount.likeCount,
           };
           return {
-            postId: reviewPost.id,
-            title: reviewPost.oneLineReview,
-            createdAt: reviewPost.createdAt,
+            postId: review.id,
+            title: review.oneLineReview,
+            createdAt: review.createdAt,
             tagList: tagNameList,
             writer: {
               writerId: writer.id,
