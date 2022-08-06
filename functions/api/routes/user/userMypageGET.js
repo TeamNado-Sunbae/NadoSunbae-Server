@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, likeDB, reviewPostDB, blockDB } = require("../../../db");
+const { userDB, likeDB, reviewDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -42,8 +42,8 @@ module.exports = async (req, res) => {
       count = likeCount.likeCount;
     } else {
       // 작성한 후기글 개수
-      const reviewPostCount = await reviewPostDB.getReviewPostCountByUserId(client, user.id);
-      count = reviewPostCount.count;
+      const reviewCount = await reviewDB.getReviewCountByUserId(client, user.id);
+      count = reviewCount.count;
     }
 
     user = {

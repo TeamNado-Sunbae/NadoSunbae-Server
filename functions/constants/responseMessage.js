@@ -85,7 +85,7 @@ module.exports = {
   ALREADY_REPORT: "이미 신고한 글/답글입니다.",
   NO_REPORT_TARGET: "존재하지 않는 글/답글입니다.",
   NO_REPORT: "존재하지 않는(혹은 만료된) 신고입니다.",
-  CREATE_ONE_INAPPROPRIATE_REVIEW_POST_SUCCESS: "부적절 후기 등록 성공",
+  CREATE_ONE_INAPPROPRIATE_REVIEW_SUCCESS: "부적절 후기 등록 성공",
 
   // 차단
   BLOCK_SUCCESS: "차단 업데이트 성공",

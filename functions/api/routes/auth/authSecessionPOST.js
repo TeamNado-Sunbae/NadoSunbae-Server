@@ -8,12 +8,12 @@ const db = require("../../../db/db");
 const {
   userDB,
   blockDB,
-  classroomPostDB,
+  postDB,
   commentDB,
   likeDB,
   notificationDB,
   reportDB,
-  reviewPostDB,
+  reviewDB,
 } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
@@ -75,8 +75,7 @@ module.exports = async (req, res) => {
       client,
       userId,
     );
-    const classroomPostUpdatedByUserSecession =
-      await classroomPostDB.deleteClassroomPostListByUserSecession(client, userId);
+    const postUpdatedByUserSecession = await postDB.deletePostListByUserSecession(client, userId);
     const commentUpdatedByUserSecession = await commentDB.deleteCommentListByUserSecession(
       client,
       userId,
@@ -88,7 +87,7 @@ module.exports = async (req, res) => {
       client,
       userId,
     );
-    const reviewPostUpdatedByUserSecession = await reviewPostDB.deleteReviewPostListByUserSecession(
+    const reviewUpdatedByUserSecession = await reviewDB.deleteReviewListByUserSecession(
       client,
       userId,
     );
@@ -101,12 +100,12 @@ module.exports = async (req, res) => {
         updatedAt: userUpdatedByUserSecession.updatedAt,
       },
       block: blockUpdatedByUserSecession,
-      classroomPost: classroomPostUpdatedByUserSecession,
+      post: postUpdatedByUserSecession,
       comment: commentUpdatedByUserSecession,
       like: likeUpdatedByUserSecession,
       notification: notificationUpdatedByUserSecession,
       report: reportUpdatedByUserSecession,
-      reviewPost: reviewPostUpdatedByUserSecession,
+      review: reviewUpdatedByUserSecession,
     };
 
     res

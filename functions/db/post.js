@@ -1,10 +1,10 @@
 const _ = require("lodash");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const deleteClassroomPostByPostId = async (client, postId) => {
+const deletePostByPostId = async (client, postId) => {
   const { rows } = await client.query(
     `
-      UPDATE classroom_post p
+      UPDATE post p
       SET is_deleted = true, updated_at = now()
       WHERE id = $1
       RETURNING id as post_id, is_deleted
@@ -14,10 +14,10 @@ const deleteClassroomPostByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getClassroomPostListByUserId = async (client, userId, invisibleUserIds) => {
+const getPostListByUserId = async (client, userId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-      SELECT * FROM classroom_post
+      SELECT * FROM post
       WHERE answerer_id = $1
       AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
       AND is_deleted = false
@@ -28,10 +28,10 @@ const getClassroomPostListByUserId = async (client, userId, invisibleUserIds) =>
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getClassroomPostByPostId = async (client, postId) => {
+const getPostByPostId = async (client, postId) => {
   const { rows } = await client.query(
     `
-    SELECT * FROM classroom_post 
+    SELECT * FROM post 
     WHERE id = $1
       AND is_deleted = false
     `,
@@ -40,11 +40,11 @@ const getClassroomPostByPostId = async (client, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getClassroomPostListByNotification = async (client) => {
+const getPostListByNotification = async (client) => {
   const { rows } = await client.query(
     `
     SELECT p.id, p.is_deleted
-    FROM classroom_post p
+    FROM post p
     INNER JOIN "user" u
     ON p.writer_id = u.id
     AND u.is_deleted = false
@@ -53,18 +53,10 @@ const getClassroomPostListByNotification = async (client) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const createClassroomPost = async (
-  client,
-  majorId,
-  writerId,
-  answererId,
-  postTypeId,
-  title,
-  content,
-) => {
+const createPost = async (client, majorId, writerId, answererId, postTypeId, title, content) => {
   const { rows } = await client.query(
     `
-    INSERT INTO classroom_post
+    INSERT INTO post
     (major_id, writer_id ,answerer_id, post_type_id, title, content)
     VALUES
     ($1, $2, $3, $4, $5, $6)
@@ -75,10 +67,10 @@ const createClassroomPost = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const updateClassroomPost = async (client, title, content, postId) => {
+const updatePost = async (client, title, content, postId) => {
   const { rows: existingRows } = await client.query(
     `
-    SELECT * FROM classroom_post p
+    SELECT * FROM post p
     WHERE id = $1
        AND is_deleted = false
     `,
@@ -91,7 +83,7 @@ const updateClassroomPost = async (client, title, content, postId) => {
 
   const { rows } = await client.query(
     `
-    UPDATE classroom_post p
+    UPDATE post p
     SET title = $1, content = $2, updated_at = now()
     WHERE id = $3
     RETURNING * 
@@ -101,7 +93,7 @@ const updateClassroomPost = async (client, title, content, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getClassroomPostListByMajorId = async (client, majorId, postTypeId, invisibleUserIds) => {
+const getPostListByMajorId = async (client, majorId, postTypeId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
   SELECT p.*, u.profile_image_id, u.nickname,
@@ -119,7 +111,7 @@ const getClassroomPostListByMajorId = async (client, majorId, postTypeId, invisi
     AND l.is_liked = true
     AND p.is_deleted = false
   )
-  FROM "classroom_post" p
+  FROM "post" p
   INNER JOIN "user" u
   ON p.writer_id = u.id
   AND u.is_deleted = false
@@ -134,11 +126,11 @@ const getClassroomPostListByMajorId = async (client, majorId, postTypeId, invisi
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getMyClassroomPostListByPostTypeIds = async (client, userId, postTypeIds) => {
+const getMyPostListByPostTypeIds = async (client, userId, postTypeIds) => {
   const { rows } = await client.query(
     `
     SELECT c.*, m.major_name 
-    FROM "classroom_post" c
+    FROM "post" c
     INNER JOIN major m
     ON c.major_id = m.id
     AND m.is_deleted = false
@@ -152,10 +144,10 @@ const getMyClassroomPostListByPostTypeIds = async (client, userId, postTypeIds) 
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const deleteClassroomPostListByUserSecession = async (client, userId) => {
+const deletePostListByUserSecession = async (client, userId) => {
   const { rows } = await client.query(
     `
-    UPDATE classroom_post
+    UPDATE post
     SET is_deleted = true, updated_at = now()
     WHERE writer_id = $1
     AND is_deleted = false
@@ -166,11 +158,11 @@ const deleteClassroomPostListByUserSecession = async (client, userId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getClassroomPostListByLike = async (client, userId, postTypeIds, invisibleUserIds) => {
+const getPostListByLike = async (client, userId, postTypeIds, invisibleUserIds) => {
   const { rows } = await client.query(
     `
     SELECT p.id, p.post_type_id, p.writer_id, p.title, p.content, p.created_at
-    FROM classroom_post p
+    FROM post p
     INNER JOIN "like" l
     ON p.id = l.post_id
     AND p.post_type_id = l.post_type_id
@@ -187,14 +179,14 @@ const getClassroomPostListByLike = async (client, userId, postTypeIds, invisible
 };
 
 module.exports = {
-  createClassroomPost,
-  deleteClassroomPostByPostId,
-  getClassroomPostListByUserId,
-  getClassroomPostListByMajorId,
-  getClassroomPostByPostId,
-  updateClassroomPost,
-  getMyClassroomPostListByPostTypeIds,
-  deleteClassroomPostListByUserSecession,
-  getClassroomPostListByLike,
-  getClassroomPostListByNotification,
+  createPost,
+  deletePostByPostId,
+  getPostListByUserId,
+  getPostListByMajorId,
+  getPostByPostId,
+  updatePost,
+  getMyPostListByPostTypeIds,
+  deletePostListByUserSecession,
+  getPostListByLike,
+  getPostListByNotification,
 };

@@ -3,37 +3,21 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { notificationDB } = require("../../../db");
+const { tagDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { notificationId } = req.params;
-
-  if (!notificationId) {
-    return res
-      .status(statusCode.BAD_REQUEST)
-      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-  }
   let client;
-
   try {
     client = await db.connect(req);
 
-    // 알림 삭제
-    const deletedNotification = await notificationDB.deleteNotificationByNotificationId(
-      client,
-      notificationId,
-    );
+    let tagList = await tagDB.getTagList(client);
 
-    // response로 보낼 isDeleted
-    const isDeleted = deletedNotification.isDeleted;
+    const data = { tagList: tagList };
 
-    res.status(statusCode.OK).send(
-      util.success(statusCode.OK, responseMessage.DELETE_ONE_NOTIFICATION_SUCCESS, {
-        notificationId: deletedNotification.id,
-        isDeleted,
-      }),
-    );
+    res
+      .status(statusCode.OK)
+      .send(util.success(statusCode.OK, responseMessage.READ_ALL_TAGS_SUCCESS, data));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

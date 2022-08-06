@@ -3,12 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const {
-  inappropriateReviewPostDB,
-  reviewPostDB,
-  userDB,
-  relationReviewPostTagDB,
-} = require("../../../db");
+const { inappropriateReviewDB, reviewDB, userDB, relationReviewTagDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -38,17 +33,17 @@ module.exports = async (req, res) => {
     }
 
     // 부적절 후기글 삭제
-    const deletedInappropriateReviewPost = await reviewPostDB.deleteReviewPost(client, postId);
+    const deletedInappropriateReview = await reviewDB.deleteReview(client, postId);
 
     // 부적절 후기글이 이미 삭제된 경우
-    if (!deletedInappropriateReviewPost) {
+    if (!deletedInappropriateReview) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
 
-    // 삭제된 reviewPost와 연계된 relationReviewPostTag 삭제
-    let deletedRelationReviewPostTag = await relationReviewPostTagDB.deleteRelationReviewPostTag(
+    // 삭제된 review와 연계된 relationReviewTag 삭제
+    let deletedRelationReviewTag = await relationReviewTagDB.deleteRelationReviewTag(
       client,
       postId,
     );
@@ -57,7 +52,7 @@ module.exports = async (req, res) => {
     const updatedUser = await userDB.updateUserByIsReviewed(
       client,
       false,
-      deletedInappropriateReviewPost.writerId,
+      deletedInappropriateReview.writerId,
     );
     if (!updatedUser) {
       return res
@@ -66,7 +61,7 @@ module.exports = async (req, res) => {
     }
 
     // 부적절 후기글 테이블에 추가
-    const inappropriateReviewPost = await inappropriateReviewPostDB.createInappropriateReviewPost(
+    const inappropriateReview = await inappropriateReviewDB.createInappropriateReview(
       client,
       postId,
       updatedUser.id,
@@ -74,10 +69,10 @@ module.exports = async (req, res) => {
     );
 
     res.status(statusCode.OK).send(
-      util.success(statusCode.OK, responseMessage.CREATE_ONE_INAPPROPRIATE_REVIEW_POST_SUCCESS, {
-        inappropriateReviewPost,
-        deletedInappropriateReviewPost: deletedInappropriateReviewPost.id,
-        isDeleted: deletedInappropriateReviewPost.isDeleted,
+      util.success(statusCode.OK, responseMessage.CREATE_ONE_INAPPROPRIATE_REVIEW_SUCCESS, {
+        inappropriateReview,
+        deletedInappropriateReview: deletedInappropriateReview.id,
+        isDeleted: deletedInappropriateReview.isDeleted,
         isReviewed: updatedUser.isReviewed,
       }),
     );

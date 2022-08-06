@@ -16,8 +16,8 @@ const getLikeCountByPostId = async (client, postId, postTypeId) => {
 };
 
 const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
-  const reviewPostPostTypeId = postType.REVIEW;
-  const classroomPostPostTypeIds = [
+  const reviewTypeId = postType.REVIEW;
+  const postTypeIds = [
     postType.INFORMATION,
     postType.QUESTION_TO_EVERYONE,
     postType.QUESTION_TO_PERSON,
@@ -27,7 +27,7 @@ const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
     `
         WITH LIKE_ID AS (
           SELECT l.id FROM "like" l
-          INNER JOIN review_post p
+          INNER JOIN review p
           ON l.post_id = p.id
           AND l.user_id = $1
           AND l.post_type_id = $2
@@ -36,19 +36,19 @@ const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
           AND p.is_deleted = false
           UNION
           SELECT l.id FROM "like" l
-          INNER JOIN classroom_post p
+          INNER JOIN post p
           ON l.post_id = p.id
           AND l.post_type_id = p.post_type_id
           AND l.user_id = $1
           AND l.is_liked = true
-          AND l.post_type_id IN (${classroomPostPostTypeIds.join()})
+          AND l.post_type_id IN (${postTypeIds.join()})
           AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
           AND p.is_deleted = false
         )
 
         SELECT cast(count(*) as integer) AS like_count FROM LIKE_ID
         `,
-    [userId, reviewPostPostTypeId],
+    [userId, reviewTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };

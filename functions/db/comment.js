@@ -148,7 +148,7 @@ const deleteCommentByCommentId = async (client, commentId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getClassroomPostListByMyCommentList = async (
+const getPostListByMyCommentList = async (
   client,
   commentWriterId,
   postTypeId,
@@ -158,7 +158,7 @@ const getClassroomPostListByMyCommentList = async (
     `
     SELECT p.id, p.writer_id, p.title, p.content, p.created_at, p.post_type_id
     FROM (SELECT DISTINCT post_id FROM comment WHERE writer_id = $1 AND is_deleted = false) AS c 
-    INNER JOIN classroom_post AS p
+    INNER JOIN post AS p
     ON c.post_id = p.id 
     AND p.writer_id != $1
     AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
@@ -190,7 +190,7 @@ module.exports = {
   getCommentCountByPostId,
   getCommentListByPostId,
   getCommentByCommentId,
-  getClassroomPostListByMyCommentList,
+  getPostListByMyCommentList,
   updateComment,
   deleteCommentByCommentId,
   deleteCommentListByPostId,

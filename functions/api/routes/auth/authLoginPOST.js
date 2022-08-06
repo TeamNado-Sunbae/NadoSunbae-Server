@@ -4,7 +4,7 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const { signInWithEmailAndPassword } = require("firebase/auth");
 const db = require("../../../db/db");
-const { userDB, reportDB, inappropriateReviewPostDB } = require("../../../db");
+const { userDB, reportDB, inappropriateReviewDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const { firebaseAuth } = require("../../../config/firebaseClient");
 const jwtHandlers = require("../../../lib/jwtHandlers");
@@ -55,8 +55,6 @@ module.exports = async (req, res) => {
     const {
       user: { uid: firebaseId, emailVerified: isEmailVerified },
     } = userFirebase;
-    // const firebaseId = userFirebase.user.uid;
-    // const isEmailVerified = userFirebase.user.emailVerified; 와 동일
 
     const userData = await userDB.getUserByFirebaseId(client, firebaseId);
     if (!userData) {
@@ -115,10 +113,12 @@ module.exports = async (req, res) => {
     }
 
     // 부적절 후기 등록 유저인지
-    const inappropriateReviewPost =
-      await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, userData.id);
+    const inappropriateReview = await inappropriateReviewDB.getInappropriateReviewByUser(
+      client,
+      userData.id,
+    );
 
-    const isReviewInappropriate = inappropriateReviewPost ? true : false;
+    const isReviewInappropriate = inappropriateReview ? true : false;
 
     // 부적절 후기글 등록 유저
     if (isReviewInappropriate) {

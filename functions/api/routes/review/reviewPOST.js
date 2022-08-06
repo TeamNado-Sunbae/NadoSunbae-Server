@@ -4,12 +4,12 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const {
-  reviewPostDB,
+  reviewDB,
   userDB,
   tagDB,
   majorDB,
-  relationReviewPostTagDB,
-  inappropriateReviewPostDB,
+  relationReviewTagDB,
+  inappropriateReviewDB,
 } = require("../../../db");
 const {
   PROS_CONS,
@@ -18,7 +18,7 @@ const {
   NON_RECOMMEND_LECTURE,
   CAREER,
   TIP,
-} = require("../../../constants/reviewPostContent");
+} = require("../../../constants/reviewContent");
 const slackAPI = require("../../../middlewares/slackAPI");
 const backgroundImage = require("../../../constants/backgroundImage");
 
@@ -35,7 +35,6 @@ module.exports = async (req, res) => {
     tip,
   } = req.body;
 
-  // 필요한 값이 없으면 실패 response
   if (!majorId || !backgroundImageId || !oneLineReview || !prosCons) {
     return res
       .status(statusCode.BAD_REQUEST)
@@ -70,8 +69,8 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
     }
 
-    // req.body로 받은 정보와 isFirstMajor를 가지고 reviewPost를 생성
-    let reviewPost = await reviewPostDB.createReviewPost(
+    // req.body로 받은 정보와 isFirstMajor를 가지고 review를 생성
+    let review = await reviewDB.createReview(
       client,
       majorId,
       req.user.id,
@@ -86,24 +85,24 @@ module.exports = async (req, res) => {
       tip,
     );
 
-    // curriculum, recommendLecture, nonRecommendLecture, career, tip 중 정보를 작성한 항목은 태그 검색되도록 relationReviewPostTag 생성
+    // curriculum, recommendLecture, nonRecommendLecture, career, tip 중 정보를 작성한 항목은 태그 검색되도록 relationReviewTag 생성
     let content = [curriculum, recommendLecture, nonRecommendLecture, career, tip];
     let tagName = [CURRICULUM, RECOMMEND_LECTURE, NON_RECOMMEND_LECTURE, CAREER, TIP];
     let tagByTagName;
-    let relationReviewPostTag;
+    let relationReviewTag;
 
     for (let i = 0; i < tagName.length; i++) {
       if (content[i]) {
         tagByTagName = await tagDB.getTagByTagName(client, tagName[i]);
-        relationReviewPostTag = await relationReviewPostTagDB.createRelationReviewPostTag(
+        relationReviewTag = await relationReviewTagDB.createRelationReviewTag(
           client,
-          reviewPost.id,
+          review.id,
           tagByTagName.id,
         );
       }
     }
 
-    // reviewPost를 작성한 writer는 isReviewed를 true로 업데이트
+    // review를 작성한 writer는 isReviewed를 true로 업데이트
     let updatedUser = await userDB.updateUserByIsReviewed(client, true, req.user.id);
 
     // post, writer, like, backgroundImage 객체로 묶어서 보냄
@@ -121,10 +120,10 @@ module.exports = async (req, res) => {
     }
 
     const post = {
-      postId: reviewPost.id,
-      oneLineReview: reviewPost.oneLineReview,
+      postId: review.id,
+      oneLineReview: review.oneLineReview,
       contentList: contentList,
-      createdAt: reviewPost.createdAt,
+      createdAt: review.createdAt,
     };
 
     const writer = {
@@ -145,14 +144,18 @@ module.exports = async (req, res) => {
     };
 
     const backgroundImage = {
-      imageId: reviewPost.backgroundImageId,
+      imageId: review.backgroundImageId,
     };
 
-    const inappropriateReviewPost =
-      await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, req.user.id);
-    if (inappropriateReviewPost) {
-      const deletedInappropriateReviewPost =
-        await inappropriateReviewPostDB.deleteInappropriateReviewPostList(client, req.user.id);
+    const inappropriateReview = await inappropriateReviewDB.getInappropriateReviewByUser(
+      client,
+      req.user.id,
+    );
+    if (inappropriateReview) {
+      const deletedInappropriateReview = await inappropriateReviewDB.deleteInappropriateReviewList(
+        client,
+        req.user.id,
+      );
     }
 
     res.status(statusCode.OK).send(
@@ -166,7 +169,7 @@ module.exports = async (req, res) => {
 
     // 슬랙에 알림 전송
     const major = await majorDB.getMajorByMajorId(client, majorId);
-    const slackMessage = `[NEW REVIEW POST]\npostId: ${post.postId}\nmajor: ${major.majorName}\nwriterId: ${writer.writerId} `;
+    const slackMessage = `[NEW REVIEW]\npostId: ${post.postId}\nmajor: ${major.majorName}\nwriterId: ${writer.writerId} `;
     slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_USER_MONITORING);
   } catch (error) {
     functions.logger.error(

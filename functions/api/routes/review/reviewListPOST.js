@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reviewPostDB, likeDB, relationReviewPostTagDB, blockDB } = require("../../../db");
+const { reviewDB, likeDB, relationReviewTagDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
@@ -27,10 +27,10 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let reviewPostList;
+    let reviewList;
     if (writerFilter === 1) {
       // 전체 목록 조회
-      reviewPostList = await reviewPostDB.getReviewPostListByFilters(
+      reviewList = await reviewDB.getReviewListByFilters(
         client,
         majorId,
         [true, false],
@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
       );
     } else if (writerFilter === 2) {
       // 본전공 필터만 선택
-      reviewPostList = await reviewPostDB.getReviewPostListByFilters(
+      reviewList = await reviewDB.getReviewListByFilters(
         client,
         majorId,
         [true],
@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
       );
     } else if (writerFilter === 3) {
       // 제 2전공 필터만 선택
-      reviewPostList = await reviewPostDB.getReviewPostListByFilters(
+      reviewList = await reviewDB.getReviewListByFilters(
         client,
         majorId,
         [false],
@@ -65,62 +65,57 @@ module.exports = async (req, res) => {
     }
 
     // 해당 과에 후기 글이 없을 경우
-    if (reviewPostList.length === 0) {
+    if (reviewList.length === 0) {
       return res
         .status(statusCode.OK)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, reviewPostList));
+        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, reviewList));
     }
 
-    const relationReviewPostTagList = await relationReviewPostTagDB.getRelationReviewPostTagList(
-      client,
-    );
+    const relationReviewTagList = await relationReviewTagDB.getRelationReviewTagList(client);
 
     const likeList = await likeDB.getLikeListByUserId(client, req.user.id);
 
-    reviewPostList = reviewPostList.map((reviewPost) => {
+    reviewList = reviewList.map((review) => {
       const writer = {
-        writerId: reviewPost.writerId,
-        profileImageId: reviewPost.profileImageId,
-        nickname: reviewPost.nickname,
-        firstMajorName: reviewPost.firstMajorName,
-        firstMajorStart: reviewPost.firstMajorStart,
-        secondMajorName: reviewPost.secondMajorName,
-        secondMajorStart: reviewPost.secondMajorStart,
+        writerId: review.writerId,
+        profileImageId: review.profileImageId,
+        nickname: review.nickname,
+        firstMajorName: review.firstMajorName,
+        firstMajorStart: review.firstMajorStart,
+        secondMajorName: review.secondMajorName,
+        secondMajorStart: review.secondMajorStart,
       };
 
       // 태그 정보
-      reviewPost.tagList = _.filter(
-        relationReviewPostTagList,
-        (r) => r.postId === reviewPost.id,
-      ).map((o) => {
+      review.tagList = _.filter(relationReviewTagList, (r) => r.postId === review.id).map((o) => {
         return { tagName: o.tagName };
       });
 
       // 좋아요 정보
       const likeData = _.find(likeList, {
-        postId: reviewPost.id,
+        postId: review.id,
         postTypeId: postType.REVIEW,
       });
 
       const isLiked = likeData ? likeData.isLiked : false;
 
       return {
-        postId: reviewPost.id,
-        oneLineReview: reviewPost.oneLineReview,
-        createdAt: reviewPost.createdAt,
+        postId: review.id,
+        oneLineReview: review.oneLineReview,
+        createdAt: review.createdAt,
         writer: writer,
-        tagList: reviewPost.tagList,
+        tagList: review.tagList,
         like: {
           isLiked: isLiked,
-          likeCount: reviewPost.likeCount,
+          likeCount: review.likeCount,
         },
       };
     });
 
     if (sort === "recent") {
-      reviewPostList = _.sortBy(reviewPostList, "createdAt").reverse();
+      reviewList = _.sortBy(reviewList, "createdAt").reverse();
     } else if (sort === "like") {
-      reviewPostList = _.sortBy(reviewPostList, ["like.likeCount", "like.isLiked"]).reverse();
+      reviewList = _.sortBy(reviewList, ["like.likeCount", "like.isLiked"]).reverse();
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
@@ -129,7 +124,7 @@ module.exports = async (req, res) => {
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, reviewPostList));
+      .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, reviewList));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

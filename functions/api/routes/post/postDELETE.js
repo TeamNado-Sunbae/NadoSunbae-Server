@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, commentDB } = require("../../../db");
+const { postDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
@@ -19,22 +19,22 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let classroomPost = await classroomPostDB.getClassroomPostByPostId(client, postId);
+    let post = await postDB.getPostByPostId(client, postId);
 
-    if (!classroomPost) {
+    if (!post) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
     // 1:1 질문글의 답변자가 아닌 경우 본인 게시글이 아닌데 삭제시도하면 403 FORBIDDEN Error
-    if (classroomPost.answererId !== req.user.id && classroomPost.writerId !== req.user.id) {
+    if (post.answererId !== req.user.id && post.writerId !== req.user.id) {
       return res
         .status(statusCode.FORBIDDEN)
         .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
     }
 
     // 게시글 삭제
-    let deletedClassroomPost = await classroomPostDB.deleteClassroomPostByPostId(client, postId);
+    let deletedPost = await postDB.deletePostByPostId(client, postId);
 
     // 관련된 댓글 삭제
     const deletedComment = await commentDB.deleteCommentListByPostId(client, postId);
@@ -47,9 +47,7 @@ module.exports = async (req, res) => {
 
     res
       .status(statusCode.OK)
-      .send(
-        util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, deletedClassroomPost),
-      );
+      .send(util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, deletedPost));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

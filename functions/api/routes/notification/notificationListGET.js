@@ -4,7 +4,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { notificationDB, classroomPostDB, commentDB, blockDB } = require("../../../db");
+const { notificationDB, postDB, commentDB, blockDB } = require("../../../db");
 const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
 const notificationType = require("../../../constants/notificationType");
@@ -39,11 +39,11 @@ module.exports = async (req, res) => {
       invisibleUserIds,
     );
 
-    const classroomPostList = await classroomPostDB.getClassroomPostListByNotification(client);
+    const postList = await postDB.getPostListByNotification(client);
     const commentList = await commentDB.getCommentListByNotification(client);
 
     notificationList = notificationList.map((notification) => {
-      const notificationPost = _.find(classroomPostList, { id: notification.postId });
+      const notificationPost = _.find(postList, { id: notification.postId });
       const isPostDeleted = notificationPost ? notificationPost.isDeleted : true;
 
       // commentId 1:1 질문글 생성 알림의 경우에는 null - notification type QUESTION_TO_PERSON_ALARM

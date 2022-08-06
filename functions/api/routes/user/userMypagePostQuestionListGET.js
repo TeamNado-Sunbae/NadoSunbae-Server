@@ -4,14 +4,15 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { classroomPostDB, likeDB, commentDB, blockDB } = require("../../../db");
+const { postDB, likeDB, userDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
-  const { type } = req.query;
+  const { userId } = req.params;
+  const { sort } = req.query;
 
-  if (!type) {
+  if (!userId || !sort) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -22,48 +23,35 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let classroomPostList;
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    // 정보글일 경우 postypeId === 2
-    if (type === "information") {
-      classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeIds(
-        client,
-        req.user.id,
-        [postType.INFORMATION],
-      );
-    }
-    // 질문글일 경우 postypeId === 3(전체) or 4(1:1)
-    else if (type === "question") {
-      classroomPostList = await classroomPostDB.getMyClassroomPostListByPostTypeIds(
-        client,
-        req.user.id,
-        [postType.QUESTION_TO_EVERYONE, postType.QUESTION_TO_PERSON],
-      );
-    } else {
-      return res
-        .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
-    }
+    let postList = await postDB.getPostListByUserId(client, userId, invisibleUserIds);
 
-    classroomPostList = await Promise.all(
-      classroomPostList.map(async (classroomPost) => {
+    // postList에 작성자 정보와 댓글 개수, 좋아요 개수를 붙임
+    postList = await Promise.all(
+      postList.map(async (post) => {
+        let writer = await userDB.getUserByUserId(client, post.writerId);
+        // 작성자 정보
+        writer = {
+          writerId: writer.id,
+          profileImageId: writer.profileImageId,
+          nickname: writer.nickname,
+        };
+
         // 댓글 개수
-
-        // 내가 차단한 사람과 나를 차단한 사람을 block
-        const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
-        const invisibleUserIds = _.map(invisibleUserList, "userId");
-
         const commentCount = await commentDB.getCommentCountByPostId(
           client,
-          classroomPost.id,
+          post.id,
           invisibleUserIds,
         );
 
         // 좋아요 정보
         const likeData = await likeDB.getLikeByPostId(
           client,
-          classroomPost.id,
-          classroomPost.postTypeId,
+          post.id,
+          postType.QUESTION_TO_PERSON,
           req.user.id,
         );
 
@@ -71,8 +59,8 @@ module.exports = async (req, res) => {
 
         const likeCount = await likeDB.getLikeCountByPostId(
           client,
-          classroomPost.id,
-          classroomPost.postTypeId,
+          post.id,
+          postType.QUESTION_TO_PERSON,
         );
         const like = {
           isLiked: isLiked,
@@ -80,23 +68,30 @@ module.exports = async (req, res) => {
         };
 
         return {
-          postId: classroomPost.id,
-          postTypeId: classroomPost.postTypeId,
-          title: classroomPost.title,
-          content: classroomPost.content,
-          majorName: classroomPost.majorName,
-          createdAt: classroomPost.createdAt,
+          postId: post.id,
+          title: post.title,
+          content: post.content,
+          createdAt: post.createdAt,
+          writer: writer,
           commentCount: commentCount.commentCount,
           like: like,
         };
       }),
     );
 
+    if (sort === "recent") {
+      postList = _.sortBy(postList, "createdAt").reverse();
+    } else if (sort === "like") {
+      postList = _.sortBy(postList, ["like.likeCount", "like.isLiked"]).reverse();
+    } else {
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_SORT));
+    }
+
     res
       .status(statusCode.OK)
-      .send(
-        util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, { classroomPostList }),
-      );
+      .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, { postList }));
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

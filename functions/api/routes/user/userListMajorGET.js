@@ -28,14 +28,11 @@ module.exports = async (req, res) => {
     // 본인은 선배 찾기 리스트에 보이지 않도록
     invisibleUserIds.push(req.user.id);
 
-    // get userList
     let userList = await userDB.getUserListByMajorId(client, majorId, invisibleUserIds);
 
     // userList를 랜덤으로 섞기
     userList = _.shuffle(userList);
 
-    // user의 fist_major_id가 majorId와 같으면 isFirstMajor true,
-    // second_major_id가 majorId와 같으면 isFirstMajor false
     let isFirstMajor;
     let majorStart;
 
