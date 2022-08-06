@@ -12,17 +12,21 @@ const DEV_WEB_HOOK_DUMMY_MONITORING = process.env.DEV_WEB_HOOK_DUMMY_MONITORING;
 
 const sendMessageToSlack = (message, apiEndPoint) => {
   // send message to slack using slack webhook
-  try {
-    axios
-      .post(apiEndPoint, { text: message })
-      .then((response) => {})
-      .catch((e) => {
-        throw e;
-      });
-  } catch (e) {
-    console.error(e);
-    // when slack webhook error occurs, logging error
-    functions.logger.error("[slackAPI 에러]", { error: e });
+  if (process.env.NODE_ENV !== "local") {
+    try {
+      axios
+        .post(apiEndPoint, {
+          text: `🚨 *${process.env.NODE_ENV}*`.toUpperCase() + "\n" + message,
+        })
+        .then((response) => {})
+        .catch((e) => {
+          throw e;
+        });
+    } catch (e) {
+      console.error(e);
+      // when slack webhook error occurs, logging error
+      functions.logger.error("[slackAPI 에러]", { error: e });
+    }
   }
 };
 
