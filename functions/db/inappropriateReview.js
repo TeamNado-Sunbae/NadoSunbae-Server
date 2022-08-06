@@ -1,15 +1,15 @@
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const createInappropriateReview = async (client, reviewId, writerId, reason) => {
+const createInappropriateReview = async (client, postId, writerId, reason) => {
   const { rows } = await client.query(
     `
       INSERT INTO inappropriate_review
-      (review_id, writer_id, reason)
+      (post_id, writer_id, reason)
       VALUES
       ($1, $2, $3)
       RETURNING *
       `,
-    [reviewId, writerId, reason],
+    [postId, writerId, reason],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };

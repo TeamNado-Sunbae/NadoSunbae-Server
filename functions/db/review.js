@@ -55,7 +55,7 @@ const getReviewListByFilters = async (
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getReviewByPostId = async (client, postId) => {
+const getReviewById = async (client, postId) => {
   const { rows } = await client.query(
     `
       SELECT * 
@@ -245,7 +245,7 @@ const getReviewListByLike = async (client, userId, postTypeId, invisibleUserIds)
 
 module.exports = {
   getReviewListByFilters,
-  getReviewByPostId,
+  getReviewById,
   createReview,
   deleteReview,
   updateReview,
