@@ -102,4 +102,5 @@ module.exports = {
   // 앱 정보
   READ_APP_VERSION: "최신 앱 버전 조회 성공",
   READ_APP_LINK: "앱 링크 조회 성공",
+  READ_APP_BANNER: "앱 배너 조회 성공",
 };
