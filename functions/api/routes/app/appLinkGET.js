@@ -2,7 +2,6 @@ const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
-const appVersion = require("../../../constants/appVersion");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
