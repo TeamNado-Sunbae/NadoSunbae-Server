@@ -243,6 +243,41 @@ const getReviewListByLike = async (client, userId, postTypeId, invisibleUserIds)
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+const getReviewListByUniversityId = async (
+  client,
+  userId,
+  universityId,
+  postTypeId,
+  invisibleUserIds,
+) => {
+  const { rows } = await client.query(
+    `
+    select r.id, r.major_id, r.one_line_review, r.created_at, m.major_name,
+    (
+      SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
+      WHERE l.post_id = r.id
+      AND l.post_type_id = $3
+      AND l.is_liked = true
+      AND r.is_deleted = false
+    ),
+    (
+      coalesce((SELECT l.is_liked FROM "like" l
+      WHERE l.post_id = r.id
+      AND l.post_type_id = $3
+      AND l.user_id = $1
+      AND r.is_deleted = false), false)
+    ) as is_liked
+    from review r
+    inner join major m on m.id = r.major_id
+    where m.university_id = $2
+    and r.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    order by r.created_at desc
+  `,
+    [userId, universityId, postTypeId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 module.exports = {
   getReviewListByFilters,
   getReviewById,
@@ -253,4 +288,5 @@ module.exports = {
   getReviewCountByUserId,
   deleteReviewListByUserSecession,
   getReviewListByLike,
+  getReviewListByUniversityId,
 };
