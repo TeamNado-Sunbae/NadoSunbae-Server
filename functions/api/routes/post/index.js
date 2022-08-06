@@ -6,6 +6,6 @@ router.post("/", checkUser, require("./postPOST"));
 router.delete("/:postId", checkUser, require("./postDELETE"));
 router.put("/:postId", checkUser, require("./postPUT"));
 router.get("/:postId", checkUser, require("./postGET"));
-router.get("/:postTypeId/major/:majorId/list", checkUser, require("./postMajorListGET"));
+router.get("/:postTypeId/major/:majorId", checkUser, require("./postMajorListGET"));
 
 module.exports = router;
