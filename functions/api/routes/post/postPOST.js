@@ -10,25 +10,36 @@ const slackAPI = require("../../../middlewares/slackAPI");
 const pushAlarmHandlers = require("../../../lib/pushAlarmHandlers");
 
 module.exports = async (req, res) => {
-  const { majorId, answererId, postTypeId, title, content } = req.body;
-  if (!majorId || !postTypeId || !title || !content) {
+  const { majorId, answererId, type, title, content } = req.body;
+  if (!majorId || !type || !title || !content) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-  }
-
-  if (postTypeId === postType.QUESTION_TO_PERSON) {
-    if (!answererId) {
-      return res
-        .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-    }
   }
 
   let client;
 
   try {
     client = await db.connect(req);
+
+    let postTypeId;
+    if (type === "information") {
+      postTypeId = postType.INFORMATION;
+    } else if (type === "questionToEveryone") {
+      postTypeId = postType.QUESTION_TO_EVERYONE;
+    } else if (type === "questionToPerson") {
+      if (!answererId) {
+        return res
+          .status(statusCode.BAD_REQUEST)
+          .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+      }
+      postTypeId = postType.QUESTION_TO_PERSON;
+    } else {
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
+    }
+
     let post = await postDB.createPost(
       client,
       majorId,

@@ -9,22 +9,13 @@ const slackAPI = require("../../../middlewares/slackAPI");
 const postType = require("../../../constants/postType");
 
 module.exports = async (req, res) => {
-  const { postTypeId, majorId } = req.params;
-  const { sort } = req.query;
+  const { majorId } = req.params;
+  const { sort, filter } = req.query;
 
-  if (!postTypeId || !majorId || !sort) {
+  if (!filter || !majorId || !sort) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-  }
-
-  if (
-    Number(postTypeId) !== postType.INFORMATION &&
-    Number(postTypeId) !== postType.QUESTION_TO_EVERYONE
-  ) {
-    return res
-      .status(statusCode.BAD_REQUEST)
-      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_POST_TYPE_ID));
   }
 
   let client;
@@ -35,6 +26,19 @@ module.exports = async (req, res) => {
     // 내가 차단한 사람과 나를 차단한 사람을 block
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
+
+    let postTypeId;
+    if (filter === "information") {
+      postTypeId = postType.INFORMATION;
+    } else if (filter === "questionToEveryone") {
+      postTypeId = postType.QUESTION_TO_EVERYONE;
+    } else if (filter === "questionToPerson") {
+      postTypeId = postType.QUESTION_TO_PERSON;
+    } else {
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
+    }
 
     let postList = await postDB.getPostListByMajorId(client, majorId, postTypeId, invisibleUserIds);
 

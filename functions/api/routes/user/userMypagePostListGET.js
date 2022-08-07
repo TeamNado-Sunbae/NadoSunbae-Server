@@ -6,12 +6,12 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { postDB, likeDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
+const { postType, likeType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
-  const { type } = req.query;
+  const { filter } = req.query;
 
-  if (!type) {
+  if (!filter) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -22,29 +22,24 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let postList;
-
-    if (type === "information") {
-      postList = await postDB.getMyPostListByPostTypeIds(client, req.user.id, [
-        postType.INFORMATION,
-      ]);
-    } else if (type === "question") {
-      postList = await postDB.getMyPostListByPostTypeIds(client, req.user.id, [
-        postType.QUESTION_TO_EVERYONE,
-        postType.QUESTION_TO_PERSON,
-      ]);
+    let postTypeIds;
+    if (filter === "questionToPerson") {
+      postTypeIds = [postType.QUESTION_TO_PERSON];
+    } else if (filter === "community") {
+      postTypeIds = [postType.GENERAL, postType.INFORMATION, postType.QUESTION_TO_EVERYONE];
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
     }
 
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
+    let postList = await postDB.getMyPostListByPostTypeIds(client, req.user.id, postTypeIds);
     postList = await Promise.all(
       postList.map(async (post) => {
-        // 내가 차단한 사람과 나를 차단한 사람을 block
-        const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
-        const invisibleUserIds = _.map(invisibleUserList, "userId");
-
         // 댓글 개수
         const commentCount = await commentDB.getCommentCountByPostId(
           client,
@@ -53,20 +48,9 @@ module.exports = async (req, res) => {
         );
 
         // 좋아요 정보
-        const likeData = await likeDB.getLikeByPostId(
-          client,
-          post.id,
-          post.postTypeId,
-          req.user.id,
-        );
-
+        const likeData = await likeDB.getLikeByPostId(client, post.id, likeType.POST, req.user.id);
         const isLiked = likeData ? likeData.isLiked : false;
-
-        const likeCount = await likeDB.getLikeCountByPostId(client, post.id, post.postTypeId);
-        const like = {
-          isLiked: isLiked,
-          likeCount: likeCount.likeCount,
-        };
+        const likeCount = await likeDB.getLikeCountByPostId(client, post.id, likeType.POST);
 
         return {
           postId: post.id,
@@ -76,7 +60,10 @@ module.exports = async (req, res) => {
           majorName: post.majorName,
           createdAt: post.createdAt,
           commentCount: commentCount.commentCount,
-          like: like,
+          like: {
+            isLiked: isLiked,
+            likeCount: likeCount.likeCount,
+          },
         };
       }),
     );

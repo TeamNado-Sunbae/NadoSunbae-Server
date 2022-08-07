@@ -5,12 +5,12 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { reportDB, reviewDB, postDB, commentDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
-const reportType = require("../../../constants/reportType");
+const { reportType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
-  const { reportedTargetId, reportedTargetTypeId, reason } = req.body;
+  const { reportedTargetId, type, reason } = req.body;
 
-  if (!reportedTargetId || !reportedTargetTypeId || !reason) {
+  if (!reportedTargetId || !type || !reason) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -24,14 +24,36 @@ module.exports = async (req, res) => {
     // 신고하는 유저
     const reportUserId = req.user.id;
 
+    let reportTypeId;
+    let reportTarget;
+    if (type === "review") {
+      reportTypeId = reportType.REVIEW;
+      reportTarget = await reviewDB.getReviewByPostId(client, reportedTargetId);
+    } else if (type === "post") {
+      reportTypeId = reportType.POST;
+      reportTarget = await postDB.getPostByPostId(client, reportedTargetId);
+    } else if (type === "comment") {
+      reportTypeId = reportType.COMMENT;
+      reportTarget = await commentDB.getCommentByCommentId(client, reportedTargetId);
+    } else {
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
+    }
+    // 신고 대상인 글/댓글이 없는 경우
+    if (!reportTarget) {
+      return res
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_REPORT_TARGET));
+    }
+
     // 이미 해당 글 or 댓글에 신고한 경우 사유가 달라도 재신고할 수 없음
     const existingReport = await reportDB.getReportByReportUser(
       client,
       reportUserId,
       reportedTargetId,
-      reportedTargetTypeId,
+      reportTypeId,
     );
-
     if (existingReport) {
       return res
         .status(statusCode.CONFLICT)
@@ -39,32 +61,7 @@ module.exports = async (req, res) => {
     }
 
     // 신고 당하는 유저 - 글 or 댓글의 작성자
-    let reportedTarget;
-
-    if (reportedTargetTypeId === reportType.REVIEW) {
-      // 후기글 신고
-      reportedTarget = await reviewDB.getReviewByPostId(client, reportedTargetId);
-    } else if (reportedTargetTypeId === reportType.POST) {
-      // 과방글(질문글, 정보글) 신고
-      reportedTarget = await postDB.getPostByPostId(client, reportedTargetId);
-    } else if (reportedTargetTypeId === reportType.COMMENT) {
-      // 댓글 신고
-      reportedTarget = await commentDB.getCommentByCommentId(client, reportedTargetId);
-      // 잘못된 report type
-    } else {
-      return res
-        .status(statusCode.BAD_REQUEST)
-        .send(util.success(statusCode.BAD_REQUEST, responseMessage.OUT_OF_VALUE));
-    }
-
-    // 신고 대상인 글/댓글이 없는 경우
-    if (!reportedTarget) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_REPORT_TARGET));
-    }
-
-    const reportedUserId = reportedTarget.writerId;
+    const reportedUserId = reportTarget.writerId;
 
     // 신고 테이블에 추가
     const report = await reportDB.createReport(
@@ -72,7 +69,7 @@ module.exports = async (req, res) => {
       reportUserId,
       reportedUserId,
       reportedTargetId,
-      reportedTargetTypeId,
+      reportTypeId,
       reason,
     );
 

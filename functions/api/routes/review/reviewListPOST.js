@@ -27,42 +27,27 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let reviewList;
-    if (writerFilter === 1) {
-      // 전체 목록 조회
-      reviewList = await reviewDB.getReviewListByFilters(
-        client,
-        majorId,
-        [true, false],
-        tagFilter,
-        invisibleUserIds,
-        postType.REVIEW,
-      );
-    } else if (writerFilter === 2) {
-      // 본전공 필터만 선택
-      reviewList = await reviewDB.getReviewListByFilters(
-        client,
-        majorId,
-        [true],
-        tagFilter,
-        invisibleUserIds,
-        postType.REVIEW,
-      );
-    } else if (writerFilter === 3) {
-      // 제 2전공 필터만 선택
-      reviewList = await reviewDB.getReviewListByFilters(
-        client,
-        majorId,
-        [false],
-        tagFilter,
-        invisibleUserIds,
-        postType.REVIEW,
-      );
+    let isFirstMajor;
+    if (writerFilter === "all") {
+      isFirstMajor = [true, false];
+    } else if (writerFilter === "firstMajor") {
+      isFirstMajor = [true];
+    } else if (writerFilter === "secondMajor") {
+      isFirstMajor = [false];
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
     }
+
+    let reviewList = await reviewDB.getReviewListByFilters(
+      client,
+      majorId,
+      isFirstMajor,
+      tagFilter,
+      invisibleUserIds,
+      postType.REVIEW,
+    );
 
     // 해당 과에 후기 글이 없을 경우
     if (reviewList.length === 0) {
