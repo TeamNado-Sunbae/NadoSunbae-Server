@@ -3,7 +3,7 @@ const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 const getBannerImageList = async (client) => {
   const { rows } = await client.query(
     `
-    select image_url from image
+    SELECT image_url FROM image
       `,
   );
   return convertSnakeToCamel.keysToCamel(rows);
