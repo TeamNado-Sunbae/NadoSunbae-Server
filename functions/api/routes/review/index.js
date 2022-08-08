@@ -7,11 +7,7 @@ router.delete("/:id", checkUser, require("./reviewDELETE"));
 router.get("/:id", checkUser, require("./reviewDetailGET"));
 router.get("/tag", checkUser, require("./reviewTagListGET"));
 router.put("/:id", checkUser, require("./reviewPUT"));
-
-// 모든 학과 리뷰 최신순 조회
-router.get("/university/:universityId", checkUser, require("./reviewGET"));
-
-// 특정 학과 리뷰 조회
-router.post("/", checkUser, require("./reviewListPOST"));
+router.get("/university/:universityId", checkUser, require("./reviewUniversityListGET"));
+router.post("/", checkUser, require("./reviewMajorListPOST"));
 
 module.exports = router;
