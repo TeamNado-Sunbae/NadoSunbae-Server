@@ -1,6 +1,6 @@
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const getBannerImages = async (client) => {
+const getBannerImageList = async (client) => {
   const { rows } = await client.query(
     `
     select image_url from image
@@ -10,5 +10,5 @@ const getBannerImages = async (client) => {
 };
 
 module.exports = {
-  getBannerImages,
+  getBannerImageList,
 };
