@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let bannerList = await imageDB.getBannerImages(client);
+    let bannerList = await imageDB.getBannerImageList(client);
     bannerList = _.map(bannerList, "imageUrl");
 
     res
@@ -34,5 +34,7 @@ module.exports = async (req, res) => {
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
       .send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+  } finally {
+    client.release();
   }
 };
