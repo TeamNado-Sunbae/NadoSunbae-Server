@@ -6,16 +6,26 @@ const { userDB } = require("../../../db");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { nickname, firstMajorId, firstMajorStart, secondMajorId, secondMajorStart, isOnQuestion } =
-    req.body;
+  const {
+    profileImageId,
+    nickname,
+    bio,
+    isOnQuestion,
+    firstMajorId,
+    firstMajorStart,
+    secondMajorId,
+    secondMajorStart,
+  } = req.body;
 
   if (
+    !profileImageId ||
     !nickname ||
+    !bio ||
     !firstMajorId ||
     !firstMajorStart ||
     !secondMajorId ||
     !secondMajorStart ||
-    (typeof isOnQuestion !== "boolean" && !isOnQuestion)
+    (!isOnQuestion && typeof isOnQuestion !== "boolean")
   ) {
     return res
       .status(statusCode.BAD_REQUEST)
@@ -27,7 +37,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 닉네임 변경했을 때만 nickname_updated_at 업데이트
+    // 닉네임 변경 여부
     const isNicknameUpdated = req.user.nickname !== nickname ? true : false;
 
     if (isNicknameUpdated) {
@@ -40,32 +50,34 @@ module.exports = async (req, res) => {
       }
     }
 
-    // 유저 정보 수정
-    let updatedUser = await userDB.updateUserByMypage(
+    const updatedUser = await userDB.updateUser(
       client,
       req.user.id,
+      profileImageId,
       nickname,
+      bio,
+      isOnQuestion,
       firstMajorId,
       firstMajorStart,
       secondMajorId,
       secondMajorStart,
-      isOnQuestion,
       isNicknameUpdated,
     );
 
-    updatedUser = {
-      nickname: updatedUser.nickname,
-      firstMajorId: updatedUser.firstMajorId,
-      firstMajorStart: updatedUser.firstMajorStart,
-      secondMajorId: updatedUser.secondMajorId,
-      secondMajorStart: updatedUser.secondMajorStart,
-      isOnQuestion: updatedUser.isOnQuestion,
-      updatedAt: updatedUser.updatedAt,
-    };
-
-    res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.UPDATE_ONE_USER_SUCCESS, updatedUser));
+    res.status(statusCode.OK).send(
+      util.success(statusCode.OK, responseMessage.UPDATE_ONE_USER_SUCCESS, {
+        profileImageId: updatedUser.profileImageId,
+        nickname: updatedUser.nickname,
+        bio: updatedUser.bio,
+        isOnQuestion: updatedUser.isOnQuestion,
+        firstMajorId: updatedUser.firstMajorId,
+        firstMajorStart: updatedUser.firstMajorStart,
+        secondMajorId: updatedUser.secondMajorId,
+        secondMajorStart: updatedUser.secondMajorStart,
+        updatedAt: updatedUser.updatedAt,
+        nicknameUpdatedAt: updatedUser.nicknameUpdatedAt,
+      }),
+    );
   } catch (error) {
     errorHandlers.error(req, error);
 

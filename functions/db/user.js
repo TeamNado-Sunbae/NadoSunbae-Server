@@ -205,22 +205,32 @@ const getUserListByCommentPostId = async (client, commentPostId, invisibleUserId
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const updateUserByMypage = async (
+const updateUser = async (
   client,
   userId,
+  profileImageId,
   nickname,
+  bio,
+  isOnQuestion,
   firstMajorId,
   firstMajorStart,
   secondMajorId,
   secondMajorStart,
-  isOnQuestion,
   isNicknameUpdated,
 ) => {
   const { rows } = await client.query(
     `
     UPDATE "user"
-    SET nickname = $2, first_major_id = $3, first_major_start = $4, second_major_id = $5, second_major_start = $6, is_on_question = $7, 
-    nickname_updated_at = (CASE WHEN $8 = true THEN now() ELSE nickname_updated_at END),
+    SET 
+    profile_image_id = $2,
+    nickname = $3,
+    bio = $4,
+    is_on_question = $5,
+    first_major_id = $6, 
+    first_major_start = $7, 
+    second_major_id = $8,
+    second_major_start = $9, 
+    nickname_updated_at = (CASE WHEN $10 = true THEN now() ELSE nickname_updated_at END),
     updated_at = now()
     WHERE id = $1
     AND is_deleted = false
@@ -228,12 +238,14 @@ const updateUserByMypage = async (
     `,
     [
       userId,
+      profileImageId,
       nickname,
+      bio,
+      isOnQuestion,
       firstMajorId,
       firstMajorStart,
       secondMajorId,
       secondMajorStart,
-      isOnQuestion,
       isNicknameUpdated,
     ],
   );
@@ -350,7 +362,7 @@ module.exports = {
   updateUserByDeviceToken,
   updateUserByRefreshToken,
   getUserListByCommentPostId,
-  updateUserByMypage,
+  updateUser,
   getUserByRefreshToken,
   updateUserByReport,
   updateUserByExpiredReport,
