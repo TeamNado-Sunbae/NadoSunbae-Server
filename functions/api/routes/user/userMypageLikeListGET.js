@@ -3,15 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const {
-  reviewDB,
-  relationReviewTagDB,
-  postDB,
-  likeDB,
-  commentDB,
-  userDB,
-  blockDB,
-} = require("../../../db");
+const { reviewDB, relationReviewTagDB, postDB, blockDB } = require("../../../db");
 const { postType, likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
 
@@ -35,39 +27,39 @@ module.exports = async (req, res) => {
 
     let likeList;
     if (filter === "review") {
+      const relationReviewTagList = await relationReviewTagDB.getRelationReviewTagList(client);
+
       likeList = await reviewDB.getReviewListByLike(
         client,
         req.user.id,
         likeType.REVIEW,
         invisibleUserIds,
       );
-      likeList = await Promise.all(
-        likeList.map(async (review) => {
-          // 게시글 작성자 정보
-          const writer = await userDB.getUserByUserId(client, review.writerId);
 
-          // 태그 정보
-          const tagNameList = await relationReviewTagDB.getTagNameListByReviewId(client, review.id);
+      likeList = likeList.map((review) => {
+        const tagNameList = _.filter(relationReviewTagList, (r) => r.reviewId === review.id).map(
+          (r) => {
+            return {
+              tagName: r.tagName,
+            };
+          },
+        );
 
-          // 좋아요 정보
-          const likeCount = await likeDB.getLikeCountByTarget(client, review.id, likeType.REVIEW);
-
-          return {
-            id: review.id,
-            title: review.oneLineReview,
-            createdAt: review.createdAt,
-            tagList: tagNameList,
-            writer: {
-              writerId: writer.id,
-              nickname: writer.nickname,
-            },
-            like: {
-              isLiked: true, // 좋아요 목록이므로 모두 true
-              likeCount: likeCount.likeCount,
-            },
-          };
-        }),
-      );
+        return {
+          id: review.id,
+          title: review.oneLineReview,
+          createdAt: review.createdAt,
+          tagList: tagNameList,
+          writer: {
+            writerId: review.writerId,
+            nickname: review.nickname,
+          },
+          like: {
+            isLiked: true, // 좋아요 목록이므로 모두 true
+            likeCount: review.likeCount,
+          },
+        };
+      });
     } else {
       let postTypeIds;
       if (filter === "questionToPerson") {
@@ -87,33 +79,39 @@ module.exports = async (req, res) => {
         postTypeIds,
         invisibleUserIds,
       );
-      likeList = await Promise.all(
-        likeList.map(async (post) => {
-          // 댓글 개수
-          const commentCount = await commentDB.getCommentCountByPostId(
-            client,
-            post.id,
-            invisibleUserIds,
-          );
 
-          // 좋아요 정보
-          const likeCount = await likeDB.getLikeCountByTarget(client, post.id, likeType.POST);
+      likeList = likeList.map((post) => {
+        let type;
+        switch (post.postTypeId) {
+          case postType.GENERAL:
+            type = "자유";
+            break;
+          case postType.QUESTION_TO_EVERYONE:
+            type = "질문";
+            break;
+          case postType.INFORMATION:
+            type = "정보";
+            break;
+        }
 
-          return {
-            id: post.id,
-            postTypeId: post.postTypeId,
-            title: post.title,
-            content: post.content,
-            majorName: post.majorName,
-            createdAt: post.createdAt,
-            commentCount: commentCount.commentCount,
-            like: {
-              isLiked: true, // 좋아요 목록이므로 모두 true
-              likeCount: likeCount.likeCount,
-            },
-          };
-        }),
-      );
+        return {
+          id: post.id,
+          type: type,
+          title: post.title,
+          content: post.content,
+          createdAt: post.createdAt,
+          majorName: post.majorName,
+          writer: {
+            id: post.writerId,
+            nickname: post.nickname,
+          },
+          commentCount: post.commentCount,
+          like: {
+            isLiked: true, // 좋아요 목록이므로 모두 true
+            likeCount: post.likeCount,
+          },
+        };
+      });
     }
 
     res

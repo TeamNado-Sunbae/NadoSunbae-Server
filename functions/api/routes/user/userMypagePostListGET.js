@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { postDB, likeDB, commentDB, blockDB } = require("../../../db");
+const { postDB, blockDB } = require("../../../db");
 const { postType, likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
 
@@ -36,36 +36,46 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let postList = await postDB.getMyPostListByPostTypeIds(client, req.user.id, postTypeIds);
-    postList = await Promise.all(
-      postList.map(async (post) => {
-        // 댓글 개수
-        const commentCount = await commentDB.getCommentCountByPostId(
-          client,
-          post.id,
-          invisibleUserIds,
-        );
-
-        // 좋아요 정보
-        const likeData = await likeDB.getLikeByTarget(client, post.id, likeType.POST, req.user.id);
-        const isLiked = likeData ? likeData.isLiked : false;
-        const likeCount = await likeDB.getLikeCountByTarget(client, post.id, likeType.POST);
-
-        return {
-          postId: post.id,
-          postTypeId: post.postTypeId,
-          title: post.title,
-          content: post.content,
-          majorName: post.majorName,
-          createdAt: post.createdAt,
-          commentCount: commentCount.commentCount,
-          like: {
-            isLiked: isLiked,
-            likeCount: likeCount.likeCount,
-          },
-        };
-      }),
+    let postList = await postDB.getPostListByWriterId(
+      client,
+      req.user.id,
+      likeType.POST,
+      postTypeIds,
+      invisibleUserIds,
     );
+
+    postList = postList.map((post) => {
+      let type;
+      switch (post.postTypeId) {
+        case postType.GENERAL:
+          type = "자유";
+          break;
+        case postType.QUESTION_TO_EVERYONE:
+          type = "질문";
+          break;
+        case postType.INFORMATION:
+          type = "정보";
+          break;
+      }
+
+      return {
+        postId: post.id,
+        type: type,
+        title: post.title,
+        content: post.content,
+        createdAt: post.createdAt,
+        majorName: post.majorName,
+        writer: {
+          id: post.writerId,
+          nickname: post.nickname,
+        },
+        commentCount: post.commentCount,
+        like: {
+          isLiked: post.isLiked,
+          likeCount: post.likeCount,
+        },
+      };
+    });
 
     res
       .status(statusCode.OK)
