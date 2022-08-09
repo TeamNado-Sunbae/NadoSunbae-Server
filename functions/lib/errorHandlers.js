@@ -1,5 +1,5 @@
 const functions = require("firebase-functions");
-const slackAPI = require("../../../middlewares/slackAPI");
+const slackAPI = require("../middlewares/slackAPI");
 
 const log = (req, error, payload) => {
   const title = `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`;
