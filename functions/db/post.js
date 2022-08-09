@@ -126,20 +126,54 @@ const getPostListByMajorId = async (client, majorId, postTypeId, likeTypeId, inv
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getMyPostListByPostTypeIds = async (client, userId, postTypeIds) => {
+const getPostListByWriterId = async (
+  client,
+  writerId,
+  likeTypeId,
+  postTypeIds,
+  invisibleUserIds,
+) => {
   const { rows } = await client.query(
     `
-    SELECT p.*, m.major_name 
+    SELECT p.id, p.post_type_id, p.title, p.content, p.created_at, p.writer_id, u.nickname, m.major_name,
+    (
+      SELECT cast(count(c.*) as integer) comment_count FROM comment c
+      WHERE c.post_id = p.id
+      AND c.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+      AND c.is_deleted = false
+      AND p.is_deleted = false
+    ),
+    (
+      SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
+      WHERE l.target_id = p.id
+      AND l.target_type_id = $2
+      AND l.is_liked = true
+      AND p.is_deleted = false
+    ),
+    (
+      coalesce(
+        (
+          SELECT l.is_liked FROM "like" l
+          WHERE l.target_id = p.id
+          AND l.target_type_id = $2
+          AND l.user_id = $1
+          AND p.is_deleted = false
+        ), false
+      )
+    ) as is_liked
     FROM "post" p
     INNER JOIN major m
     ON p.major_id = m.id
     AND m.is_deleted = false
+    INNER JOIN "user" u
+    ON p.writer_id = u.id
+    AND u.is_deleted = false
     AND p.writer_id = $1
     AND p.post_type_id IN (${postTypeIds.join()})
     AND p.is_deleted = false
     ORDER BY p.created_at desc
   `,
-    [userId],
+    [writerId, likeTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -262,7 +296,7 @@ module.exports = {
   getPostListByMajorId,
   getPostByPostId,
   updatePost,
-  getMyPostListByPostTypeIds,
+  getPostListByWriterId,
   deletePostListByUserSecession,
   getPostListByLike,
   getPostListByNotification,
