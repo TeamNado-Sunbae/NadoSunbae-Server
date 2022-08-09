@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
         util.success(statusCode.OK, responseMessage.READ_UNIVERSITY_EMAIL_SUCCESS, universityData),
       );
   } catch (error) {
-    errorHandlers.error(error);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
