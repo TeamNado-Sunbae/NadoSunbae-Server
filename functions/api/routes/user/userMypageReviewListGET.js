@@ -5,7 +5,7 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { reviewDB, likeDB, relationReviewTagDB, userDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
+const { likeType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
   const { userId } = req.params;
@@ -40,26 +40,26 @@ module.exports = async (req, res) => {
 
     reviewList = await Promise.all(
       reviewList.map(async (review) => {
-        const tagNameList = await relationReviewTagDB.getTagListByPostId(client, review.id);
+        const tagNameList = await relationReviewTagDB.getTagNameListByReviewId(client, review.id);
 
         // 좋아요 정보
-        const likeData = await likeDB.getLikeByPostId(
+        const likeData = await likeDB.getLikeByTarget(
           client,
           review.id,
-          postType.REVIEW,
+          likeType.REVIEW,
           req.user.id,
         );
 
         const isLiked = likeData ? likeData.isLiked : false;
 
-        const likeCount = await likeDB.getLikeCountByPostId(client, review.id, postType.REVIEW);
+        const likeCount = await likeDB.getLikeCountByTarget(client, review.id, likeType.REVIEW);
         const like = {
           isLiked: isLiked,
           likeCount: likeCount.likeCount,
         };
 
         return {
-          postId: review.id,
+          id: review.id,
           majorName: review.majorName,
           oneLineReview: review.oneLineReview,
           createdAt: review.createdAt,

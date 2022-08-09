@@ -8,10 +8,10 @@ const slackAPI = require("../../../middlewares/slackAPI");
 const { likeType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
-  const { postId, type } = req.body;
+  const { targetId, type } = req.body;
   let user = req.user;
 
-  if (!postId || !type) {
+  if (!targetId || !type) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -22,23 +22,23 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let likeTypeId;
+    let targetTypeId;
     if (type === "review") {
-      likeTypeId = likeType.REVIEW;
+      targetTypeId = likeType.REVIEW;
     } else if (type === "post") {
-      likeTypeId = likeType.POST;
+      targetTypeId = likeType.POST;
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
     }
 
-    const likeData = await likeDB.getLikeByPostId(client, postId, likeTypeId, user.id);
+    const likeData = await likeDB.getLikeByTarget(client, targetId, targetTypeId, user.id);
     let postLike;
     if (!likeData) {
-      postLike = await likeDB.createLikeByPostId(client, postId, likeTypeId, user.id);
+      postLike = await likeDB.createLikeByTarget(client, targetId, targetTypeId, user.id);
     } else {
-      postLike = await likeDB.updateLikeByPostId(client, postId, likeTypeId, user.id);
+      postLike = await likeDB.updateLikeByTarget(client, targetId, targetTypeId, user.id);
     }
 
     res

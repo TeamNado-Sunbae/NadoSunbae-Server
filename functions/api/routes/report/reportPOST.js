@@ -8,9 +8,9 @@ const slackAPI = require("../../../middlewares/slackAPI");
 const { reportType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
-  const { reportedTargetId, type, reason } = req.body;
+  const { targetId, type, reason } = req.body;
 
-  if (!reportedTargetId || !type || !reason) {
+  if (!targetId || !type || !reason) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -24,17 +24,17 @@ module.exports = async (req, res) => {
     // 신고하는 유저
     const reportUserId = req.user.id;
 
-    let reportTypeId;
+    let targetTypeId;
     let reportTarget;
     if (type === "review") {
-      reportTypeId = reportType.REVIEW;
-      reportTarget = await reviewDB.getReviewByPostId(client, reportedTargetId);
+      targetTypeId = reportType.REVIEW;
+      reportTarget = await reviewDB.getReviewById(client, targetId);
     } else if (type === "post") {
-      reportTypeId = reportType.POST;
-      reportTarget = await postDB.getPostByPostId(client, reportedTargetId);
+      targetTypeId = reportType.POST;
+      reportTarget = await postDB.getPostByPostId(client, targetId);
     } else if (type === "comment") {
-      reportTypeId = reportType.COMMENT;
-      reportTarget = await commentDB.getCommentByCommentId(client, reportedTargetId);
+      targetTypeId = reportType.COMMENT;
+      reportTarget = await commentDB.getCommentByCommentId(client, targetId);
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
@@ -51,8 +51,8 @@ module.exports = async (req, res) => {
     const existingReport = await reportDB.getReportByReportUser(
       client,
       reportUserId,
-      reportedTargetId,
-      reportTypeId,
+      targetId,
+      targetTypeId,
     );
     if (existingReport) {
       return res
@@ -68,8 +68,8 @@ module.exports = async (req, res) => {
       client,
       reportUserId,
       reportedUserId,
-      reportedTargetId,
-      reportTypeId,
+      targetId,
+      targetTypeId,
       reason,
     );
 

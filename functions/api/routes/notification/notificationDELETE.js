@@ -19,19 +19,15 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 알림 삭제
     const deletedNotification = await notificationDB.deleteNotificationByNotificationId(
       client,
       notificationId,
     );
 
-    // response로 보낼 isDeleted
-    const isDeleted = deletedNotification.isDeleted;
-
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.DELETE_ONE_NOTIFICATION_SUCCESS, {
         notificationId: deletedNotification.id,
-        isDeleted,
+        isDeleted: deletedNotification.isDeleted,
       }),
     );
   } catch (error) {

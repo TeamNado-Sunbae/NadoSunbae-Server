@@ -6,6 +6,7 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { userDB, likeDB, reviewDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
+const { likeType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
   const { userId } = req.params;
@@ -38,7 +39,13 @@ module.exports = async (req, res) => {
       const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
       const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-      const likeCount = await likeDB.getLikeCountByUserId(client, user.id, invisibleUserIds);
+      const likeCount = await likeDB.getLikeCountByUserId(
+        client,
+        likeType.REVIEW,
+        likeType.POST,
+        user.id,
+        invisibleUserIds,
+      );
       count = likeCount.likeCount;
     } else {
       // 작성한 후기글 개수

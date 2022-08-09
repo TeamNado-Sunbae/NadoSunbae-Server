@@ -6,7 +6,7 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { postDB, likeDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
+const { postType, likeType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
   const { majorId } = req.params;
@@ -40,15 +40,21 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
     }
 
-    let postList = await postDB.getPostListByMajorId(client, majorId, postTypeId, invisibleUserIds);
+    let postList = await postDB.getPostListByMajorId(
+      client,
+      majorId,
+      postTypeId,
+      likeType.POST,
+      invisibleUserIds,
+    );
 
     const likeList = await likeDB.getLikeListByUserId(client, req.user.id);
 
     postList = postList.map((post) => {
       // 좋아요 정보
       const likeData = _.find(likeList, {
-        postId: post.id,
-        postTypeId: post.postTypeId,
+        targetId: post.id,
+        targetTypeId: likeType.POST,
       });
 
       const isLiked = likeData ? likeData.isLiked : false;

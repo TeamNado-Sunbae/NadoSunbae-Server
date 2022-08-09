@@ -93,7 +93,7 @@ const updatePost = async (client, title, content, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getPostListByMajorId = async (client, majorId, postTypeId, invisibleUserIds) => {
+const getPostListByMajorId = async (client, majorId, postTypeId, likeTypeId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
   SELECT p.*, u.profile_image_id, u.nickname,
@@ -106,8 +106,8 @@ const getPostListByMajorId = async (client, majorId, postTypeId, invisibleUserId
   ),
   (
     SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
-    WHERE l.post_id = p.id
-    AND l.post_type_id = $2
+    WHERE l.target_id = p.id
+    AND l.target_type_id = $3
     AND l.is_liked = true
     AND p.is_deleted = false
   )
@@ -121,7 +121,7 @@ const getPostListByMajorId = async (client, majorId, postTypeId, invisibleUserId
   AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   ORDER BY p.created_at desc
   `,
-    [majorId, postTypeId],
+    [majorId, postTypeId, likeTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -129,15 +129,15 @@ const getPostListByMajorId = async (client, majorId, postTypeId, invisibleUserId
 const getMyPostListByPostTypeIds = async (client, userId, postTypeIds) => {
   const { rows } = await client.query(
     `
-    SELECT c.*, m.major_name 
-    FROM "post" c
+    SELECT p.*, m.major_name 
+    FROM "post" p
     INNER JOIN major m
-    ON c.major_id = m.id
+    ON p.major_id = m.id
     AND m.is_deleted = false
-    AND c.writer_id = $1
-    AND c.post_type_id IN (${postTypeIds.join()})
-    AND c.is_deleted = false
-    ORDER BY c.created_at desc
+    AND p.writer_id = $1
+    AND p.post_type_id IN (${postTypeIds.join()})
+    AND p.is_deleted = false
+    ORDER BY p.created_at desc
   `,
     [userId],
   );
@@ -158,22 +158,25 @@ const deletePostListByUserSecession = async (client, userId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getPostListByLike = async (client, userId, postTypeIds, invisibleUserIds) => {
+const getPostListByLike = async (client, userId, likeTypeId, postTypeIds, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-    SELECT p.id, p.post_type_id, p.writer_id, p.title, p.content, p.created_at
+    SELECT p.id, p.post_type_id, p.title, p.content, p.created_at, m.major_name
     FROM post p
     INNER JOIN "like" l
-    ON p.id = l.post_id
-    AND p.post_type_id = l.post_type_id
+    ON p.id = l.target_id
     AND l.user_id = $1
     AND l.is_liked = true
-    AND l.post_type_id IN (${postTypeIds.join()})
+    AND l.target_type_id = $2
+    INNER JOIN major m
+    ON p.major_id = m.id
+    AND m.is_deleted = false
     AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    AND p.post_type_id IN (${postTypeIds.join()})
     AND p.is_deleted = false
     ORDER BY l.updated_at desc
   `,
-    [userId],
+    [userId, likeTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };

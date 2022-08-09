@@ -48,13 +48,13 @@ module.exports = async (req, res) => {
           const writer = await userDB.getUserByUserId(client, review.writerId);
 
           // 태그 정보
-          const tagNameList = await relationReviewTagDB.getTagListByPostId(client, review.id);
+          const tagNameList = await relationReviewTagDB.getTagNameListByReviewId(client, review.id);
 
           // 좋아요 정보
-          const likeCount = await likeDB.getLikeCountByPostId(client, review.id, postType.REVIEW);
+          const likeCount = await likeDB.getLikeCountByTarget(client, review.id, likeType.REVIEW);
 
           return {
-            postId: review.id,
+            id: review.id,
             title: review.oneLineReview,
             createdAt: review.createdAt,
             tagList: tagNameList,
@@ -98,10 +98,10 @@ module.exports = async (req, res) => {
           );
 
           // 좋아요 정보
-          const likeCount = await likeDB.getLikeCountByPostId(client, post.id, likeType.POST);
+          const likeCount = await likeDB.getLikeCountByTarget(client, post.id, likeType.POST);
 
           return {
-            postId: post.id,
+            id: post.id,
             postTypeId: post.postTypeId,
             title: post.title,
             content: post.content,

@@ -9,7 +9,7 @@ const slackAPI = require("../../../middlewares/slackAPI");
 const { firebaseAuth } = require("../../../config/firebaseClient");
 const jwtHandlers = require("../../../lib/jwtHandlers");
 const dateHandlers = require("../../../lib/dateHandlers");
-const reportPeriodType = require("../../../constants/reportPeriodType");
+const reportPeriod = require("../../../constants/reportPeriod");
 
 module.exports = async (req, res) => {
   const { email, password, deviceToken } = req.body;
@@ -132,20 +132,20 @@ module.exports = async (req, res) => {
     // 신고로 인해 제재 중인 유저의 경우 - 신고 만료 확인
     if (userData.reportCreatedAt) {
       // 유저 신고 기간
-      let reportPeriod;
+      let period;
 
       if (userData.reportCount === 1) {
-        reportPeriod = reportPeriodType.FIRST_PERIOD;
+        period = reportPeriod.FIRST_PERIOD;
       } else if (userData.reportCount === 2) {
-        reportPeriod = reportPeriodType.SECOND_PERIOD;
+        period = reportPeriod.SECOND_PERIOD;
       } else if (userData.reportCount === 3) {
-        reportPeriod = reportPeriodType.THIRD_PERIOD;
+        period = reportPeriod.THIRD_PERIOD;
       }
 
       // 신고 만료 날짜
       const expirationDate = dateHandlers.getExpirationDateByMonth(
         userData.reportCreatedAt,
-        reportPeriod,
+        period,
       );
 
       message = `신고 누적이용자로\n${expirationDate.format(

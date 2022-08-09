@@ -6,7 +6,7 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { postDB, likeDB, userDB, commentDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
+const { likeType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
   const { userId } = req.params;
@@ -48,20 +48,11 @@ module.exports = async (req, res) => {
         );
 
         // 좋아요 정보
-        const likeData = await likeDB.getLikeByPostId(
-          client,
-          post.id,
-          postType.QUESTION_TO_PERSON,
-          req.user.id,
-        );
+        const likeData = await likeDB.getLikeByTarget(client, post.id, likeType.POST, req.user.id);
 
         const isLiked = likeData ? likeData.isLiked : false;
 
-        const likeCount = await likeDB.getLikeCountByPostId(
-          client,
-          post.id,
-          postType.QUESTION_TO_PERSON,
-        );
+        const likeCount = await likeDB.getLikeCountByTarget(client, post.id, likeType.POST);
         const like = {
           isLiked: isLiked,
           likeCount: likeCount.likeCount,

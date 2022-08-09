@@ -1,67 +1,63 @@
 const _ = require("lodash");
-const postType = require("../constants/postType");
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const getLikeCountByPostId = async (client, postId, postTypeId) => {
+const getLikeCountByTarget = async (client, targetId, targetTypeId) => {
   const { rows } = await client.query(
     `
         SELECT cast(count(*) as integer) AS like_count FROM "like"
-        WHERE post_id = $1 
-        AND post_type_id = $2
+        WHERE target_id = $1 
+        AND target_type_id = $2
         AND is_liked = true
         `,
-    [postId, postTypeId],
+    [targetId, targetTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getLikeCountByUserId = async (client, userId, invisibleUserIds) => {
-  const reviewTypeId = postType.REVIEW;
-  const postTypeIds = [
-    postType.INFORMATION,
-    postType.QUESTION_TO_EVERYONE,
-    postType.QUESTION_TO_PERSON,
-  ];
-
+const getLikeCountByUserId = async (
+  client,
+  reviewLikeType,
+  postLikeType,
+  userId,
+  invisibleUserIds,
+) => {
   const { rows } = await client.query(
     `
-        WITH LIKE_ID AS (
+        SELECT cast(count(*) as integer) AS like_count FROM 
+        (
           SELECT l.id FROM "like" l
-          INNER JOIN review p
-          ON l.post_id = p.id
+          INNER JOIN review r
+          ON l.target_id = r.id
+          AND l.target_type_id = $2
           AND l.user_id = $1
-          AND l.post_type_id = $2
           AND l.is_liked = true
-          AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-          AND p.is_deleted = false
+          AND r.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+          AND r.is_deleted = false
           UNION
           SELECT l.id FROM "like" l
           INNER JOIN post p
-          ON l.post_id = p.id
-          AND l.post_type_id = p.post_type_id
+          ON l.target_id = p.id
+          AND l.target_type_id = $3
           AND l.user_id = $1
           AND l.is_liked = true
-          AND l.post_type_id IN (${postTypeIds.join()})
           AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
           AND p.is_deleted = false
-        )
-
-        SELECT cast(count(*) as integer) AS like_count FROM LIKE_ID
+        ) as like_id
         `,
-    [userId, reviewTypeId],
+    [userId, reviewLikeType, postLikeType],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getLikeByPostId = async (client, postId, postTypeId, userId) => {
+const getLikeByTarget = async (client, targetId, targetTypeId, userId) => {
   const { rows } = await client.query(
     `
         SELECT * FROM "like"
-        WHERE post_id = $1 
-        AND post_type_id = $2 
+        WHERE target_id = $1 
+        AND target_type_id = $2 
         AND user_id = $3
         `,
-    [postId, postTypeId, userId],
+    [targetId, targetTypeId, userId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
@@ -69,7 +65,7 @@ const getLikeByPostId = async (client, postId, postTypeId, userId) => {
 const getLikeListByUserId = async (client, userId) => {
   const { rows } = await client.query(
     `
-        SELECT post_id, post_type_id, is_liked FROM "like"
+        SELECT target_id, target_type_id, is_liked FROM "like"
         WHERE user_id = $1
         `,
     [userId],
@@ -77,21 +73,21 @@ const getLikeListByUserId = async (client, userId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const createLikeByPostId = async (client, postId, postTypeId, userId) => {
+const createLikeByTarget = async (client, targetId, targetTypeId, userId) => {
   const { rows } = await client.query(
     `
     INSERT INTO "like"
-    (post_id, post_type_id, user_id, is_liked)
+    (target_id, target_type_id, user_id, is_liked)
     VALUES
     ($1, $2, $3, true)
-    RETURNING post_id, is_liked
+    RETURNING target_id, is_liked
     `,
-    [postId, postTypeId, userId],
+    [targetId, targetTypeId, userId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const updateLikeByPostId = async (client, postId, postTypeId, userId) => {
+const updateLikeByTarget = async (client, targetId, targetTypeId, userId) => {
   const { rows } = await client.query(
     `
     UPDATE "like"
@@ -99,12 +95,12 @@ const updateLikeByPostId = async (client, postId, postTypeId, userId) => {
     WHEN is_liked = true THEN false
     ELSE true
     END
-    WHERE post_id = $1
-    AND post_type_id = $2
+    WHERE target_id = $1
+    AND target_type_id = $2
     AND user_id = $3
-    RETURNING post_id, is_liked
+    RETURNING target_id, is_liked
     `,
-    [postId, postTypeId, userId],
+    [targetId, targetTypeId, userId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
@@ -124,10 +120,10 @@ const deleteLikeListByUserSecession = async (client, userId) => {
 };
 
 module.exports = {
-  getLikeCountByPostId,
-  getLikeByPostId,
-  createLikeByPostId,
-  updateLikeByPostId,
+  getLikeCountByTarget,
+  getLikeByTarget,
+  createLikeByTarget,
+  updateLikeByTarget,
   getLikeCountByUserId,
   deleteLikeListByUserSecession,
   getLikeListByUserId,

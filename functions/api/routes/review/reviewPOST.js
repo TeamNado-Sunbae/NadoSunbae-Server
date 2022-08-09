@@ -105,7 +105,7 @@ module.exports = async (req, res) => {
     // review를 작성한 writer는 isReviewed를 true로 업데이트
     let updatedUser = await userDB.updateUserByIsReviewed(client, true, req.user.id);
 
-    // post, writer, like, backgroundImage 객체로 묶어서 보냄
+    // review, writer, like, backgroundImage 객체로 묶어서 보냄
     let contentList = [];
     content = [prosCons, curriculum, recommendLecture, nonRecommendLecture, career, tip];
     tagName = [PROS_CONS, CURRICULUM, RECOMMEND_LECTURE, NON_RECOMMEND_LECTURE, CAREER, TIP];
@@ -118,13 +118,6 @@ module.exports = async (req, res) => {
         });
       }
     }
-
-    const post = {
-      postId: review.id,
-      oneLineReview: review.oneLineReview,
-      contentList: contentList,
-      createdAt: review.createdAt,
-    };
 
     const writer = {
       writerId: req.user.id,
@@ -158,9 +151,16 @@ module.exports = async (req, res) => {
       );
     }
 
+    review = {
+      id: review.id,
+      oneLineReview: review.oneLineReview,
+      contentList: contentList,
+      createdAt: review.createdAt,
+    };
+
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, {
-        post,
+        review,
         writer,
         like,
         backgroundImage,
@@ -169,7 +169,7 @@ module.exports = async (req, res) => {
 
     // 슬랙에 알림 전송
     const major = await majorDB.getMajorByMajorId(client, majorId);
-    const slackMessage = `[NEW REVIEW]\npostId: ${post.postId}\nmajor: ${major.majorName}\nwriterId: ${writer.writerId} `;
+    const slackMessage = `[NEW REVIEW]\n id: ${review.id}\nmajor: ${major.majorName}\nwriterId: ${writer.writerId} `;
     slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_USER_MONITORING);
   } catch (error) {
     functions.logger.error(

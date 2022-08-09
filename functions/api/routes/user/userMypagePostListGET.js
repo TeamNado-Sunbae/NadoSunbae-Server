@@ -48,9 +48,9 @@ module.exports = async (req, res) => {
         );
 
         // 좋아요 정보
-        const likeData = await likeDB.getLikeByPostId(client, post.id, likeType.POST, req.user.id);
+        const likeData = await likeDB.getLikeByTarget(client, post.id, likeType.POST, req.user.id);
         const isLiked = likeData ? likeData.isLiked : false;
-        const likeCount = await likeDB.getLikeCountByPostId(client, post.id, likeType.POST);
+        const likeCount = await likeDB.getLikeCountByTarget(client, post.id, likeType.POST);
 
         return {
           postId: post.id,
