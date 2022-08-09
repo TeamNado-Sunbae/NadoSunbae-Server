@@ -4,6 +4,7 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { majorDB } = require("../../../db");
 const errorHandlers = require("../../../lib/errorHandlers");
+const { NO_INFO, NOT_ENTERED } = require("../../../constants/major");
 
 module.exports = async (req, res) => {
   const { universityId } = req.params;
@@ -20,35 +21,33 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let majorList;
+    let isFirstMajor, isSecondMajor, invisibleMajorIds;
 
     if (filter === "all") {
-      majorList = await majorDB.getMajorListByUniversityId(
-        client,
-        universityId,
-        [true, false],
-        [true, false],
-      );
-      majorList.shift();
+      isFirstMajor = [true, false];
+      isSecondMajor = [true, false];
+      invisibleMajorIds = NO_INFO.concat(NOT_ENTERED);
     } else if (filter === "firstMajor") {
-      majorList = await majorDB.getMajorListByUniversityId(
-        client,
-        universityId,
-        [true],
-        [true, false],
-      );
+      isFirstMajor = [true];
+      isSecondMajor = [true, false];
+      invisibleMajorIds = NO_INFO;
     } else if (filter === "secondMajor") {
-      majorList = await majorDB.getMajorListByUniversityId(
-        client,
-        universityId,
-        [true, false],
-        [true],
-      );
+      isFirstMajor = [true, false];
+      isSecondMajor = [true];
+      invisibleMajorIds = NO_INFO;
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
     }
+
+    const majorList = await majorDB.getMajorListByUniversityId(
+      client,
+      universityId,
+      isFirstMajor,
+      isSecondMajor,
+      invisibleMajorIds,
+    );
 
     res
       .status(statusCode.OK)
