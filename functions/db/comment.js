@@ -151,27 +151,30 @@ const deleteCommentByCommentId = async (client, commentId) => {
 const getPostListByMyCommentList = async (
   client,
   commentWriterId,
-  postTypeId,
+  postTypeIds,
   invisibleUserIds,
 ) => {
   const { rows } = await client.query(
     `
-    SELECT p.id, p.writer_id, p.title, p.content, p.created_at, p.post_type_id
-    FROM (SELECT DISTINCT post_id FROM comment WHERE writer_id = $1 AND is_deleted = false) AS c 
-    INNER JOIN post AS p
-    ON c.post_id = p.id 
+    SELECT p.id, p.writer_id, p.title, p.content, p.created_at, p.post_type_id, m.major_name
+    FROM post p
+    INNER JOIN (SELECT DISTINCT post_id FROM comment WHERE writer_id = $1 AND is_deleted = false) AS c
+    ON c.post_id = p.id
+    INNER JOIN major m
+    ON p.major_id = m.id
+    AND m.is_deleted = false
     AND p.writer_id != $1
     AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-    AND p.post_type_id = $2
+    AND p.post_type_id IN (${postTypeIds.join()})
     AND p.is_deleted = false
     ORDER BY p.created_at desc
       `,
-    [commentWriterId, postTypeId],
+    [commentWriterId, postTypeIds],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const deleteCommentListByUserSecession = async (client, userId) => {
+const deleteCommentListByUserSecession = async (client, writerId) => {
   const { rows } = await client.query(
     `
     UPDATE comment
@@ -180,7 +183,7 @@ const deleteCommentListByUserSecession = async (client, userId) => {
     AND is_deleted = false
     RETURNING id, is_deleted, updated_at
     `,
-    [userId],
+    [writerId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };

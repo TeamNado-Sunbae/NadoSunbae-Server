@@ -1,15 +1,14 @@
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { inappropriateReviewDB, reviewDB, userDB, relationReviewTagDB } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
+const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { postId, reason } = req.body;
+  const { reviewId, reason } = req.body;
 
-  if (!postId || !reason) {
+  if (!reviewId || !reason) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -33,7 +32,7 @@ module.exports = async (req, res) => {
     }
 
     // 부적절 후기글 삭제
-    const deletedInappropriateReview = await reviewDB.deleteReview(client, postId);
+    const deletedInappropriateReview = await reviewDB.deleteReview(client, reviewId);
 
     // 부적절 후기글이 이미 삭제된 경우
     if (!deletedInappropriateReview) {
@@ -45,7 +44,7 @@ module.exports = async (req, res) => {
     // 삭제된 review와 연계된 relationReviewTag 삭제
     let deletedRelationReviewTag = await relationReviewTagDB.deleteRelationReviewTag(
       client,
-      postId,
+      reviewId,
     );
 
     // 부적절 후기글을 삭제 후, 작성자의 isReviewed false로
@@ -63,7 +62,7 @@ module.exports = async (req, res) => {
     // 부적절 후기글 테이블에 추가
     const inappropriateReview = await inappropriateReviewDB.createInappropriateReview(
       client,
-      postId,
+      reviewId,
       updatedUser.id,
       reason,
     );
@@ -77,16 +76,7 @@ module.exports = async (req, res) => {
       }),
     );
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

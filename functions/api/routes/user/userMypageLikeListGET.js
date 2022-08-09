@@ -1,5 +1,4 @@
 const _ = require("lodash");
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
@@ -13,13 +12,13 @@ const {
   userDB,
   blockDB,
 } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
+const { postType, likeType } = require("../../../constants/type");
+const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { type } = req.query;
+  const { filter } = req.query;
 
-  if (!type) {
+  if (!filter) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -34,33 +33,27 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let likePostList;
-
-    // 후기글일 경우
-    if (type === "review") {
-      likePostList = await reviewDB.getReviewListByLike(
+    let likeList;
+    if (filter === "review") {
+      likeList = await reviewDB.getReviewListByLike(
         client,
         req.user.id,
-        postType.REVIEW,
+        likeType.REVIEW,
         invisibleUserIds,
       );
-
-      likePostList = await Promise.all(
-        likePostList.map(async (review) => {
+      likeList = await Promise.all(
+        likeList.map(async (review) => {
           // 게시글 작성자 정보
           const writer = await userDB.getUserByUserId(client, review.writerId);
 
           // 태그 정보
-          const tagNameList = await relationReviewTagDB.getTagListByPostId(client, review.id);
+          const tagNameList = await relationReviewTagDB.getTagNameListByReviewId(client, review.id);
 
           // 좋아요 정보
-          const likeCount = await likeDB.getLikeCountByPostId(client, review.id, postType.REVIEW);
-          const like = {
-            isLiked: true, // 좋아요 목록이므로 모두 true
-            likeCount: likeCount.likeCount,
-          };
+          const likeCount = await likeDB.getLikeCountByTarget(client, review.id, likeType.REVIEW);
+
           return {
-            postId: review.id,
+            id: review.id,
             title: review.oneLineReview,
             createdAt: review.createdAt,
             tagList: tagNameList,
@@ -68,32 +61,34 @@ module.exports = async (req, res) => {
               writerId: writer.id,
               nickname: writer.nickname,
             },
-            like: like,
+            like: {
+              isLiked: true, // 좋아요 목록이므로 모두 true
+              likeCount: likeCount.likeCount,
+            },
           };
         }),
       );
-      // 과방글일 경우
-    } else if (type === "information" || type === "question") {
+    } else {
       let postTypeIds;
-      // 정보글인지 질문글인지에 따라 postTypeIds 결정
-      if (type === "information") {
-        postTypeIds = [postType.INFORMATION];
-      } else if (type === "question") {
-        postTypeIds = [postType.QUESTION_TO_EVERYONE, postType.QUESTION_TO_PERSON];
+      if (filter === "questionToPerson") {
+        postTypeIds = [postType.QUESTION_TO_PERSON];
+      } else if (filter === "community") {
+        postTypeIds = [postType.GENERAL, postType.INFORMATION, postType.QUESTION_TO_EVERYONE];
+      } else {
+        return res
+          .status(statusCode.BAD_REQUEST)
+          .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
       }
 
-      likePostList = await postDB.getPostListByLike(
+      likeList = await postDB.getPostListByLike(
         client,
         req.user.id,
+        likeType.POST,
         postTypeIds,
         invisibleUserIds,
       );
-
-      likePostList = await Promise.all(
-        likePostList.map(async (post) => {
-          // 게시글 작성자 정보
-          const writer = await userDB.getUserByUserId(client, post.writerId);
-
+      likeList = await Promise.all(
+        likeList.map(async (post) => {
           // 댓글 개수
           const commentCount = await commentDB.getCommentCountByPostId(
             client,
@@ -102,46 +97,30 @@ module.exports = async (req, res) => {
           );
 
           // 좋아요 정보
-          const likeCount = await likeDB.getLikeCountByPostId(client, post.id, post.postTypeId);
-          const like = {
-            isLiked: true, // 좋아요 목록이므로 모두 true
-            likeCount: likeCount.likeCount,
-          };
+          const likeCount = await likeDB.getLikeCountByTarget(client, post.id, likeType.POST);
+
           return {
-            postId: post.id,
+            id: post.id,
             postTypeId: post.postTypeId,
             title: post.title,
             content: post.content,
+            majorName: post.majorName,
             createdAt: post.createdAt,
-            writer: {
-              writerId: writer.id,
-              nickname: writer.nickname,
-            },
             commentCount: commentCount.commentCount,
-            like: like,
+            like: {
+              isLiked: true, // 좋아요 목록이므로 모두 true
+              likeCount: likeCount.likeCount,
+            },
           };
         }),
       );
-    } else {
-      return res
-        .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
     }
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, { likePostList }));
+      .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, { likeList }));
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

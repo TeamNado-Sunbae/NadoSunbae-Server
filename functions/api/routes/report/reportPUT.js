@@ -1,4 +1,3 @@
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
@@ -11,9 +10,9 @@ const {
   commentDB,
   relationReviewTagDB,
 } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
-const reportType = require("../../../constants/reportType");
+const { reportType } = require("../../../constants/type");
 const dateHandlers = require("../../../lib/dateHandlers");
+const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
   const { reportId } = req.params;
@@ -51,21 +50,19 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_REPORT));
     }
 
-    // updatedReport와 같은 reportedTarget 대한 report는 자동으로 접수 처리 (is_reported = true)
-    // 같은 reportedTarget을 가지는 report id의 list
-
-    const reportIdListByReportedTarget = await reportDB.getReportListByReportedTarget(
+    // updatedReport와 같은 target을 가지는 report는 자동으로 접수 처리 (is_reported = true)
+    const reportIdListByTarget = await reportDB.getReportListByTarget(
       client,
-      updatedReport.reportedTargetId,
-      updatedReport.reportedTargetTypeId,
+      updatedReport.targetId,
+      updatedReport.targetTypeId,
     );
 
     let reportIdList = [];
-    reportIdListByReportedTarget.map((report) => {
+    reportIdListByTarget.map((report) => {
       reportIdList.push(report.id);
     });
 
-    // 같은 reportedTarget을 가지는 report id가 있을 때만 해당 report 자동 접수 처리 (is_reported = true)
+    // 같은 target을 가지는 report id가 있을 때만 해당 report 자동 접수 처리 (is_reported = true)
     let updatedReportList = [];
     if (reportIdList.length !== 0) {
       updatedReportList = await reportDB.updateReportListByIsReported(client, [reportIdList], true);
@@ -73,16 +70,16 @@ module.exports = async (req, res) => {
 
     // 1. 신고된 report의 글 or 댓글은 삭제함
 
-    let deletedReportedTarget;
-    if (updatedReport.reportedTargetTypeId === reportType.REVIEW) {
+    let deletedTarget;
+    if (updatedReport.targetTypeId === reportType.REVIEW) {
       // 후기글 삭제
-      deletedReportedTarget = await reviewDB.deleteReview(client, updatedReport.reportedTargetId);
+      deletedTarget = await reviewDB.deleteReview(client, updatedReport.targetId);
 
       // 후기글과 관련된 삭제 로직
       // 삭제된 review와 연계된 relationReviewTag 삭제
       let deletedRelationReviewTag = await relationReviewTagDB.deleteRelationReviewTag(
         client,
-        updatedReport.reportedTargetId,
+        updatedReport.targetId,
       );
       if (!deletedRelationReviewTag) {
         return res
@@ -91,16 +88,13 @@ module.exports = async (req, res) => {
       }
 
       // 후기글을 삭제 후, 해당 user가 작성한 다른 후기글이 없다면 isReviewed false로
-      const reviewByUser = await reviewDB.getReviewListByUserId(
-        client,
-        deletedReportedTarget.writerId,
-      );
+      const reviewByUser = await reviewDB.getReviewListByUserId(client, deletedTarget.writerId);
       let isReviewed = true;
       if (reviewByUser.length === 0) {
         const updatedUser = await userDB.updateUserByIsReviewed(
           client,
           false,
-          deletedReportedTarget.writerId,
+          deletedTarget.writerId,
         );
         isReviewed = updatedUser.isReviewed;
         if (!updatedUser) {
@@ -109,18 +103,15 @@ module.exports = async (req, res) => {
             .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_USER));
         }
       }
-    } else if (updatedReport.reportedTargetTypeId === reportType.POST) {
+    } else if (updatedReport.targetTypeId === reportType.POST) {
       // 과방글(질문글, 정보글) 삭제
-      deletedReportedTarget = await postDB.deletePostByPostId(
-        client,
-        updatedReport.reportedTargetId,
-      );
+      deletedTarget = await postDB.deletePostByPostId(client, updatedReport.targetId);
 
       // 과방글과 관련된 삭제 로직
       // 관련된 댓글 삭제
       const deletedComment = await commentDB.deleteCommentListByPostId(
         client,
-        updatedReport.reportedTargetId,
+        updatedReport.targetId,
       );
 
       if (!deletedComment) {
@@ -128,12 +119,9 @@ module.exports = async (req, res) => {
           .status(statusCode.NOT_FOUND)
           .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_COMMENT));
       }
-    } else if (updatedReport.reportedTargetTypeId === reportType.COMMENT) {
+    } else if (updatedReport.targetTypeId === reportType.COMMENT) {
       // 댓글 삭제
-      deletedReportedTarget = await commentDB.deleteCommentByCommentId(
-        client,
-        updatedReport.reportedTargetId,
-      );
+      deletedTarget = await commentDB.deleteCommentByCommentId(client, updatedReport.targetId);
     } else {
       // 잘못된 report type
       return res
@@ -142,7 +130,7 @@ module.exports = async (req, res) => {
     }
 
     // 삭제 시도한 글/댓글이 없을 경우
-    if (!deletedReportedTarget) {
+    if (!deletedTarget) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_REPORT_TARGET));
@@ -232,26 +220,17 @@ module.exports = async (req, res) => {
         },
         {
           isReportedList: isReportedList,
-          reportedTarget: {
-            reportedTargetTypeId: updatedReport.reportedTargetTypeId,
-            reportedTargetId: updatedReport.reportedTargetId,
-            isDeleted: deletedReportedTarget.isDeleted,
+          target: {
+            targetTypeId: updatedReport.targetTypeId,
+            targetId: updatedReport.targetId,
+            isDeleted: deletedTarget.isDeleted,
           },
           reportedUser: user,
         },
       ),
     );
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

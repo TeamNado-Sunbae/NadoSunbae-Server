@@ -1,34 +1,44 @@
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { postDB, userDB, notificationDB, majorDB } = require("../../../db");
-const notificationType = require("../../../constants/notificationType");
-const postType = require("../../../constants/postType");
-const slackAPI = require("../../../middlewares/slackAPI");
+const { postType, notificationType } = require("../../../constants/type");
 const pushAlarmHandlers = require("../../../lib/pushAlarmHandlers");
+const errorHandlers = require("../../../lib/errorHandlers");
+const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { majorId, answererId, postTypeId, title, content } = req.body;
-  if (!majorId || !postTypeId || !title || !content) {
+  const { majorId, answererId, type, title, content } = req.body;
+  if (!majorId || !type || !title || !content) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-  }
-
-  if (postTypeId === postType.QUESTION_TO_PERSON) {
-    if (!answererId) {
-      return res
-        .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-    }
   }
 
   let client;
 
   try {
     client = await db.connect(req);
+
+    let postTypeId;
+    if (type === "information") {
+      postTypeId = postType.INFORMATION;
+    } else if (type === "questionToEveryone") {
+      postTypeId = postType.QUESTION_TO_EVERYONE;
+    } else if (type === "questionToPerson") {
+      if (!answererId) {
+        return res
+          .status(statusCode.BAD_REQUEST)
+          .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+      }
+      postTypeId = postType.QUESTION_TO_PERSON;
+    } else {
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
+    }
+
     let post = await postDB.createPost(
       client,
       majorId,
@@ -107,16 +117,7 @@ module.exports = async (req, res) => {
       slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_DUMMY_MONITORING);
     }
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

@@ -1,11 +1,10 @@
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { reviewDB, likeDB, relationReviewTagDB, userDB } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
+const { likeType } = require("../../../constants/type");
+const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
   const { userId } = req.params;
@@ -40,26 +39,26 @@ module.exports = async (req, res) => {
 
     reviewList = await Promise.all(
       reviewList.map(async (review) => {
-        const tagNameList = await relationReviewTagDB.getTagListByPostId(client, review.id);
+        const tagNameList = await relationReviewTagDB.getTagNameListByReviewId(client, review.id);
 
         // 좋아요 정보
-        const likeData = await likeDB.getLikeByPostId(
+        const likeData = await likeDB.getLikeByTarget(
           client,
           review.id,
-          postType.REVIEW,
+          likeType.REVIEW,
           req.user.id,
         );
 
         const isLiked = likeData ? likeData.isLiked : false;
 
-        const likeCount = await likeDB.getLikeCountByPostId(client, review.id, postType.REVIEW);
+        const likeCount = await likeDB.getLikeCountByTarget(client, review.id, likeType.REVIEW);
         const like = {
           isLiked: isLiked,
           likeCount: likeCount.likeCount,
         };
 
         return {
-          postId: review.id,
+          id: review.id,
           majorName: review.majorName,
           oneLineReview: review.oneLineReview,
           createdAt: review.createdAt,
@@ -76,16 +75,7 @@ module.exports = async (req, res) => {
       }),
     );
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
