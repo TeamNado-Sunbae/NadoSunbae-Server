@@ -5,9 +5,8 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { notificationDB, postDB, commentDB, blockDB } = require("../../../db");
-const postType = require("../../../constants/postType");
 const slackAPI = require("../../../middlewares/slackAPI");
-const notificationType = require("../../../constants/notificationType");
+const { postType, notificationType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
   const { receiverId } = req.params;

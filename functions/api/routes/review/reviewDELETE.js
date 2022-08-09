@@ -19,7 +19,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const review = await reviewDB.getReviewByPostId(client, id);
+    const review = await reviewDB.getReviewById(client, id);
     if (!review) {
       return res
         .status(statusCode.NOT_FOUND)
@@ -60,7 +60,7 @@ module.exports = async (req, res) => {
     // deletedReview에 isReviewed 추가해서 response 보냄
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.DELETE_ONE_POST_SUCCESS, {
-        postId: deletedReview.postId,
+        id: deletedReview.id,
         isDeleted: deletedReview.isDeleted,
         isReviewed: isReviewed,
       }),

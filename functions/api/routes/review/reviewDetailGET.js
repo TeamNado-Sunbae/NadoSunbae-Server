@@ -6,7 +6,7 @@ const db = require("../../../db/db");
 const { userDB, reviewDB, likeDB } = require("../../../db");
 const reviewContent = require("../../../constants/reviewContent");
 const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
+const { likeType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
   const { id } = req.params;
@@ -22,31 +22,31 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // 후기글 정보 가져오기
-    let post = await reviewDB.getReviewByPostId(client, id);
-    if (!post) {
+    let review = await reviewDB.getReviewById(client, id);
+    if (!review) {
       return res
         .status(statusCode.NOT_FOUND)
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_POST));
     }
     // 현재 뷰어의 좋아요 정보 가져오기
-    let likeCount = await likeDB.getLikeCountByPostId(client, id, postType.REVIEW);
-    let likeData = await likeDB.getLikeByPostId(client, id, postType.REVIEW, req.user.id);
+    let likeCount = await likeDB.getLikeCountByTarget(client, id, likeType.REVIEW);
+    let likeData = await likeDB.getLikeByTarget(client, id, likeType.REVIEW, req.user.id);
 
     const isLiked = likeData ? likeData.isLiked : false;
 
     // 후기글 작성자 정보 가져오기
-    const writerId = post.writerId;
+    const writerId = review.writerId;
     let writer = await userDB.getUserByUserId(client, writerId);
 
     // 후기글 내용 리스트로 보여주기
     let contentList = [];
     let content = [
-      post.prosCons,
-      post.curriculum,
-      post.recommendLecture,
-      post.nonRecommendLecture,
-      post.career,
-      post.tip,
+      review.prosCons,
+      review.curriculum,
+      review.recommendLecture,
+      review.nonRecommendLecture,
+      review.career,
+      review.tip,
     ];
     let tagName = [
       reviewContent.PROS_CONS,
@@ -68,14 +68,14 @@ module.exports = async (req, res) => {
 
     // 후기글 배경 이미지 가져오기
     const backgroundImage = {
-      imageId: post.backgroundImageId,
+      imageId: review.backgroundImageId,
     };
 
-    post = {
-      postId: post.id,
-      oneLineReview: post.oneLineReview,
+    review = {
+      id: review.id,
+      oneLineReview: review.oneLineReview,
       contentList: contentList,
-      createdAt: post.createdAt,
+      createdAt: review.createdAt,
     };
 
     writer = {
@@ -97,7 +97,7 @@ module.exports = async (req, res) => {
 
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.READ_ONE_POST_SUCCESS, {
-        post,
+        review,
         writer,
         like,
         backgroundImage,

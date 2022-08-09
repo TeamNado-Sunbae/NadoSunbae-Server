@@ -11,13 +11,13 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let tagList = await tagDB.getTagList(client);
-
-    const data = { tagList: tagList };
+    const tagList = await tagDB.getTagList(client);
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ALL_TAGS_SUCCESS, data));
+      .send(
+        util.success(statusCode.OK, responseMessage.READ_ALL_TAGS_SUCCESS, { tagList: tagList }),
+      );
   } catch (error) {
     functions.logger.error(
       `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,

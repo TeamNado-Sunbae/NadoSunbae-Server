@@ -4,38 +4,33 @@ const createReport = async (
   client,
   reportUserId,
   reportedUserId,
-  reportedTargetId,
-  reportedTargetTypeId,
+  targetId,
+  targetTypeId,
   reason,
 ) => {
   const { rows } = await client.query(
     `
       INSERT INTO report
-      (report_user_id, reported_user_id, reported_target_id, reported_target_type_id, reason)
+      (report_user_id, reported_user_id, target_id, target_type_id, reason)
       VALUES
       ($1, $2, $3, $4, $5)
       RETURNING *
       `,
-    [reportUserId, reportedUserId, reportedTargetId, reportedTargetTypeId, reason],
+    [reportUserId, reportedUserId, targetId, targetTypeId, reason],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getReportByReportUser = async (
-  client,
-  reportUserId,
-  reportedTargetId,
-  reportedTargetTypeId,
-) => {
+const getReportByReportUser = async (client, reportUserId, targetId, targetTypeId) => {
   const { rows } = await client.query(
     `
   SELECT * FROM report
   WHERE report_user_id = $1
-  AND reported_target_id = $2
-  AND reported_target_type_id = $3
+  AND target_id = $2
+  AND target_type_id = $3
   AND is_deleted = false
   `,
-    [reportUserId, reportedTargetId, reportedTargetTypeId],
+    [reportUserId, targetId, targetTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
@@ -53,16 +48,16 @@ const getReportListByReportedUser = async (client, reportedUserId) => {
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getReportListByReportedTarget = async (client, reportedTargetId, reportedTargetTypeId) => {
+const getReportListByTarget = async (client, targetId, targetTypeId) => {
   const { rows } = await client.query(
     `
   SELECT id FROM report
-  WHERE reported_target_id = $1
-  AND reported_target_type_id = $2
+  WHERE target_id = $1
+  AND target_type_id = $2
   AND is_reported = false
   AND is_deleted = false
   `,
-    [reportedTargetId, reportedTargetTypeId],
+    [targetId, targetTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -124,7 +119,7 @@ module.exports = {
   createReport,
   getReportByReportUser,
   getReportListByReportedUser,
-  getReportListByReportedTarget,
+  getReportListByTarget,
   updateReportListByIsReported,
   deleteReportList,
   deleteReportListByUserSecession,

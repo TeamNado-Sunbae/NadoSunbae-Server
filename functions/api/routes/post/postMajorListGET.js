@@ -6,25 +6,16 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { postDB, likeDB, blockDB } = require("../../../db");
 const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
+const { postType, likeType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
-  const { postTypeId, majorId } = req.params;
-  const { sort } = req.query;
+  const { majorId } = req.params;
+  const { sort, filter } = req.query;
 
-  if (!postTypeId || !majorId || !sort) {
+  if (!filter || !majorId || !sort) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
-  }
-
-  if (
-    Number(postTypeId) !== postType.INFORMATION &&
-    Number(postTypeId) !== postType.QUESTION_TO_EVERYONE
-  ) {
-    return res
-      .status(statusCode.BAD_REQUEST)
-      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_POST_TYPE_ID));
   }
 
   let client;
@@ -36,15 +27,34 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let postList = await postDB.getPostListByMajorId(client, majorId, postTypeId, invisibleUserIds);
+    let postTypeId;
+    if (filter === "information") {
+      postTypeId = postType.INFORMATION;
+    } else if (filter === "questionToEveryone") {
+      postTypeId = postType.QUESTION_TO_EVERYONE;
+    } else if (filter === "questionToPerson") {
+      postTypeId = postType.QUESTION_TO_PERSON;
+    } else {
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
+    }
+
+    let postList = await postDB.getPostListByMajorId(
+      client,
+      majorId,
+      postTypeId,
+      likeType.POST,
+      invisibleUserIds,
+    );
 
     const likeList = await likeDB.getLikeListByUserId(client, req.user.id);
 
     postList = postList.map((post) => {
       // 좋아요 정보
       const likeData = _.find(likeList, {
-        postId: post.id,
-        postTypeId: post.postTypeId,
+        targetId: post.id,
+        targetTypeId: likeType.POST,
       });
 
       const isLiked = likeData ? likeData.isLiked : false;

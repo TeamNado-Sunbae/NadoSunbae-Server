@@ -1,20 +1,20 @@
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const createInappropriateReview = async (client, postId, writerId, reason) => {
+const createInappropriateReview = async (client, reviewId, writerId, reason) => {
   const { rows } = await client.query(
     `
       INSERT INTO inappropriate_review
-      (post_id, writer_id, reason)
+      (review_id, writer_id, reason)
       VALUES
       ($1, $2, $3)
       RETURNING *
       `,
-    [postId, writerId, reason],
+    [reviewId, writerId, reason],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const deleteInappropriateReviewList = async (client, userId) => {
+const deleteInappropriateReviewList = async (client, writerId) => {
   const { rows } = await client.query(
     `
       UPDATE inappropriate_review
@@ -23,19 +23,19 @@ const deleteInappropriateReviewList = async (client, userId) => {
       AND is_deleted = false
       RETURNING *
       `,
-    [userId],
+    [writerId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const getInappropriateReviewByUser = async (client, userId) => {
+const getInappropriateReviewByUser = async (client, writerId) => {
   const { rows } = await client.query(
     `
     SELECT id FROM inappropriate_review
     WHERE writer_id = $1
     AND is_deleted = false
     `,
-    [userId],
+    [writerId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };

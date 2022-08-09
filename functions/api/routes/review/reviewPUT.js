@@ -6,8 +6,8 @@ const db = require("../../../db/db");
 const { reviewDB, likeDB, relationReviewTagDB } = require("../../../db");
 const reviewContent = require("../../../constants/reviewContent");
 const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
 const backgroundImage = require("../../../constants/backgroundImage");
+const { likeType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
   const { id } = req.params;
@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const review = await reviewDB.getReviewByPostId(client, id);
+    const review = await reviewDB.getReviewById(client, id);
     if (!review) {
       return res
         .status(statusCode.NOT_FOUND)
@@ -94,14 +94,6 @@ module.exports = async (req, res) => {
       }
     }
 
-    const post = {
-      postId: updatedReview.id,
-      oneLineReview: updatedReview.oneLineReview,
-      contentList: contentList,
-      createdAt: updatedReview.createdAt,
-      updatedAt: updatedReview.updatedAt,
-    };
-
     const writer = {
       writerId: req.user.id,
       profileImageId: req.user.profileImageId,
@@ -112,13 +104,22 @@ module.exports = async (req, res) => {
       secondMajorStart: req.user.secondMajorStart,
     };
 
-    const likeCount = await likeDB.getLikeCountByPostId(client, updatedReview.id);
-    const likeStatus = await likeDB.getLikeByPostId(client, id, postType.REVIEW, req.user.id);
+    const likeCount = await likeDB.getLikeCountByTarget(client, updatedReview.id, likeType.REVIEW);
+    const likeStatus = await likeDB.getLikeByTarget(
+      client,
+      updatedReview.id,
+      likeType.REVIEW,
+      req.user.id,
+    );
 
     const isLiked = likeStatus ? likeStatus.isLiked : false;
 
     updatedReview = {
-      post: post,
+      id: updatedReview.id,
+      oneLineReview: updatedReview.oneLineReview,
+      contentList: contentList,
+      createdAt: updatedReview.createdAt,
+      updatedAt: updatedReview.updatedAt,
       writer: writer,
       like: { isLiked: isLiked, likeCount: likeCount.likeCount },
       backgroundImage: { imageId: backgroundImageId },

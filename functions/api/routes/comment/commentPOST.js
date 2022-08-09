@@ -5,8 +5,7 @@ const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { commentDB, userDB, postDB, notificationDB, blockDB } = require("../../../db");
-const notificationType = require("../../../constants/notificationType");
-const postType = require("../../../constants/postType");
+const { postType, notificationType } = require("../../../constants/type");
 const slackAPI = require("../../../middlewares/slackAPI");
 const pushAlarmHandlers = require("../../../lib/pushAlarmHandlers");
 
