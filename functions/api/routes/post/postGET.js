@@ -1,12 +1,11 @@
 const _ = require("lodash");
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
-const postType = require("../../../constants/postType");
 const db = require("../../../db/db");
 const { postDB, userDB, likeDB, commentDB, blockDB } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
+const { likeType } = require("../../../constants/type");
+const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
@@ -30,12 +29,12 @@ module.exports = async (req, res) => {
     // post 좋아요 정보
 
     // 로그인 유저가 좋아요한 상태인지
-    const like = await likeDB.getLikeByPostId(client, post.id, post.postTypeId, req.user.id);
+    const like = await likeDB.getLikeByTarget(client, post.id, likeType.POST, req.user.id);
 
     const isLiked = like ? like.isLiked : false;
 
     // post 좋아요 개수
-    const likeCount = await likeDB.getLikeCountByPostId(client, post.id, post.postTypeId);
+    const likeCount = await likeDB.getLikeCountByTarget(client, post.id, likeType.POST);
 
     // post 작성자 정보
     let writer = await userDB.getUserByUserId(client, post.writerId);
@@ -109,16 +108,7 @@ module.exports = async (req, res) => {
       }),
     );
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

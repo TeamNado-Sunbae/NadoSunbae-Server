@@ -1,25 +1,16 @@
 const _ = require("lodash");
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const {
-  reviewDB,
-  relationReviewTagDB,
-  postDB,
-  likeDB,
-  commentDB,
-  userDB,
-  blockDB,
-} = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
+const { reviewDB, relationReviewTagDB, postDB, blockDB } = require("../../../db");
+const { postType, likeType } = require("../../../constants/type");
+const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { type } = req.query;
+  const { filter } = req.query;
 
-  if (!type) {
+  if (!filter) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -34,114 +25,100 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let likePostList;
+    let likeList;
+    if (filter === "review") {
+      const relationReviewTagList = await relationReviewTagDB.getRelationReviewTagList(client);
 
-    // 후기글일 경우
-    if (type === "review") {
-      likePostList = await reviewDB.getReviewListByLike(
+      likeList = await reviewDB.getReviewListByLike(
         client,
         req.user.id,
-        postType.REVIEW,
+        likeType.REVIEW,
         invisibleUserIds,
       );
 
-      likePostList = await Promise.all(
-        likePostList.map(async (review) => {
-          // 게시글 작성자 정보
-          const writer = await userDB.getUserByUserId(client, review.writerId);
+      likeList = likeList.map((review) => {
+        const tagNameList = _.filter(relationReviewTagList, (r) => r.reviewId === review.id).map(
+          (r) => {
+            return {
+              tagName: r.tagName,
+            };
+          },
+        );
 
-          // 태그 정보
-          const tagNameList = await relationReviewTagDB.getTagListByPostId(client, review.id);
-
-          // 좋아요 정보
-          const likeCount = await likeDB.getLikeCountByPostId(client, review.id, postType.REVIEW);
-          const like = {
+        return {
+          id: review.id,
+          title: review.oneLineReview,
+          createdAt: review.createdAt,
+          tagList: tagNameList,
+          writer: {
+            writerId: review.writerId,
+            nickname: review.nickname,
+          },
+          like: {
             isLiked: true, // 좋아요 목록이므로 모두 true
-            likeCount: likeCount.likeCount,
-          };
-          return {
-            postId: review.id,
-            title: review.oneLineReview,
-            createdAt: review.createdAt,
-            tagList: tagNameList,
-            writer: {
-              writerId: writer.id,
-              nickname: writer.nickname,
-            },
-            like: like,
-          };
-        }),
-      );
-      // 과방글일 경우
-    } else if (type === "information" || type === "question") {
+            likeCount: review.likeCount,
+          },
+        };
+      });
+    } else {
       let postTypeIds;
-      // 정보글인지 질문글인지에 따라 postTypeIds 결정
-      if (type === "information") {
-        postTypeIds = [postType.INFORMATION];
-      } else if (type === "question") {
-        postTypeIds = [postType.QUESTION_TO_EVERYONE, postType.QUESTION_TO_PERSON];
+      if (filter === "questionToPerson") {
+        postTypeIds = [postType.QUESTION_TO_PERSON];
+      } else if (filter === "community") {
+        postTypeIds = [postType.GENERAL, postType.INFORMATION, postType.QUESTION_TO_EVERYONE];
+      } else {
+        return res
+          .status(statusCode.BAD_REQUEST)
+          .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
       }
 
-      likePostList = await postDB.getPostListByLike(
+      likeList = await postDB.getPostListByLike(
         client,
         req.user.id,
+        likeType.POST,
         postTypeIds,
         invisibleUserIds,
       );
 
-      likePostList = await Promise.all(
-        likePostList.map(async (post) => {
-          // 게시글 작성자 정보
-          const writer = await userDB.getUserByUserId(client, post.writerId);
+      likeList = likeList.map((post) => {
+        let type;
+        switch (post.postTypeId) {
+          case postType.GENERAL:
+            type = "자유";
+            break;
+          case postType.QUESTION_TO_EVERYONE:
+            type = "질문";
+            break;
+          case postType.INFORMATION:
+            type = "정보";
+            break;
+        }
 
-          // 댓글 개수
-          const commentCount = await commentDB.getCommentCountByPostId(
-            client,
-            post.id,
-            invisibleUserIds,
-          );
-
-          // 좋아요 정보
-          const likeCount = await likeDB.getLikeCountByPostId(client, post.id, post.postTypeId);
-          const like = {
+        return {
+          id: post.id,
+          type: type,
+          title: post.title,
+          content: post.content,
+          createdAt: post.createdAt,
+          majorName: post.majorName,
+          writer: {
+            id: post.writerId,
+            nickname: post.nickname,
+          },
+          commentCount: post.commentCount,
+          like: {
             isLiked: true, // 좋아요 목록이므로 모두 true
-            likeCount: likeCount.likeCount,
-          };
-          return {
-            postId: post.id,
-            postTypeId: post.postTypeId,
-            title: post.title,
-            content: post.content,
-            createdAt: post.createdAt,
-            writer: {
-              writerId: writer.id,
-              nickname: writer.nickname,
-            },
-            commentCount: commentCount.commentCount,
-            like: like,
-          };
-        }),
-      );
-    } else {
-      return res
-        .status(statusCode.BAD_REQUEST)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
+            likeCount: post.likeCount,
+          },
+        };
+      });
     }
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, { likePostList }));
+      .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, { likeList }));
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

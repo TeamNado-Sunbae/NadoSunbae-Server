@@ -1,13 +1,13 @@
-const functions = require("firebase-functions");
-const jwtHandlers = require("../../../lib/jwtHandlers");
-const db = require("../../../db/db");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
+const db = require("../../../db/db");
 const { userDB, reportDB, inappropriateReviewDB } = require("../../../db");
-const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../../../constants/jwt");
+const jwtHandlers = require("../../../lib/jwtHandlers");
 const dateHandlers = require("../../../lib/dateHandlers");
-const reportPeriodType = require("../../../constants/reportPeriodType");
+const errorHandlers = require("../../../lib/errorHandlers");
+const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../../../constants/jwt");
+const reportPeriod = require("../../../constants/reportPeriod");
 
 module.exports = async (req, res) => {
   const { refreshtoken } = req.headers;
@@ -88,20 +88,20 @@ module.exports = async (req, res) => {
       // 신고로 인해 제재 중인 유저의 경우 - 신고 만료 확인
       if (userData.reportCreatedAt) {
         // 유저 신고 기간
-        let reportPeriod;
+        let period;
 
         if (userData.reportCount === 1) {
-          reportPeriod = reportPeriodType.FIRST_PERIOD;
+          period = reportPeriod.FIRST_PERIOD;
         } else if (userData.reportCount === 2) {
-          reportPeriod = reportPeriodType.SECOND_PERIOD;
+          period = reportPeriod.SECOND_PERIOD;
         } else if (userData.reportCount === 3) {
-          reportPeriod = reportPeriodType.THIRD_PERIOD;
+          period = reportPeriod.THIRD_PERIOD;
         }
 
         // 신고 만료 날짜
         const expirationDate = dateHandlers.getExpirationDateByMonth(
           userData.reportCreatedAt,
-          reportPeriod,
+          period,
         );
 
         message = `신고 누적이용자로\n${expirationDate.format(
@@ -167,11 +167,8 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID));
     }
   } catch (error) {
-    console.log(error);
-    functions.logger.error(
-      `[AUTH ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      refreshtoken,
-    );
+    errorHandlers.error(req, error);
+
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
       .send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));

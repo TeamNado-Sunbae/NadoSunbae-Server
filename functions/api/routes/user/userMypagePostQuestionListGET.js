@@ -1,12 +1,11 @@
 const _ = require("lodash");
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { postDB, likeDB, userDB, commentDB, blockDB } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
+const { postDB, blockDB } = require("../../../db");
+const { likeType } = require("../../../constants/type");
+const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
   const { userId } = req.params;
@@ -27,57 +26,31 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let postList = await postDB.getPostListByUserId(client, userId, invisibleUserIds);
-
-    // postList에 작성자 정보와 댓글 개수, 좋아요 개수를 붙임
-    postList = await Promise.all(
-      postList.map(async (post) => {
-        let writer = await userDB.getUserByUserId(client, post.writerId);
-        // 작성자 정보
-        writer = {
-          writerId: writer.id,
-          profileImageId: writer.profileImageId,
-          nickname: writer.nickname,
-        };
-
-        // 댓글 개수
-        const commentCount = await commentDB.getCommentCountByPostId(
-          client,
-          post.id,
-          invisibleUserIds,
-        );
-
-        // 좋아요 정보
-        const likeData = await likeDB.getLikeByPostId(
-          client,
-          post.id,
-          postType.QUESTION_TO_PERSON,
-          req.user.id,
-        );
-
-        const isLiked = likeData ? likeData.isLiked : false;
-
-        const likeCount = await likeDB.getLikeCountByPostId(
-          client,
-          post.id,
-          postType.QUESTION_TO_PERSON,
-        );
-        const like = {
-          isLiked: isLiked,
-          likeCount: likeCount.likeCount,
-        };
-
-        return {
-          postId: post.id,
-          title: post.title,
-          content: post.content,
-          createdAt: post.createdAt,
-          writer: writer,
-          commentCount: commentCount.commentCount,
-          like: like,
-        };
-      }),
+    let postList = await postDB.getPostListByAnswererId(
+      client,
+      userId,
+      req.user.id,
+      likeType.POST,
+      invisibleUserIds,
     );
+
+    postList = postList.map((post) => {
+      return {
+        postId: post.id,
+        title: post.title,
+        content: post.content,
+        createdAt: post.createdAt,
+        writer: {
+          id: post.writerId,
+          nickname: post.nickname,
+        },
+        commentCount: post.commentCount,
+        like: {
+          isLiked: post.isLiked,
+          likeCount: post.likeCount,
+        },
+      };
+    });
 
     if (sort === "recent") {
       postList = _.sortBy(postList, "createdAt").reverse();
@@ -93,16 +66,7 @@ module.exports = async (req, res) => {
       .status(statusCode.OK)
       .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, { postList }));
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

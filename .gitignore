@@ -67,6 +67,7 @@ node_modules/
 .env.local
 .env.dev
 .env.prod
+.env.local
 
 # firebase key
 nadosunbae-server-firebase-adminsdk-lzgu9-7c653db78a.json

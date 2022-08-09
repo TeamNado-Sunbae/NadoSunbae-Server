@@ -1,12 +1,11 @@
 const _ = require("lodash");
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { reviewDB, likeDB, relationReviewTagDB, blockDB } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
-const postType = require("../../../constants/postType");
+const { likeType } = require("../../../constants/type");
+const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
   const { sort } = req.query;
@@ -27,42 +26,27 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let reviewList;
-    if (writerFilter === 1) {
-      // 전체 목록 조회
-      reviewList = await reviewDB.getReviewListByFilters(
-        client,
-        majorId,
-        [true, false],
-        tagFilter,
-        invisibleUserIds,
-        postType.REVIEW,
-      );
-    } else if (writerFilter === 2) {
-      // 본전공 필터만 선택
-      reviewList = await reviewDB.getReviewListByFilters(
-        client,
-        majorId,
-        [true],
-        tagFilter,
-        invisibleUserIds,
-        postType.REVIEW,
-      );
-    } else if (writerFilter === 3) {
-      // 제 2전공 필터만 선택
-      reviewList = await reviewDB.getReviewListByFilters(
-        client,
-        majorId,
-        [false],
-        tagFilter,
-        invisibleUserIds,
-        postType.REVIEW,
-      );
+    let isFirstMajor;
+    if (writerFilter === "all") {
+      isFirstMajor = [true, false];
+    } else if (writerFilter === "firstMajor") {
+      isFirstMajor = [true];
+    } else if (writerFilter === "secondMajor") {
+      isFirstMajor = [false];
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
     }
+
+    let reviewList = await reviewDB.getReviewListByFilters(
+      client,
+      majorId,
+      isFirstMajor,
+      tagFilter,
+      invisibleUserIds,
+      likeType.REVIEW,
+    );
 
     // 해당 과에 후기 글이 없을 경우
     if (reviewList.length === 0) {
@@ -87,20 +71,20 @@ module.exports = async (req, res) => {
       };
 
       // 태그 정보
-      review.tagList = _.filter(relationReviewTagList, (r) => r.postId === review.id).map((o) => {
+      review.tagList = _.filter(relationReviewTagList, (r) => r.reviewId === review.id).map((o) => {
         return { tagName: o.tagName };
       });
 
       // 좋아요 정보
       const likeData = _.find(likeList, {
-        postId: review.id,
-        postTypeId: postType.REVIEW,
+        targetId: review.id,
+        targetTypeId: likeType.REVIEW,
       });
 
       const isLiked = likeData ? likeData.isLiked : false;
 
       return {
-        postId: review.id,
+        id: review.id,
         oneLineReview: review.oneLineReview,
         createdAt: review.createdAt,
         writer: writer,
@@ -126,16 +110,7 @@ module.exports = async (req, res) => {
       .status(statusCode.OK)
       .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, reviewList));
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

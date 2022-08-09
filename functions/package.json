@@ -3,7 +3,7 @@
   "description": "Cloud Functions for Firebase",
   "scripts": {
     "lint": "eslint .",
-    "serve": "firebase use dev && cross-env NODE_ENV=local firebase emulators:start --only functions",
+    "serve": "firebase use local && cross-env NODE_ENV=local firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy:dev": "firebase use dev && cross-env NODE_ENV=development firebase deploy --only functions",
