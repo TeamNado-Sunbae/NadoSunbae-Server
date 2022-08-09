@@ -376,6 +376,23 @@ const getPostDetailByPostId = async (client, postId, userId, likeTypeId, invisib
     AND p.is_deleted = false
     `,
     [postId, likeTypeId, userId],
+    );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
+// response rate policy (answered questionToPerson post cnt/questionToPerson post cnt) * 100
+const calculateResponseRate = async (client, userId) => {
+  const { rows } = await client.query(
+    `
+    SELECT COUNT(DISTINCT CASE WHEN p.answerer_id = c.writer_id THEN p.id END)*100/COUNT(DISTINCT p.id) rate
+    FROM post p
+    LEFT JOIN "comment" c
+    ON c.post_id = p.id
+    AND c.is_deleted = false
+    where p.is_deleted = false
+    AND p.answerer_id = $1
+      `,
+    [userId],
   );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
@@ -391,6 +408,7 @@ module.exports = {
   deletePostListByUserSecession,
   getPostListByLike,
   getPostListByNotification,
+  calculateResponseRate,
   getPostListByComment,
   getPostDetailByPostId,
 };
