@@ -40,7 +40,6 @@ const sendMessageToSlack = (message, apiEndPoint) => {
         });
     } catch (e) {
       console.error(e);
-      // when slack webhook error occurs, logging error
       functions.logger.error("[slackAPI 에러]", { error: e });
     }
   }

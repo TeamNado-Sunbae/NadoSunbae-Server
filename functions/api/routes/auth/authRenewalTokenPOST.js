@@ -1,12 +1,12 @@
-const functions = require("firebase-functions");
-const jwtHandlers = require("../../../lib/jwtHandlers");
-const db = require("../../../db/db");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
+const db = require("../../../db/db");
 const { userDB, reportDB, inappropriateReviewDB } = require("../../../db");
-const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../../../constants/jwt");
+const jwtHandlers = require("../../../lib/jwtHandlers");
 const dateHandlers = require("../../../lib/dateHandlers");
+const errorHandlers = require("../../../lib/errorHandlers");
+const { TOKEN_INVALID, TOKEN_EXPIRED } = require("../../../constants/jwt");
 const reportPeriod = require("../../../constants/reportPeriod");
 
 module.exports = async (req, res) => {
@@ -167,11 +167,8 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.UNAUTHORIZED, responseMessage.TOKEN_INVALID));
     }
   } catch (error) {
-    console.log(error);
-    functions.logger.error(
-      `[AUTH ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      refreshtoken,
-    );
+    errorHandlers.error(req, error);
+
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
       .send(util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
