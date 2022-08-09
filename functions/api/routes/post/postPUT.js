@@ -1,11 +1,10 @@
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { postDB, likeDB } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
 const { likeType } = require("../../../constants/type");
+const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
   const { postId } = req.params;
@@ -75,16 +74,7 @@ module.exports = async (req, res) => {
       .status(statusCode.OK)
       .send(util.success(statusCode.OK, responseMessage.UPDATE_ONE_POST_SUCCESS, updatedPost));
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

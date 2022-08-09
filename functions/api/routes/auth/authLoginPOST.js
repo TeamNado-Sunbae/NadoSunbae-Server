@@ -1,14 +1,13 @@
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
-const { signInWithEmailAndPassword } = require("firebase/auth");
 const db = require("../../../db/db");
 const { userDB, reportDB, inappropriateReviewDB } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
 const { firebaseAuth } = require("../../../config/firebaseClient");
+const { signInWithEmailAndPassword } = require("firebase/auth");
 const jwtHandlers = require("../../../lib/jwtHandlers");
 const dateHandlers = require("../../../lib/dateHandlers");
+const errorHandlers = require("../../../lib/errorHandlers");
 const reportPeriod = require("../../../constants/reportPeriod");
 
 module.exports = async (req, res) => {
@@ -202,16 +201,7 @@ module.exports = async (req, res) => {
       }),
     );
   } catch (error) {
-    console.log(error);
-    functions.logger.error(
-      `[EMAIL LOGIN ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] email:${email} ${error}`,
-    );
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error, `email:${email}`);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
