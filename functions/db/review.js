@@ -263,24 +263,31 @@ const getReviewListByUniversityId = async (
   const { rows } = await client.query(
     `
     SELECT r.id, r.one_line_review, r.created_at, m.major_name,
-      json_build_object('likeCount', (
+    (
       SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
       WHERE l.target_id = r.id
       AND l.target_type_id = $3
       AND l.is_liked = true
       AND r.is_deleted = false
-    ), 'isLiked', (
-      coalesce((SELECT l.is_liked FROM "like" l
-      WHERE l.target_id = r.id
-      AND l.target_type_id = $3
-      AND l.user_id = $1
-      AND r.is_deleted = false), false)
-    )) as like
+    ),
+    (
+      coalesce(
+        (
+          SELECT l.is_liked FROM "like" l
+          WHERE l.target_id = r.id
+          AND l.target_type_id = $3
+          AND l.user_id = $1
+          AND r.is_deleted = false
+        ), false
+      )
+    ) as is_liked
     FROM review r
-    INNER JOIN major m ON m.id = r.major_id
+    INNER JOIN major m 
+    ON m.id = r.major_id
+    AND m.is_deleted = false
     AND m.university_id = $2
-    AND r.is_deleted = false
     AND r.writer_id <> ALL (ARRAY[${invisibleUserIds.join()}]::int[])
+    AND r.is_deleted = false
     ORDER BY r.created_at DESC
   `,
     [userId, universityId, targetTypeId],
