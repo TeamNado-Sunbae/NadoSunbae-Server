@@ -40,12 +40,12 @@ module.exports = async (req, res) => {
 
     reviewList = reviewList.map((review) => {
       // 태그 정보
-      review.tagList = _.filter(relationReviewTagList, (r) => r.postId === review.id).map((o) => {
+      review.tagList = _.filter(relationReviewTagList, (r) => r.reviewId === review.id).map((o) => {
         return { tagName: o.tagName };
       });
 
       return {
-        postId: review.id,
+        id: review.id,
         oneLineReview: review.oneLineReview,
         majorName: review.majorName,
         createdAt: review.createdAt,
