@@ -41,12 +41,12 @@ const getReviewListByFilters = async (
       AND r.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
       AND r.is_first_major IN (${writerFilter.join()})
       AND r.id = ANY (
-        SELECT rel.review_id
-        FROM relation_review_tag rel
+        SELECT rrt.review_id
+        FROM relation_review_tag rrt
         INNER JOIN "tag" t
-        ON t.id = rel.tag_id
+        ON t.id = rrt.tag_id
         AND t.id IN (${tagFilter.join()})
-        AND rel.is_deleted = false
+        AND rrt.is_deleted = false
         AND t.is_deleted = false
        )
       `,
@@ -227,14 +227,24 @@ const deleteReviewListByUserSecession = async (client, userId) => {
 const getReviewListByLike = async (client, userId, likeTypeId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-    SELECT r.id, r.writer_id, r.one_line_review, r.created_at
+    SELECT r.id, r.one_line_review, r.created_at, r.writer_id, u.nickname,
+    (
+      SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
+      WHERE l.target_id = r.id
+      AND l.target_type_id = $2
+      AND l.is_liked = true
+      AND r.is_deleted = false
+    )
     FROM review r
     INNER JOIN "like" l
-    ON r.id = l.target_id
+    ON l.target_id = r.id 
     AND l.target_type_id = $2
     AND l.user_id = $1
     AND l.is_liked = true
-    AND r.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    INNER JOIN "user" u
+    ON r.writer_id = u.id
+    AND u.is_deleted = false
+    WHERE r.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
     AND r.is_deleted = false
     ORDER BY l.updated_at desc
   `,

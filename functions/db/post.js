@@ -161,17 +161,34 @@ const deletePostListByUserSecession = async (client, userId) => {
 const getPostListByLike = async (client, userId, likeTypeId, postTypeIds, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-    SELECT p.id, p.post_type_id, p.title, p.content, p.created_at, m.major_name
+    SELECT p.id, p.post_type_id, p.title, p.content, p.created_at, p.writer_id, u.nickname, m.major_name,
+    (
+      SELECT cast(count(c.*) as integer) comment_count FROM comment c
+      WHERE c.post_id = p.id
+      AND c.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+      AND c.is_deleted = false
+      AND p.is_deleted = false
+    ),
+    (
+      SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
+      WHERE l.target_id = p.id
+      AND l.target_type_id = $2
+      AND l.is_liked = true
+      AND p.is_deleted = false
+    )
     FROM post p
     INNER JOIN "like" l
-    ON p.id = l.target_id
+    ON l.target_id = p.id
+    AND l.target_type_id = $2
     AND l.user_id = $1
     AND l.is_liked = true
-    AND l.target_type_id = $2
     INNER JOIN major m
     ON p.major_id = m.id
     AND m.is_deleted = false
-    AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    INNER JOIN "user" u
+    ON p.writer_id = u.id
+    AND u.is_deleted = false
+    WHERE p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
     AND p.post_type_id IN (${postTypeIds.join()})
     AND p.is_deleted = false
     ORDER BY l.updated_at desc
