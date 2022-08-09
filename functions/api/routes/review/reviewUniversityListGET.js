@@ -49,10 +49,7 @@ module.exports = async (req, res) => {
         majorName: review.majorName,
         createdAt: review.createdAt,
         tagList: review.tagList,
-        like: {
-          isLiked: review.isLiked,
-          likeCount: review.likeCount,
-        },
+        like: review.like,
       };
     });
 
