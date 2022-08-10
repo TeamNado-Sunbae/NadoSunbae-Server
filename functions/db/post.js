@@ -331,14 +331,13 @@ const getPostListByComment = async (
 const calculateResponseRate = async (client, userId) => {
   const { rows } = await client.query(
     `
-    SELECT cast(COUNT(DISTINCT CASE WHEN p.answerer_id = c.writer_id THEN p.id END)*100/COUNT(DISTINCT p.id) as integer) rate
+    SELECT cast(COUNT(DISTINCT CASE WHEN p.answerer_id = c.writer_id THEN p.id END) * 100 / NULLIF(COUNT(DISTINCT p.id), 0) as integer) rate
     FROM post p
     LEFT JOIN "comment" c
     ON c.post_id = p.id
     AND c.is_deleted = false
     where p.is_deleted = false
     AND p.answerer_id = $1
-    GROUP BY answerer_id
       `,
     [userId],
   );

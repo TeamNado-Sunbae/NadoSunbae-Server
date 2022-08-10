@@ -60,7 +60,7 @@ module.exports = async (req, res) => {
         isOnQuestion: user.isOnQuestion,
         profileImageId: user.profileImageId,
         nickname: user.nickname,
-        responseRate: responseRate ? responseRate.rate : null,
+        responseRate: responseRate.rate,
         bio: user.bio,
         firstMajorName: user.firstMajorName,
         firstMajorStart: user.firstMajorStart,
