@@ -129,6 +129,7 @@ const getUserByFirebaseId = async (client, firebaseId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+// response rate policy (answered questionToPerson post cnt/questionToPerson post cnt) * 100
 const getUserListByMajorId = async (client, majorId, reviewFilter, invisibleUserIds) => {
   const { rows } = await client.query(
     `
