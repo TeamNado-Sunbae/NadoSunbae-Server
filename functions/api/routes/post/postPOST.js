@@ -58,6 +58,7 @@ module.exports = async (req, res) => {
           type: type,
           title: post.title,
           content: post.content,
+          majorId: post.majorId,
           createdAt: post.createdAt,
           answererId: post.answererId,
         },
