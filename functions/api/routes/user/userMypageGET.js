@@ -6,6 +6,7 @@ const db = require("../../../db/db");
 const { userDB, likeDB, reviewDB, blockDB, postDB } = require("../../../db");
 const { likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
+const { response } = require("express");
 
 module.exports = async (req, res) => {
   const { userId } = req.params;
@@ -59,7 +60,7 @@ module.exports = async (req, res) => {
         isOnQuestion: user.isOnQuestion,
         profileImageId: user.profileImageId,
         nickname: user.nickname,
-        responseRate: responseRate.rate,
+        responseRate: responseRate ? responseRate.rate : null,
         bio: user.bio,
         firstMajorName: user.firstMajorName,
         firstMajorStart: user.firstMajorStart,
