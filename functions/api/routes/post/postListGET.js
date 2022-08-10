@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let postList = await postDB.getPostListByMajorId(
+    let postList = await postDB.getPostList(
       client,
       majorId ? majorId : 0,
       postTypeIds,

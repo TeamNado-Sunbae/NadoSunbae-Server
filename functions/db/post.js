@@ -131,14 +131,7 @@ const updatePost = async (client, title, content, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getPostListByMajorId = async (
-  client,
-  majorId,
-  postTypeIds,
-  userId,
-  likeTypeId,
-  invisibleUserIds,
-) => {
+const getPostList = async (client, majorId, postTypeIds, userId, likeTypeId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
     SELECT p.id, p.post_type_id, p.title, p.content, p.created_at, p.writer_id, u.nickname, m.major_name,
@@ -369,7 +362,7 @@ module.exports = {
   createPost,
   deletePostByPostId,
   getPostListByAnswererId,
-  getPostListByMajorId,
+  getPostList,
   getPostByPostId,
   updatePost,
   getPostListByWriterId,
