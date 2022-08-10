@@ -57,7 +57,6 @@ module.exports = async (req, res) => {
     );
 
     // separate major by default major, other major, other campus
-
     let defaultMajor = [],
       otherMajor = [],
       otherCampus = [];
