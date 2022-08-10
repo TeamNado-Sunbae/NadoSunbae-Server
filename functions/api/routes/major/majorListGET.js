@@ -4,11 +4,11 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { majorDB } = require("../../../db");
 const errorHandlers = require("../../../lib/errorHandlers");
-const { NO_INFO, NOT_ENTERED } = require("../../../constants/major");
+const { NO_INFO, NOT_ENTERED, NO_MAJOR } = require("../../../constants/major");
 
 module.exports = async (req, res) => {
   const { universityId } = req.params;
-  const { filter } = req.query;
+  const { filter, exclude } = req.query;
 
   if (!universityId || !filter) {
     return res
@@ -26,15 +26,20 @@ module.exports = async (req, res) => {
     if (filter === "all") {
       isFirstMajor = [true, false];
       isSecondMajor = [true, false];
-      invisibleMajorIds = NO_INFO.concat(NOT_ENTERED);
+
+      if (exclude === "noMajor") {
+        invisibleMajorIds = [...NO_INFO, ...NOT_ENTERED, ...NO_MAJOR];
+      } else {
+        invisibleMajorIds = [...NO_INFO, ...NOT_ENTERED];
+      }
     } else if (filter === "firstMajor") {
       isFirstMajor = [true];
       isSecondMajor = [true, false];
-      invisibleMajorIds = NO_INFO;
+      invisibleMajorIds = [...NO_INFO, ...NO_MAJOR];
     } else if (filter === "secondMajor") {
       isFirstMajor = [true, false];
       isSecondMajor = [true];
-      invisibleMajorIds = NO_INFO;
+      invisibleMajorIds = [...NO_INFO, ...NO_MAJOR];
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
