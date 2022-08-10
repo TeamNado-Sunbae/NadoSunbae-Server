@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
@@ -21,6 +22,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
+    // filter & exclude query
     let isFirstMajor, isSecondMajor, invisibleMajorIds;
 
     if (filter === "all") {
@@ -54,9 +56,36 @@ module.exports = async (req, res) => {
       invisibleMajorIds,
     );
 
+    // separate major by default major, other major, other campus
+
+    let defaultMajor = [],
+      otherMajor = [],
+      otherCampus = [];
+
+    majorList.map((m) => {
+      if ([...NOT_ENTERED, ...NO_MAJOR].includes(m.majorId)) {
+        otherMajor.push(m);
+      } else if (m.majorName.includes("(")) {
+        otherCampus.push(m);
+      } else {
+        defaultMajor.push(m);
+      }
+    });
+
+    // sort by korean, alphabetical order
+    const isCharKorean = (char) => {
+      return char >= "가" && char <= "힣";
+    };
+
+    defaultMajor = _.sortBy(defaultMajor, [(m) => !isCharKorean(m.majorName[0]), "majorName"]);
+    otherCampus = _.sortBy(otherCampus, [(m) => !isCharKorean(m.majorName[0]), "majorName"]);
+
+    // other major first, followed by default major, other campus
+    const result = otherMajor.concat(defaultMajor, otherCampus);
+
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_ALL_MAJORS_SUCCESS, majorList));
+      .send(util.success(statusCode.OK, responseMessage.READ_ALL_MAJORS_SUCCESS, result));
   } catch (error) {
     errorHandlers.error(req, error);
 
