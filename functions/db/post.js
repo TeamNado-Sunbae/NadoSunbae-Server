@@ -131,35 +131,56 @@ const updatePost = async (client, title, content, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getPostListByMajorId = async (client, majorId, postTypeId, likeTypeId, invisibleUserIds) => {
+const getPostListByMajorId = async (
+  client,
+  majorId,
+  postTypeIds,
+  userId,
+  likeTypeId,
+  invisibleUserIds,
+) => {
   const { rows } = await client.query(
     `
-  SELECT p.*, u.profile_image_id, u.nickname,
-  (
-    SELECT cast(count(c.*) as integer) comment_count FROM comment c
-    WHERE c.post_id = p.id
-    AND c.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-    AND c.is_deleted = false
-    AND p.is_deleted = false
-  ),
-  (
-    SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
-    WHERE l.target_id = p.id
-    AND l.target_type_id = $3
-    AND l.is_liked = true
-    AND p.is_deleted = false
-  )
+    SELECT p.id, p.post_type_id, p.title, p.content, p.created_at, p.writer_id, u.nickname, m.major_name,
+    (
+      SELECT cast(count(c.*) as integer) comment_count FROM comment c
+      WHERE c.post_id = p.id
+      AND c.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+      AND c.is_deleted = false
+      AND p.is_deleted = false
+    ),
+    (
+      SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
+      WHERE l.target_id = p.id
+      AND l.target_type_id = $3
+      AND l.is_liked = true
+      AND p.is_deleted = false
+    ),
+    (
+      coalesce(
+        (
+          SELECT l.is_liked FROM "like" l
+          WHERE l.target_id = p.id
+          AND l.target_type_id = $3
+          AND l.user_id = $2
+          AND p.is_deleted = false
+        ), false
+      )
+    ) as is_liked
   FROM "post" p
+  INNER JOIN major m
+    ON p.major_id = m.id
+    AND m.is_deleted = false
   INNER JOIN "user" u
-  ON p.writer_id = u.id
-  AND u.is_deleted = false
-  AND p.major_id = $1
-  AND p.post_type_id = $2
-  AND p.is_deleted = false
+    ON p.writer_id = u.id
+    AND u.is_deleted = false
+  AND p.major_id = (CASE WHEN $1 <> 0 then $1 else p.major_id end)
+  AND p.post_type_id IN (${postTypeIds.join()})
   AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+  AND p.is_deleted = false
   ORDER BY p.created_at desc
   `,
-    [majorId, postTypeId, likeTypeId],
+    [majorId, userId, likeTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
