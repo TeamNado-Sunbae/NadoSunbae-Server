@@ -6,7 +6,6 @@ const db = require("../../../db/db");
 const { userDB, likeDB, reviewDB, blockDB, postDB } = require("../../../db");
 const { likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
-const { response } = require("express");
 
 module.exports = async (req, res) => {
   const { userId } = req.params;
