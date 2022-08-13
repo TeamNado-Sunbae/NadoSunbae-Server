@@ -8,8 +8,8 @@ const { likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { sort } = req.query;
-  const { majorId, writerFilter, tagFilter } = req.body;
+  const { sort, tagFilter } = req.query;
+  const { majorId, writerFilter } = req.params;
 
   if (!majorId || !writerFilter || !tagFilter || !sort) {
     return res
@@ -39,20 +39,20 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
     }
 
+    let tagFilterList = Array.from(tagFilter);
     let reviewList = await reviewDB.getReviewListByFilters(
       client,
       majorId,
       isFirstMajor,
-      tagFilter,
+      tagFilterList,
       invisibleUserIds,
       likeType.REVIEW,
     );
 
-    // 해당 과에 후기 글이 없을 경우
     if (reviewList.length === 0) {
-      return res
+      res
         .status(statusCode.OK)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, reviewList));
+        .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, []));
     }
 
     const relationReviewTagList = await relationReviewTagDB.getRelationReviewTagList(client);
