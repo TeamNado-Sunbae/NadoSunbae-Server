@@ -69,8 +69,10 @@ module.exports = async (req, res) => {
     };
 
     res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, { post, writer }));
+      .status(statusCode.CREATED)
+      .send(
+        util.success(statusCode.CREATED, responseMessage.CREATE_ONE_POST_SUCCESS, { post, writer }),
+      );
 
     // notification DB 저장 및 푸시 알림 전송을 위한 case 설정
     // [ case 1: 마이페이지에 1:1 질문글이 올라온 경우 ]

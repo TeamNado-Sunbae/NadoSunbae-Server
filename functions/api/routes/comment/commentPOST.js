@@ -62,8 +62,8 @@ module.exports = async (req, res) => {
     };
 
     res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.CREATE_ONE_COMMENT_SUCCESS, comment));
+      .status(statusCode.CREATED)
+      .send(util.success(statusCode.CREATED, responseMessage.CREATE_ONE_COMMENT_SUCCESS, comment));
 
     // notification DB 저장 및 푸시 알림 전송
 

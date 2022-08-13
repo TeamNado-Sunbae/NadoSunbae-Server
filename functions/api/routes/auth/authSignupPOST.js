@@ -95,9 +95,9 @@ module.exports = async (req, res) => {
       createdAt: user.createdAt,
     };
 
-    res.status(statusCode.OK).send(
+    res.status(statusCode.CREATED).send(
       util.success(
-        statusCode.OK,
+        statusCode.CREATED,
         `${responseMessage.CREATE_USER} 및 ${responseMessage.SEND_VERIFICATION_EMAIL_SUCCESS}`,
         {
           user,
