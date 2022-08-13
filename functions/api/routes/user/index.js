@@ -3,7 +3,6 @@ const { checkUser } = require("../../../middlewares/auth");
 const router = express.Router();
 
 router.get("/major/:majorId", checkUser, require("./userListMajorGET"));
-router.get("/app-version/recent", checkUser, require("./userMypageAppVersionRecentGET"));
 router.get("/post", checkUser, require("./userMypagePostListGET"));
 router.get("/comment", checkUser, require("./userMypageCommentListGET"));
 router.get("/like", checkUser, require("./userMypageLikeListGET"));
