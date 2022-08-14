@@ -327,6 +327,59 @@ const getPostListByComment = async (
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+const getPostDetailByPostId = async (client, postId, userId, likeTypeId, invisibleUserIds) => {
+  const { rows } = await client.query(
+    `
+    SELECT p.id, p.post_type_id, p.title, p.content, p.created_at, m.major_name,
+    p.writer_id, u.profile_image_id, u.nickname, u.first_major_start, u.second_major_start, m1.major_name first_major_name, m2.major_name second_major_name,
+    (
+      SELECT cast(count(c.*) as integer) comment_count FROM comment c
+      WHERE c.post_id = p.id
+      AND c.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+      AND c.is_deleted = false
+      AND p.is_deleted = false
+    ),
+    (
+      SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
+      WHERE l.target_id = p.id
+      AND l.target_type_id = $2
+      AND l.is_liked = true
+      AND p.is_deleted = false
+    ),
+    (
+      coalesce(
+        (
+          SELECT l.is_liked FROM "like" l
+          WHERE l.target_id = p.id
+          AND l.target_type_id = $2
+          AND l.user_id = $3
+          AND p.is_deleted = false
+        ), false
+      )
+    ) as is_liked
+    FROM post p
+    INNER JOIN major m
+      ON p.major_id = m.id
+      AND m.is_deleted = false
+    INNER JOIN "user" u
+      ON p.writer_id = u.id
+      AND u.is_deleted = false
+    INNER JOIN major m1
+      ON u.first_major_id = m1.id
+      AND u.is_deleted = false
+      AND m1.is_deleted = false
+    INNER JOIN major m2
+      ON u.second_major_id = m2.id
+      AND u.is_deleted = false
+      AND m2.is_deleted = false
+    WHERE p.id = $1
+    AND p.is_deleted = false
+    `,
+    [postId, likeTypeId, userId],
+    );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 // response rate policy (answered questionToPerson post cnt/questionToPerson post cnt) * 100
 const calculateResponseRate = async (client, userId) => {
   const { rows } = await client.query(
@@ -357,4 +410,5 @@ module.exports = {
   getPostListByNotification,
   calculateResponseRate,
   getPostListByComment,
+  getPostDetailByPostId,
 };
