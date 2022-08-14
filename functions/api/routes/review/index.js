@@ -8,6 +8,6 @@ router.get("/:id", checkUser, require("./reviewDetailGET"));
 router.get("/tag", checkUser, require("./reviewTagListGET"));
 router.put("/:id", checkUser, require("./reviewPUT"));
 router.get("/university/:universityId", checkUser, require("./reviewUniversityListGET"));
-router.post("/", checkUser, require("./reviewMajorListPOST"));
+router.post("/major", checkUser, require("./reviewMajorListPOST"));
 
 module.exports = router;
