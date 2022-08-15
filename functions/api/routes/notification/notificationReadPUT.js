@@ -29,33 +29,13 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
     }
 
-    // 알림 읽으면 isRead 업데이트
-
-    // 해당 알림과 postId가 같은 알림은 모두 업데이트함
-
-    let updatedNotifications = await notificationDB.updateNotificationListByIsRead(
+    // 알림 읽으면 해당 알림과 postId가 같은 알림은 모두 isRead true로
+    const updatedNotifications = await notificationDB.updateNotificationListByIsRead(
       client,
       notification.postId,
       notification.receiverId,
       true,
     );
-    if (!updatedNotifications) {
-      return res
-        .status(statusCode.NOT_FOUND)
-        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_NOTIFICATION));
-    }
-
-    updatedNotifications = updatedNotifications.map((notification) => {
-      return {
-        notificationId: notification.id,
-        notificationPostId: notification.postId,
-        receiverId: notification.receiverId,
-        isRead: notification.isRead,
-        createdAt: notification.createdAt,
-        updatedAt: notification.updatedAt,
-        isDeleted: notification.isDeleted,
-      };
-    });
 
     res
       .status(statusCode.OK)

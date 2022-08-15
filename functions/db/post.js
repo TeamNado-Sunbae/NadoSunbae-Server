@@ -376,7 +376,7 @@ const getPostDetailByPostId = async (client, postId, userId, likeTypeId, invisib
     AND p.is_deleted = false
     `,
     [postId, likeTypeId, userId],
-    );
+  );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 

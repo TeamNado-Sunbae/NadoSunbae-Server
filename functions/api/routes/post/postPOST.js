@@ -1,8 +1,9 @@
+const _ = require("lodash");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { postDB, userDB, notificationDB, majorDB } = require("../../../db");
+const { postDB, userDB, notificationDB, majorDB, blockDB } = require("../../../db");
 const { postType, notificationType } = require("../../../constants/type");
 const pushAlarmHandlers = require("../../../lib/pushAlarmHandlers");
 const errorHandlers = require("../../../lib/errorHandlers");
@@ -39,7 +40,7 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
     }
 
-    let post = await postDB.createPost(
+    const post = await postDB.createPost(
       client,
       majorId,
       req.user.id,
@@ -49,64 +50,108 @@ module.exports = async (req, res) => {
       content,
     );
 
-    post = {
-      postId: post.id,
-      title: post.title,
-      content: post.content,
-      createdAt: post.createdAt,
-      answererId: post.answererId,
-      postTypeId: post.postTypeId,
-    };
+    res.status(statusCode.OK).send(
+      util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, {
+        post: {
+          postId: post.id,
+          title: post.title,
+          content: post.content,
+          createdAt: post.createdAt,
+          answererId: post.answererId,
+          postTypeId: post.postTypeId,
+        },
+        writer: {
+          writerId: req.user.id,
+          profileImageId: req.user.profileImageId,
+          nickname: req.user.nickname,
+          firstMajorName: req.user.firstMajorName,
+          firstMajorStart: req.user.firstMajorStart,
+          secondMajorName: req.user.secondMajorName,
+          secondMajorStart: req.user.secondMajorStart,
+        },
+      }),
+    );
 
-    const writer = {
-      writerId: req.user.id,
-      profileImageId: req.user.profileImageId,
-      nickname: req.user.nickname,
-      firstMajorName: req.user.firstMajorName,
-      firstMajorStart: req.user.firstMajorStart,
-      secondMajorName: req.user.secondMajorName,
-      secondMajorStart: req.user.secondMajorStart,
-    };
+    // ******************************************************************************************
+    // notification DB 저장 및 푸시 알림 전송
 
-    res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, { post, writer }));
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    // notification DB 저장 및 푸시 알림 전송을 위한 case 설정
-    // [ case 1: 마이페이지에 1:1 질문글이 올라온 경우 ]
+    const notificationTitle = "나도선배";
+    const sender = await userDB.getUserByUserId(client, req.user.id);
 
-    // 1:1 질문글인 경우에만 알림 전송
+    let receiver, unicastNotificationTypeId, unicastNotificationContent;
+    let receivers, multicastNotificationTypeId, multicastNotificationContent;
+
     if (post.postTypeId === postType.QUESTION_TO_PERSON && post.answererId) {
-      // 푸시 알림 제목은 나도선배 통일
-      const notificationTitle = "나도선배";
+      receiver = await userDB.getUserByUserId(client, post.answererId);
+      unicastNotificationTypeId = notificationType.QUESTION_TO_PERSON_ALARM;
+      unicastNotificationContent = `마이페이지에 ${sender.nickname}님이 1:1 질문을 남겼습니다.`;
+    } else if (post.postTypeId === postType.QUESTION_TO_EVERYONE) {
+      const major = await majorDB.getMajorByMajorId(client, post.majorId);
+      receivers = await userDB.getUserListByMajorId(
+        client,
+        post.majorId,
+        [true, false],
+        invisibleUserIds,
+      );
+      multicastNotificationTypeId = notificationType.COMMUNITY_ALARM;
+      multicastNotificationContent = `커뮤니티에 ${major.majorName} 질문글이 올라왔습니다.`;
+    }
 
-      // receiver는 게시글의 answerer, sender는 게시글 작성자
-      let receiver = await userDB.getUserByUserId(client, post.answererId);
-      let sender = await userDB.getUserByUserId(client, req.user.id);
-      let notificationContent = `마이페이지에 ${sender.nickname}님이 1:1 질문을 남겼습니다.`;
+    // for unicast
+    if (receiver && receiver.id !== sender.id) {
+      notificationDB.createNotification(
+        client,
+        sender.id,
+        receiver.id,
+        post.id,
+        unicastNotificationTypeId,
+        post.title,
+        null,
+        post.postTypeId,
+      );
 
-      if (receiver.id !== sender.id) {
-        // DB에 알림 저장
-        const notification = await notificationDB.createNotification(
-          client,
-          sender.id,
-          receiver.id,
-          post.postId,
-          notificationType.QUESTION_TO_PERSON_ALARM,
-          post.title,
-          null,
-          post.postTypeId,
+      // 푸시 알림 전송
+      if (receiver.deviceToken) {
+        pushAlarmHandlers.sendUnicast(
+          receiver.deviceToken,
+          notificationTitle,
+          unicastNotificationContent,
         );
-
-        // 푸시 알림 전송
-        if (receiver.deviceToken) {
-          pushAlarmHandlers.sendUnicast(
-            receiver.deviceToken,
-            notificationTitle,
-            notificationContent,
-          );
-        }
       }
+    }
+
+    // for multicast
+    if (receivers) {
+      const receiverTokens = [];
+      receivers.map((receiver) => {
+        if (receiver.id !== sender.id) {
+          notificationDB.createNotification(
+            client,
+            sender.id,
+            receiver.id,
+            post.id,
+            multicastNotificationTypeId,
+            post.title,
+            null,
+            post.postTypeId,
+          );
+
+          if (receiver.deviceToken) {
+            receiverTokens.push(receiver.deviceToken);
+          }
+        }
+      });
+
+      // 푸시 알림 전송
+      pushAlarmHandlers.sendMulticast(
+        receiverTokens,
+        notificationTitle,
+        multicastNotificationContent,
+      );
     }
 
     // 더미 데이터에 1:1 질문 들어왔을 경우 슬랙에 메세지 전송
