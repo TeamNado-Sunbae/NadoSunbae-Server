@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
 
     let postTypeId;
     if (type === "general") {
-      postTypeId;
+      postTypeId = postType.GENERAL;
     } else if (type === "information") {
       postTypeId = postType.INFORMATION;
     } else if (type === "questionToEveryone") {
