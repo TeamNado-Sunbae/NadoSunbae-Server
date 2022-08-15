@@ -10,8 +10,8 @@ const errorHandlers = require("../../../lib/errorHandlers");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { majorId, answererId, type, title, content } = req.body;
-  if (!majorId || !type || !title || !content) {
+  const { type, majorId, answererId, title, content } = req.body;
+  if (!type || !majorId || !title || !content) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -23,7 +23,9 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     let postTypeId;
-    if (type === "information") {
+    if (type === "general") {
+      postTypeId = postType.GENERAL;
+    } else if (type === "information") {
       postTypeId = postType.INFORMATION;
     } else if (type === "questionToEveryone") {
       postTypeId = postType.QUESTION_TO_EVERYONE;
@@ -53,15 +55,16 @@ module.exports = async (req, res) => {
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, {
         post: {
-          postId: post.id,
+          id: post.id,
+          type: type,
           title: post.title,
           content: post.content,
+          majorId: post.majorId,
           createdAt: post.createdAt,
           answererId: post.answererId,
-          postTypeId: post.postTypeId,
         },
         writer: {
-          writerId: req.user.id,
+          id: req.user.id,
           profileImageId: req.user.profileImageId,
           nickname: req.user.nickname,
           firstMajorName: req.user.firstMajorName,
