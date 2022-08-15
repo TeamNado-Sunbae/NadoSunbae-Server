@@ -131,7 +131,15 @@ const updatePost = async (client, title, content, postId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getPostList = async (client, majorId, postTypeIds, userId, likeTypeId, invisibleUserIds) => {
+const getPostList = async (
+  client,
+  majorId,
+  postTypeIds,
+  userId,
+  likeTypeId,
+  search,
+  invisibleUserIds,
+) => {
   const { rows } = await client.query(
     `
     SELECT p.id, p.post_type_id, p.title, p.content, p.created_at, p.writer_id, u.nickname, m.major_name,
@@ -171,6 +179,8 @@ const getPostList = async (client, majorId, postTypeIds, userId, likeTypeId, inv
   AND p.post_type_id IN (${postTypeIds.join()})
   AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   AND p.is_deleted = false
+  AND (p.title LIKE '%${search}%'
+  OR p.content LIKE '%${search}%')
   ORDER BY p.created_at desc
   `,
     [majorId, userId, likeTypeId],
@@ -390,7 +400,7 @@ const getPostDetailByPostId = async (client, postId, userId, likeTypeId, invisib
     AND p.is_deleted = false
     `,
     [postId, likeTypeId, userId],
-    );
+  );
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
