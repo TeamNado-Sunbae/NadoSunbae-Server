@@ -129,13 +129,27 @@ const getUserByFirebaseId = async (client, firebaseId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUserListByMajorId = async (client, majorId, invisibleUserIds) => {
+// response rate policy (answered questionToPerson post cnt/questionToPerson post cnt) * 100
+const getUserListByMajorId = async (client, majorId, reviewFilter, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-    SELECT * FROM "user" u
+    SELECT u.id, u.is_on_question, u.profile_image_id, u.nickname,
+    CASE WHEN u.first_major_id = $1 THEN true ELSE false END is_first_major,
+    CASE WHEN u.first_major_id = $1 THEN u.first_major_start ELSE u.second_major_start END major_start,
+    cast(COUNT(DISTINCT CASE WHEN p.answerer_id = c.writer_id THEN p.id END) * 100 / NULLIF(COUNT(DISTINCT p.id), 0) as integer) rate
+    FROM "user" u
+    LEFT JOIN post p
+      ON p.answerer_id = u.id
+      AND p.is_deleted = false
+    LEFT JOIN "comment" c
+      ON c.post_id = p.id
+      AND c.is_deleted = false
     WHERE (u.first_major_id = $1 OR u.second_major_id = $1)
-    AND id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-    AND is_deleted = false
+    AND u.is_reviewed IN (${reviewFilter.join()})
+    AND u.id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    AND u.is_deleted = false
+    GROUP BY u.id
+    ORDER BY rate DESC NULLS LAST
         `,
     [majorId],
   );

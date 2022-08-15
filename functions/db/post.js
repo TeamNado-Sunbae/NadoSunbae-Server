@@ -384,7 +384,7 @@ const getPostDetailByPostId = async (client, postId, userId, likeTypeId, invisib
 const calculateResponseRate = async (client, userId) => {
   const { rows } = await client.query(
     `
-    SELECT COUNT(DISTINCT CASE WHEN p.answerer_id = c.writer_id THEN p.id END)*100/COUNT(DISTINCT p.id) rate
+    SELECT cast(COUNT(DISTINCT CASE WHEN p.answerer_id = c.writer_id THEN p.id END) * 100 / NULLIF(COUNT(DISTINCT p.id), 0) as integer) rate
     FROM post p
     LEFT JOIN "comment" c
     ON c.post_id = p.id

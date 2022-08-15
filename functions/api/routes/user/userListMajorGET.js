@@ -8,6 +8,7 @@ const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
   const { majorId } = req.params;
+  const { exclude } = req.query;
 
   if (!majorId) {
     return res
@@ -24,43 +25,19 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    // 본인은 선배 찾기 리스트에 보이지 않도록
+    // 본인은 선배 리스트에 보이지 않도록
     invisibleUserIds.push(req.user.id);
 
-    let userList = await userDB.getUserListByMajorId(client, majorId, invisibleUserIds);
+    const isReviewed = exclude === "noReview" ? [true] : [true, false];
 
-    // userList를 랜덤으로 섞기
-    userList = _.shuffle(userList);
+    const userList = await userDB.getUserListByMajorId(
+      client,
+      majorId,
+      isReviewed,
+      invisibleUserIds,
+    );
 
-    let isFirstMajor;
-    let majorStart;
-
-    userList = userList.map((user) => {
-      if (user.firstMajorId === Number(majorId)) {
-        isFirstMajor = true;
-        majorStart = user.firstMajorStart;
-      } else if (user.secondMajorId === Number(majorId)) {
-        isFirstMajor = false;
-        majorStart = user.secondMajorStart;
-      }
-
-      return {
-        userId: user.id,
-        profileImageId: user.profileImageId,
-        isOnQuestion: user.isOnQuestion,
-        nickname: user.nickname,
-        isFirstMajor: isFirstMajor,
-        majorStart: majorStart,
-      };
-    });
-
-    // 질문 알림 여부에 따라 두 그룹으로 나누어 response 보냄
-    let onQuestionUserList = [];
-    let offQuestionUserList = [];
-
-    userList.map((user) => {
-      return (user.isOnQuestion === true ? onQuestionUserList : offQuestionUserList).push(user);
-    });
+    const [onQuestionUserList, offQuestionUserList] = _.partition(userList, (u) => u.isOnQuestion);
 
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.READ_ALL_USERS_SUCCESS, {
