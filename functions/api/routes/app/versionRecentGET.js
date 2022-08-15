@@ -1,19 +1,18 @@
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
-const appVersion = require("../../../constants/appVersion");
 const errorHandlers = require("../../../lib/errorHandlers");
+const dotenv = require("dotenv");
+dotenv.config();
 
 module.exports = async (req, res) => {
   try {
-    const data = {
-      AOS: appVersion.AOS,
-      iOS: appVersion.iOS,
-    };
-
-    res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_APP_VERSION, data));
+    res.status(statusCode.OK).send(
+      util.success(statusCode.OK, responseMessage.READ_APP_VERSION, {
+        AOS: process.env.VERSION_AOS,
+        iOS: process.env.VERSION_iOS,
+      }),
+    );
   } catch (error) {
     errorHandlers.error(req, error);
 
