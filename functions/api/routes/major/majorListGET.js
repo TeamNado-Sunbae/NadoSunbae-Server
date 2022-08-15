@@ -23,25 +23,25 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // filter & exclude query
-    let isFirstMajor, isSecondMajor, invisibleMajorIds;
+    let isFirstMajor, isSecondMajor, invisibleMajorNames;
 
     if (filter === "all") {
       isFirstMajor = [true, false];
       isSecondMajor = [true, false];
 
       if (exclude === "noMajor") {
-        invisibleMajorIds = [...NO_INFO, ...NOT_ENTERED, ...NO_MAJOR];
+        invisibleMajorNames = [...NO_INFO, ...NOT_ENTERED, ...NO_MAJOR];
       } else {
-        invisibleMajorIds = [...NO_INFO, ...NOT_ENTERED];
+        invisibleMajorNames = [...NO_INFO, ...NOT_ENTERED];
       }
     } else if (filter === "firstMajor") {
       isFirstMajor = [true];
       isSecondMajor = [true, false];
-      invisibleMajorIds = [...NO_INFO, ...NO_MAJOR];
+      invisibleMajorNames = [...NO_INFO, ...NO_MAJOR];
     } else if (filter === "secondMajor") {
       isFirstMajor = [true, false];
       isSecondMajor = [true];
-      invisibleMajorIds = [...NO_INFO, ...NO_MAJOR];
+      invisibleMajorNames = [...NO_INFO, ...NO_MAJOR];
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
@@ -53,7 +53,7 @@ module.exports = async (req, res) => {
       universityId,
       isFirstMajor,
       isSecondMajor,
-      invisibleMajorIds,
+      invisibleMajorNames,
     );
 
     // separate major by default major, other major, other campus
@@ -62,7 +62,7 @@ module.exports = async (req, res) => {
       otherCampus = [];
 
     majorList.map((m) => {
-      if ([...NOT_ENTERED, ...NO_MAJOR].includes(m.majorId)) {
+      if ([...NOT_ENTERED, ...NO_MAJOR].includes(m.majorName)) {
         otherMajor.push(m);
       } else if (m.majorName.includes("(")) {
         otherCampus.push(m);

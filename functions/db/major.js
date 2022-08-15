@@ -5,7 +5,7 @@ const getMajorListByUniversityId = async (
   universityId,
   isFirstMajor,
   isSecondMajor,
-  invisibleMajorIds,
+  invisibleMajorNames,
 ) => {
   const { rows } = await client.query(
     `
@@ -13,10 +13,10 @@ const getMajorListByUniversityId = async (
     WHERE m.university_id = $1
     AND m.is_first_major IN (${isFirstMajor.join()})
     AND m.is_second_major IN (${isSecondMajor.join()})
-    AND m.id NOT IN (${invisibleMajorIds.join()})
+    AND m.major_name <> all ($2)
     AND is_deleted = false
     `,
-    [universityId],
+    [universityId, invisibleMajorNames],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
