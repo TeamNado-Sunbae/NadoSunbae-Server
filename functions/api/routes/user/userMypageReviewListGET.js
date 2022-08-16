@@ -27,16 +27,6 @@ module.exports = async (req, res) => {
       nickname: writer.nickname,
     };
 
-    // 해당 유저의 후기글이 하나도 없을 경우
-    if (reviewList.length === 0) {
-      return res.status(statusCode.OK).send(
-        util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, {
-          writer,
-          reviewList,
-        }),
-      );
-    }
-
     reviewList = await Promise.all(
       reviewList.map(async (review) => {
         const tagNameList = await relationReviewTagDB.getTagNameListByReviewId(client, review.id);

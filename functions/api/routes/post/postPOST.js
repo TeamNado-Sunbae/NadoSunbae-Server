@@ -9,8 +9,8 @@ const errorHandlers = require("../../../lib/errorHandlers");
 const slackAPI = require("../../../middlewares/slackAPI");
 
 module.exports = async (req, res) => {
-  const { majorId, answererId, type, title, content } = req.body;
-  if (!majorId || !type || !title || !content) {
+  const { type, majorId, answererId, title, content } = req.body;
+  if (!type || !majorId || !title || !content) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -22,7 +22,9 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     let postTypeId;
-    if (type === "information") {
+    if (type === "general") {
+      postTypeId = postType.GENERAL;
+    } else if (type === "information") {
       postTypeId = postType.INFORMATION;
     } else if (type === "questionToEveryone") {
       postTypeId = postType.QUESTION_TO_EVERYONE;
@@ -39,7 +41,7 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_TYPE));
     }
 
-    let post = await postDB.createPost(
+    const post = await postDB.createPost(
       client,
       majorId,
       req.user.id,
@@ -49,30 +51,28 @@ module.exports = async (req, res) => {
       content,
     );
 
-    post = {
-      postId: post.id,
-      title: post.title,
-      content: post.content,
-      createdAt: post.createdAt,
-      answererId: post.answererId,
-      postTypeId: post.postTypeId,
-    };
-
-    const writer = {
-      writerId: req.user.id,
-      profileImageId: req.user.profileImageId,
-      nickname: req.user.nickname,
-      firstMajorName: req.user.firstMajorName,
-      firstMajorStart: req.user.firstMajorStart,
-      secondMajorName: req.user.secondMajorName,
-      secondMajorStart: req.user.secondMajorStart,
-    };
-
-    res
-      .status(statusCode.CREATED)
-      .send(
-        util.success(statusCode.CREATED, responseMessage.CREATE_ONE_POST_SUCCESS, { post, writer }),
-      );
+    res.status(statusCode.OK).send(
+      util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, {
+        post: {
+          id: post.id,
+          type: type,
+          title: post.title,
+          content: post.content,
+          majorId: post.majorId,
+          createdAt: post.createdAt,
+          answererId: post.answererId,
+        },
+        writer: {
+          id: req.user.id,
+          profileImageId: req.user.profileImageId,
+          nickname: req.user.nickname,
+          firstMajorName: req.user.firstMajorName,
+          firstMajorStart: req.user.firstMajorStart,
+          secondMajorName: req.user.secondMajorName,
+          secondMajorStart: req.user.secondMajorStart,
+        },
+      }),
+    );
 
     // notification DB 저장 및 푸시 알림 전송을 위한 case 설정
     // [ case 1: 마이페이지에 1:1 질문글이 올라온 경우 ]

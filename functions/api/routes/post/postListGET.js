@@ -3,15 +3,14 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { postDB, likeDB, blockDB } = require("../../../db");
+const { postDB, blockDB } = require("../../../db");
 const { postType, likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { majorId } = req.params;
-  const { sort, filter } = req.query;
+  const { majorId, filter, sort } = req.query;
 
-  if (!filter || !majorId || !sort) {
+  if (!filter || !sort) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -22,57 +21,66 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    // 내가 차단한 사람과 나를 차단한 사람을 block
-    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
-    const invisibleUserIds = _.map(invisibleUserList, "userId");
-
-    let postTypeId;
-    if (filter === "information") {
-      postTypeId = postType.INFORMATION;
+    let postTypeIds;
+    if (filter === "community") {
+      postTypeIds = [postType.GENERAL, postType.INFORMATION, postType.QUESTION_TO_EVERYONE];
+    } else if (filter === "general") {
+      postTypeIds = [postType.GENERAL];
+    } else if (filter === "information") {
+      postTypeIds = [postType.INFORMATION];
     } else if (filter === "questionToEveryone") {
-      postTypeId = postType.QUESTION_TO_EVERYONE;
+      postTypeIds = [postType.QUESTION_TO_EVERYONE];
     } else if (filter === "questionToPerson") {
-      postTypeId = postType.QUESTION_TO_PERSON;
+      postTypeIds = [postType.QUESTION_TO_PERSON];
     } else {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
     }
 
-    let postList = await postDB.getPostListByMajorId(
+    // 내가 차단한 사람과 나를 차단한 사람을 block
+    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
+    const invisibleUserIds = _.map(invisibleUserList, "userId");
+
+    let postList = await postDB.getPostList(
       client,
-      majorId,
-      postTypeId,
+      majorId ? majorId : 0,
+      postTypeIds,
+      req.user.id,
       likeType.POST,
       invisibleUserIds,
     );
 
-    const likeList = await likeDB.getLikeListByUserId(client, req.user.id);
-
     postList = postList.map((post) => {
-      // 좋아요 정보
-      const likeData = _.find(likeList, {
-        targetId: post.id,
-        targetTypeId: likeType.POST,
-      });
-
-      const isLiked = likeData ? likeData.isLiked : false;
+      let type;
+      switch (post.postTypeId) {
+        case postType.GENERAL:
+          type = "자유";
+          break;
+        case postType.QUESTION_TO_EVERYONE:
+          type = "질문";
+          break;
+        case postType.INFORMATION:
+          type = "정보";
+          break;
+      }
 
       return {
         postId: post.id,
+        type: type,
         title: post.title,
         content: post.content,
         createdAt: post.createdAt,
+        majorName: post.majorName,
         writer: {
-          writerId: post.writerId,
-          profileImageId: post.profileImageId,
+          id: post.writerId,
           nickname: post.nickname,
         },
+        commentCount: post.commentCount,
         like: {
-          isLiked: isLiked,
+          isLiked: post.isLiked,
           likeCount: post.likeCount,
         },
-        commentCount: post.commentCount,
       };
     });
 

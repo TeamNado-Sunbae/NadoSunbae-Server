@@ -22,8 +22,8 @@ module.exports = async (req, res) => {
     const universityData = await universityDB.getEmailByUniversityId(client, universityId);
     if (!universityData) {
       return res
-        .status(statusCode.NO_CONTENT)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, universityData));
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_EMAIL));
     }
 
     res

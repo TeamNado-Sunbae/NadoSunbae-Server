@@ -1,17 +1,22 @@
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const getMajorListByUniversityId = async (client, universityId, isFirstMajor, isSecondMajor) => {
+const getMajorListByUniversityId = async (
+  client,
+  universityId,
+  isFirstMajor,
+  isSecondMajor,
+  invisibleMajorNames,
+) => {
   const { rows } = await client.query(
     `
-    SELECT id as major_id, major_name, is_first_major, is_second_major FROM "major" m
+    SELECT id as major_id, major_name FROM "major" m
     WHERE m.university_id = $1
     AND m.is_first_major IN (${isFirstMajor.join()})
     AND m.is_second_major IN (${isSecondMajor.join()})
-    AND m.major_name != '정보없음'
+    AND m.major_name <> all ($2)
     AND is_deleted = false
-    ORDER BY major_id
     `,
-    [universityId],
+    [universityId, invisibleMajorNames],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
