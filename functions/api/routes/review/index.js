@@ -8,5 +8,6 @@ router.get("/:id", checkUser, require("./reviewDetailGET"));
 router.get("/tag", checkUser, require("./reviewTagListGET"));
 router.get("/major/:majorId/writer/:writerFilter", checkUser, require("./reviewMajorListGET"));
 router.put("/:id", checkUser, require("./reviewPUT"));
+router.get("/university/:universityId", checkUser, require("./reviewUniversityListGET"));
 
 module.exports = router;

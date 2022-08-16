@@ -22,8 +22,8 @@ module.exports = async (req, res) => {
     const majorData = await majorDB.getMajorByMajorId(client, majorId);
     if (!majorData) {
       return res
-        .status(statusCode.NO_CONTENT)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, majorData));
+        .status(statusCode.NOT_FOUND)
+        .send(util.fail(statusCode.NOT_FOUND, responseMessage.NO_MAJOR));
     }
 
     res

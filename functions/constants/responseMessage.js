@@ -6,8 +6,8 @@ module.exports = {
   INCORRECT_FILTER: "필터값이 잘못되었습니다.",
   INCORRECT_SORT: "정렬값이 잘못되었습니다.",
 
-  // 데이터 없음
-  NO_CONTENT: "찾는 데이터가 없습니다.",
+  // 대학
+  NO_EMAIL: "이메일 값이 없습니다.",
 
   // 서버 내 오류
   INTERNAL_SERVER_ERROR: "서버 내 오류",
@@ -75,6 +75,7 @@ module.exports = {
   // 전공
   READ_ONE_MAJOR_SUCCESS: "해당 학과 정보 가져오기 성공",
   READ_ALL_MAJORS_SUCCESS: "해당 학교의 학과 목록 조회 성공",
+  NO_MAJOR: "존재하지 않는 전공입니다.",
 
   // 좋아요
   UPDATE_LIKE_SUCCESS: "게시글 좋아요 업데이트 성공",

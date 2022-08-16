@@ -2,8 +2,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { postDB, likeDB } = require("../../../db");
-const { likeType } = require("../../../constants/type");
+const { postDB } = require("../../../db");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
@@ -22,7 +21,7 @@ module.exports = async (req, res) => {
     client = await db.connect(req);
 
     // 해당 글이 있는지 확인
-    let post = await postDB.getPostByPostId(client, postId);
+    const post = await postDB.getPostByPostId(client, postId);
     if (!post) {
       return res
         .status(statusCode.NOT_FOUND)
@@ -36,43 +35,28 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.FORBIDDEN, responseMessage.FORBIDDEN_ACCESS));
     }
 
-    // 과방글 수정
-    let updatedPost = await postDB.updatePost(client, title, content, postId);
+    const updatedPost = await postDB.updatePost(client, title, content, postId);
 
-    post = {
-      postId: updatedPost.id,
-      title: updatedPost.title,
-      content: updatedPost.content,
-      createdAt: updatedPost.createdAt,
-      updatedAt: updatedPost.updatedAt,
-    };
-
-    const writer = {
-      writerId: req.user.id,
-      profileImageId: req.user.profileImageId,
-      nickname: req.user.nickname,
-      firstMajorName: req.user.firstMajorName,
-      firstMajorStart: req.user.firstMajorStart,
-      secondMajorName: req.user.secondMajorName,
-      secondMajorStart: req.user.secondMajorStart,
-    };
-
-    // 좋아요 수
-    const likeCount = await likeDB.getLikeCountByTarget(client, postId, likeType.POST);
-    // 좋아요 상태
-    const likeStatus = await likeDB.getLikeByTarget(client, postId, likeType.POST, req.user.id);
-
-    const isLiked = likeStatus ? likeStatus.isLiked : false;
-
-    updatedPost = {
-      post: post,
-      writer: writer,
-      like: { isLiked: isLiked, likeCount: likeCount.likeCount },
-    };
-
-    res
-      .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.UPDATE_ONE_POST_SUCCESS, updatedPost));
+    res.status(statusCode.OK).send(
+      util.success(statusCode.OK, responseMessage.UPDATE_ONE_POST_SUCCESS, {
+        post: {
+          id: updatedPost.id,
+          title: updatedPost.title,
+          content: updatedPost.content,
+          createdAt: updatedPost.createdAt,
+          updatedAt: updatedPost.updatedAt,
+        },
+        writer: {
+          id: req.user.id,
+          profileImageId: req.user.profileImageId,
+          nickname: req.user.nickname,
+          firstMajorName: req.user.firstMajorName,
+          firstMajorStart: req.user.firstMajorStart,
+          secondMajorName: req.user.secondMajorName,
+          secondMajorStart: req.user.secondMajorStart,
+        },
+      }),
+    );
   } catch (error) {
     errorHandlers.error(req, error);
 
