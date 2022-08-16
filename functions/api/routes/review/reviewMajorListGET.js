@@ -46,21 +46,15 @@ module.exports = async (req, res) => {
         .send(util.fail(statusCode.BAD_REQUEST, responseMessage.INCORRECT_FILTER));
     }
 
-    let tagFilterList = Array.from(tagFilter);
     let reviewList = await reviewDB.getReviewListByFilters(
       client,
       majorId,
       isFirstMajor,
-      tagFilterList,
+      tagFilter,
       invisibleUserIds,
       likeType.REVIEW,
     );
 
-    if (reviewList.length === 0) {
-      res
-        .status(statusCode.OK)
-        .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, []));
-    }
     reviewList = reviewList.map((review) => {
       const writer = {
         writerId: review.writerId,
