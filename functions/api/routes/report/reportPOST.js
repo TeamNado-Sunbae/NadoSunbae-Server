@@ -72,8 +72,8 @@ module.exports = async (req, res) => {
       reason,
     );
 
-    res.status(statusCode.OK).send(
-      util.success(statusCode.OK, responseMessage.REPORT_SUCCESS, {
+    res.status(statusCode.CREATED).send(
+      util.success(statusCode.CREATED, responseMessage.REPORT_SUCCESS, {
         reportId: report.id,
         createdAt: report.createdAt,
       }),
