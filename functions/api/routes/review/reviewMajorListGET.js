@@ -8,8 +8,10 @@ const { likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { sort, tagFilter } = req.query;
-  const { majorId, writerFilter } = req.params;
+  const { sort, tagFilter, writerFilter } = req.query;
+  const { majorId } = req.params;
+
+  console.log(writerFilter);
 
   if (!majorId || !writerFilter || !tagFilter || !sort) {
     return res
