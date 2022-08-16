@@ -24,8 +24,13 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
+    const [invisibleUserList, relationReviewTagList, likeList] = await Promise.all([
+      blockDB.getInvisibleUserListByUserId(client, req.user.id),
+      relationReviewTagDB.getRelationReviewTagList(client),
+      likeDB.getLikeListByUserId(client, req.user.id),
+    ]);
+
     // 내가 차단한 사람과 나를 차단한 사람을 block
-    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
     let isFirstMajor;
@@ -56,11 +61,6 @@ module.exports = async (req, res) => {
         .status(statusCode.OK)
         .send(util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, []));
     }
-
-    const relationReviewTagList = await relationReviewTagDB.getRelationReviewTagList(client);
-
-    const likeList = await likeDB.getLikeListByUserId(client, req.user.id);
-
     reviewList = reviewList.map((review) => {
       const writer = {
         writerId: review.writerId,
