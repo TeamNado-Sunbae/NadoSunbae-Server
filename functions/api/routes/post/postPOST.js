@@ -51,8 +51,8 @@ module.exports = async (req, res) => {
       content,
     );
 
-    res.status(statusCode.OK).send(
-      util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, {
+    res.status(statusCode.CREATED).send(
+      util.success(statusCode.CREATED, responseMessage.CREATE_ONE_POST_SUCCESS, {
         post: {
           id: post.id,
           type: type,

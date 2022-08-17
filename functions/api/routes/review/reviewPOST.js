@@ -158,8 +158,8 @@ module.exports = async (req, res) => {
       createdAt: review.createdAt,
     };
 
-    res.status(statusCode.OK).send(
-      util.success(statusCode.OK, responseMessage.CREATE_ONE_POST_SUCCESS, {
+    res.status(statusCode.CREATED).send(
+      util.success(statusCode.CREATED, responseMessage.CREATE_ONE_POST_SUCCESS, {
         review,
         writer,
         like,
