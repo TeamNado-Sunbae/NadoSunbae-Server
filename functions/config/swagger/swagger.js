@@ -9,11 +9,10 @@ var swaggerDefinition = {
   securityDefinitions: {
     jwt: {
       type: "apiKey",
-      name: "Authorization",
+      name: "accesstoken",
       in: "header",
     },
   },
-  security: [{ jwt: [] }],
 };
 
 const outputFile = __dirname + "/new-swagger-output.json";
