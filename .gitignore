@@ -74,3 +74,8 @@ nadosunbae-server-dev-90ac3-firebase-adminsdk-r7b4s-10d004f02b.json
 
 # mac OS file
 .DS_Store
+
+# swagger
+swagger.js
+swagger-output.json
+new-swagger-output.json
