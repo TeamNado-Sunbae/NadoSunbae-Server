@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.READ_APP_VERSION, {
         AOS: process.env.VERSION_AOS,
-        iOS: process.env.VERSION_iOS,
+        iOS: process.env.VERSION_IOS,
       }),
     );
   } catch (error) {
