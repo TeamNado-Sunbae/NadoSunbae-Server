@@ -45,7 +45,7 @@ const getReviewListByFilters = async (
         FROM relation_review_tag rrt
         INNER JOIN "tag" t
         ON t.id = rrt.tag_id
-        AND t.id IN (${tagFilter.join()})
+        AND t.id IN (${tagFilter})
         AND rrt.is_deleted = false
         AND t.is_deleted = false
        )
