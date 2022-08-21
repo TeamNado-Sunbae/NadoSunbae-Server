@@ -6,8 +6,8 @@ router.post("/", checkUser, require("./reviewPOST"));
 router.delete("/:id", checkUser, require("./reviewDELETE"));
 router.get("/:id", checkUser, require("./reviewDetailGET"));
 router.get("/tag", checkUser, require("./reviewTagListGET"));
+router.get("/major/:majorId", checkUser, require("./reviewMajorListGET"));
 router.put("/:id", checkUser, require("./reviewPUT"));
 router.get("/university/:universityId", checkUser, require("./reviewUniversityListGET"));
-router.post("/major", checkUser, require("./reviewMajorListPOST"));
 
 module.exports = router;

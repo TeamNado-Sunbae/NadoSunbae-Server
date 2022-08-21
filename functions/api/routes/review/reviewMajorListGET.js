@@ -8,8 +8,10 @@ const { likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { sort } = req.query;
-  const { majorId, writerFilter, tagFilter } = req.body;
+  const { sort, tagFilter, writerFilter } = req.query;
+  const { majorId } = req.params;
+
+  console.log(writerFilter);
 
   if (!majorId || !writerFilter || !tagFilter || !sort) {
     return res
@@ -22,8 +24,13 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
+    const [invisibleUserList, relationReviewTagList, likeList] = await Promise.all([
+      blockDB.getInvisibleUserListByUserId(client, req.user.id),
+      relationReviewTagDB.getRelationReviewTagList(client),
+      likeDB.getLikeListByUserId(client, req.user.id),
+    ]);
+
     // 내가 차단한 사람과 나를 차단한 사람을 block
-    const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
     let isFirstMajor;
@@ -47,17 +54,6 @@ module.exports = async (req, res) => {
       invisibleUserIds,
       likeType.REVIEW,
     );
-
-    // 해당 과에 후기 글이 없을 경우
-    if (reviewList.length === 0) {
-      return res
-        .status(statusCode.OK)
-        .send(util.success(statusCode.NO_CONTENT, responseMessage.NO_CONTENT, reviewList));
-    }
-
-    const relationReviewTagList = await relationReviewTagDB.getRelationReviewTagList(client);
-
-    const likeList = await likeDB.getLikeListByUserId(client, req.user.id);
 
     reviewList = reviewList.map((review) => {
       const writer = {
