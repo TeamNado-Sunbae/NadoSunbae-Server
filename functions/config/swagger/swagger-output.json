@@ -1,0 +1,1372 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Nadosunbae server API",
+    "version": "2.0.0",
+    "description": "나도선배 develop용 API 명세서입니다."
+  },
+  "paths": {
+    "/auth/duplication-check/nickname": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "닉네임 중복 체크",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nickname": {
+                    "type": "string",
+                    "example": "juhyeon"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/duplication-check/email": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "이메일 중복 체크",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "wngus4296@swu.ac.kr"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "회원가입",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "wngus4296@swu.ac.kr"
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "example": "juhyeon"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "123456"
+                  },
+                  "universityId": {
+                    "type": "int",
+                    "example": "1"
+                  },
+                  "firstMajorId": {
+                    "type": "int",
+                    "example": "23"
+                  },
+                  "firstMajorStart": {
+                    "type": "string",
+                    "example": "19-1"
+                  },
+                  "secondMajorId": {
+                    "type": "int",
+                    "example": "24"
+                  },
+                  "secondMajorStart": {
+                    "type": "string",
+                    "example": "20-2"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "로그인",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "wngus4296@swu.ac.kr"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "123456"
+                  },
+                  "deviceToken": {
+                    "type": "string",
+                    "example": "abcdefg"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["auth"],
+        "summary": "로그아웃",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/renewal/token": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "토큰 재발급 / 자동 로그인",
+        "description": "",
+        "parameters": [
+          {
+            "name": "refreshtoken",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/auth/reset/password": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "비밀번호 재설정",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "wngus4296@swu.ac.kr"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/university/{universityId}": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "학교별 이메일 뒷자리 조회",
+        "description": "회원가입 - 이메일 인증에 필요한 학교별 이메일 뒷자리를 조회합니다.",
+        "parameters": [
+          {
+            "name": "universityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/auth/certification/email": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "이메일 인증",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "wngus4296@swu.ac.kr"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/secession": {
+      "post": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["auth"],
+        "summary": "회원 탈퇴",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/mypage/major/{majorId}?exclude=string": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["user/mypage"],
+        "summary": "과방 마이페이지 유저 조회",
+        "description": "exclude -> noReview / res에 질문 가능 선배, 질문 불가 선배 나눠져있습니다.",
+        "parameters": [
+          {
+            "name": "majorId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 3
+          },
+          {
+            "name": "exclude",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "noReview"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/user/mypage/post?filter=string": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["user/mypage"],
+        "summary": "마이페이지 내가 쓴 글 조회",
+        "description": "filter -> 1:1 질문: questionToPerson, 커뮤니티: community",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "community"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/user/mypage/comment?filter=string": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["user/mypage"],
+        "summary": "마이페이지 내가 쓴 답글 조회",
+        "description": "filter -> 1:1 질문: questionToPerson, 커뮤니티: community",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "questionToPerson"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/user/mypage/like?filter=string": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["user/mypage"],
+        "summary": "마이페이지 좋아요 목록 조회",
+        "description": "filter -> 후기: review, 1:1 질문: questionToPerson, 커뮤니티: community",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "review"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/user/mypage/{userId}/review": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["user/mypage"],
+        "summary": "마이페이지 내가 쓴 후기 조회",
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 3
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/user/mypage/{userId}/post/question?sort=string": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["user/mypage"],
+        "summary": "마이페이지 1:1 질문 조회",
+        "description": "sort -> 최신순: recent, 좋아요 순: like",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 109
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "like"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/user/mypage/{userId}": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["user/mypage"],
+        "summary": "해당 유저 마이페이지 조회",
+        "description": "나의 마이페이지인 경우, count는 좋아요 갯수 / 남의 마이페이지인 경우 count는 후기 갯수",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 109
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/user/mypage/": {
+      "put": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["user/mypage"],
+        "summary": "마이페이지 수정",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "profileImageId": {
+                    "type": "int",
+                    "example": 3
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "example": "jh"
+                  },
+                  "bio": {
+                    "type": "string",
+                    "example": "한 줄 소개"
+                  },
+                  "isOnQuestion": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "firstMajorId": {
+                    "type": "int",
+                    "example": 4
+                  },
+                  "firstMajorStart": {
+                    "type": "string",
+                    "example": "19-1"
+                  },
+                  "secondMajorId": {
+                    "type": "int",
+                    "example": 30
+                  },
+                  "secondMajorStart": {
+                    "type": "string",
+                    "example": "21-1"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/review/": {
+      "post": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["review"],
+        "summary": "후기 등록",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "majorId": {
+                    "type": "int",
+                    "example": 3
+                  },
+                  "backgroundImageId": {
+                    "type": "int",
+                    "example": 9
+                  },
+                  "oneLineReview": {
+                    "type": "string",
+                    "example": "한 줄 후기"
+                  },
+                  "prosCons": {
+                    "type": "string",
+                    "example": "장단점"
+                  },
+                  "curriculum": {
+                    "type": "string",
+                    "example": "커리큘럼"
+                  },
+                  "recommendLecture": {
+                    "type": "string",
+                    "example": "추천 수업"
+                  },
+                  "nonRecommendLecture": {
+                    "type": "string",
+                    "example": "비추 수업"
+                  },
+                  "career": {
+                    "type": "string",
+                    "example": "진로"
+                  },
+                  "tip": {
+                    "type": "string",
+                    "example": "꿀팁"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/review/{id}": {
+      "delete": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["review"],
+        "summary": "후기 삭제",
+        "description": "본인 후기만 삭제 가능",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 46
+          }
+        ],
+        "responses": {}
+      },
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["review"],
+        "summary": "후기 상세 조회",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 45
+          }
+        ],
+        "responses": {}
+      },
+      "put": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["review"],
+        "summary": "후기 수정",
+        "description": "본인 후기만 수정 가능",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 46
+          }
+        ],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "backgroundImageId": {
+                    "type": "int",
+                    "example": 6
+                  },
+                  "oneLineReview": {
+                    "type": "string",
+                    "example": "한 줄 후기"
+                  },
+                  "prosCons": {
+                    "type": "string",
+                    "example": "장단점"
+                  },
+                  "curriculum": {
+                    "type": "string",
+                    "example": "커리큘럼"
+                  },
+                  "recommendLecture": {
+                    "type": "string",
+                    "example": "추천 수업"
+                  },
+                  "nonRecommendLecture": {
+                    "type": "string",
+                    "example": "비추 추업"
+                  },
+                  "career": {
+                    "type": "string",
+                    "example": "진로"
+                  },
+                  "tip": {
+                    "type": "string",
+                    "example": "꿀팁"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/review/tag/list": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["review"],
+        "summary": "후기 태그 리스트 조회",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/review/major/{majorId}?writerFilter=all&tagFilter=2&tagFilter=4&sort=recent": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["review"],
+        "summary": "해당 전공 후기 조회",
+        "description": "sort -> 최신순: recent, 좋아요 순: like / writerFilter -> 전체: all, 제 1전공: firstMajor, 제 2전공: secondMajor / tagFilter -> 1, 2, 3, 4, 5 (tagFilter=3, tagFilter=4 와 같이 여러개 넣어주시면 됩니다.)",
+        "parameters": [
+          {
+            "name": "majorId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 5
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "recent"
+            }
+          },
+          {
+            "name": "tagFilter",
+            "in": "query",
+            "schema": {
+              "type": "int",
+              "example": 2
+            }
+          },
+          {
+            "name": "writerFilter",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "all"
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/review/university/{universityId}": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["review"],
+        "summary": "학교 후기 전체 최신순 조회",
+        "description": "",
+        "parameters": [
+          {
+            "name": "universityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/post/": {
+      "post": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["post"],
+        "summary": "게시글 작성",
+        "description": "type -> 자유: general, 정보: information, 1:1 질문: questionToEveryone, 전체 질문: questionToPerson",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "example": "general"
+                  },
+                  "majorId": {
+                    "type": "int",
+                    "example": 14
+                  },
+                  "answererId": {
+                    "type": "int",
+                    "example": 32
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "제목입니다"
+                  },
+                  "content": {
+                    "type": "string",
+                    "example": "내용입니다"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["post"],
+        "summary": "게시글 조회",
+        "description": "filter -> 커뮤니티: community, 자유: general, 정보: information, 1:1 질문: questionToEveryone, 전체에게 질문: questionToPerson / sort -> 최신순: recent, 좋아요순: like",
+        "parameters": [
+          {
+            "name": "majorId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": 3
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "general"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "like"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/post/{postId}": {
+      "delete": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["post"],
+        "summary": "게시글 삭제",
+        "description": "",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 38
+          }
+        ],
+        "responses": {}
+      },
+      "put": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["post"],
+        "summary": "게시글 수정",
+        "description": "",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 49
+          }
+        ],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "제목입니다"
+                  },
+                  "content": {
+                    "type": "string",
+                    "example": "내용입니다"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["post"],
+        "summary": "게시글 상세 조회",
+        "description": "",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 87
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/major/university/{universityId}?filter=string&exclude=string": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["major"],
+        "summary": "학과 리스트 조회",
+        "description": "filter -> 전체: all, 제 1전공: firstMajor, 제 2전공: secondMajor / exclude -> 학과 무관: noMajor",
+        "parameters": [
+          {
+            "name": "universityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 1
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "all"
+          },
+          {
+            "name": "exclude",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "noMajor"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/major/{majorId}": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["major"],
+        "summary": "학과 상세 조회",
+        "description": "",
+        "parameters": [
+          {
+            "name": "majorId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 2
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/comment/": {
+      "post": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["comment"],
+        "summary": "댓글 작성",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "postId": {
+                    "type": "int",
+                    "example": 14
+                  },
+                  "content": {
+                    "type": "string",
+                    "example": "댓글 내용입니다"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/comment/{commentId}": {
+      "put": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["comment"],
+        "summary": "댓글 수정",
+        "description": "",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 78
+          }
+        ],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "example": "수정할 댓글 내용입니다"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["comment"],
+        "summary": "댓글 삭제",
+        "description": "",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 65
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/like/": {
+      "post": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["like"],
+        "summary": "좋아요 등록 / 취소",
+        "description": "type -> 후기: review,  과방, 커뮤니티: post",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "targetId": {
+                    "type": "int",
+                    "example": 123
+                  },
+                  "type": {
+                    "type": "string",
+                    "example": "review"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report/": {
+      "post": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["report"],
+        "summary": "신고 등록",
+        "description": "type -> 후기: review, 글: post, 댓글: comment",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "targetId": {
+                    "type": "int",
+                    "example": 10
+                  },
+                  "type": {
+                    "type": "string",
+                    "example": "comment"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "example": "이유입니다"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report/{reportId}": {
+      "put": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["report"],
+        "summary": "신고 수정",
+        "description": "admin 계정만 사용 가능합니다.",
+        "parameters": [
+          {
+            "name": "reportId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/notification/{receiverId}": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["notification"],
+        "summary": "알림 리스트 조회",
+        "description": "",
+        "parameters": [
+          {
+            "name": "receiverId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 22
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/notification/{notificationId}/read": {
+      "put": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["notification"],
+        "summary": "알림 읽음 처리",
+        "description": "",
+        "parameters": [
+          {
+            "name": "notificationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 23
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/notification/{notificationId}": {
+      "delete": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["notification"],
+        "summary": "알림 삭제",
+        "description": "",
+        "parameters": [
+          {
+            "name": "notificationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 5
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/block/": {
+      "get": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["block"],
+        "summary": "차단 리스트 조회",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      },
+      "post": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["block"],
+        "summary": "차단 등록",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "blockedUserId": {
+                    "type": "int",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inappropriate-review/": {
+      "post": {
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": ["inappropriate-review"],
+        "summary": "부적절 후기 등록",
+        "description": "admin 계정만 사용 가능합니다.",
+        "parameters": [],
+        "responses": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reviewId": {
+                    "type": "int",
+                    "example": 4
+                  },
+                  "reason": {
+                    "type": "string",
+                    "example": "이유입니다."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/app/link": {
+      "get": {
+        "tags": ["app"],
+        "summary": "앱 링크 조회",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/app/banner": {
+      "get": {
+        "tags": ["app"],
+        "summary": "앱 배너 리스트 조회",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/app/version/recent": {
+      "get": {
+        "tags": ["app"],
+        "summary": "앱 최신 버전 조회",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "jwt": {
+        "type": "apiKey",
+        "name": "accesstoken",
+        "in": "header"
+      }
+    }
+  }
+}
