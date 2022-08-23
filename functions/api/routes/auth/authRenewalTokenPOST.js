@@ -56,7 +56,7 @@ module.exports = async (req, res) => {
         return res
           .status(statusCode.INTERNAL_SERVER_ERROR)
           .send(
-            util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_DEVICE_TOKEN_FAIL),
+            util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_REFRESH_TOKEN_FAIL),
           );
       }
 
