@@ -156,6 +156,34 @@ const getUserListByMajorId = async (client, majorId, reviewFilter, invisibleUser
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
+// response rate policy (answered questionToPerson post cnt/questionToPerson post cnt) * 100
+const getUserListByUniversityId = async (client, universityId, invisibleUserIds) => {
+  const { rows } = await client.query(
+    `
+    SELECT u.id, u.profile_image_id, u.nickname,
+    (SELECT m.major_name from major m WHERE m.id = u.first_major_id) as first_major_name,
+    u.first_major_start,
+    (SELECT m.major_name from major m WHERE m.id = u.second_major_id) as second_major_name,
+    u.second_major_start,
+    cast(COUNT(DISTINCT CASE WHEN p.answerer_id = c.writer_id THEN p.id END) * 100 / NULLIF(COUNT(DISTINCT p.id), 0) as integer) rate
+    FROM "user" u
+    LEFT JOIN post p
+      ON p.answerer_id = u.id
+      AND p.is_deleted = false
+    LEFT JOIN "comment" c
+      ON c.post_id = p.id
+      AND c.is_deleted = false
+    WHERE u.university_id = $1
+    AND u.id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    AND u.is_deleted = false
+    GROUP BY u.id
+    ORDER BY rate DESC NULLS LAST, u.is_reviewed DESC, u.nickname
+        `,
+    [universityId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
 const updateUserByDeviceToken = async (client, userId, deviceToken) => {
   const { rows: existingRows } = await client.query(
     `
@@ -373,6 +401,7 @@ module.exports = {
   getUserByUserId,
   getUserByFirebaseId,
   getUserListByMajorId,
+  getUserListByUniversityId,
   updateUserByDeviceToken,
   updateUserByRefreshToken,
   getUserListByCommentPostId,
