@@ -133,6 +133,7 @@ const updatePost = async (client, title, content, postId) => {
 
 const getPostList = async (
   client,
+  universityId,
   majorId,
   postTypeIds,
   userId,
@@ -153,7 +154,7 @@ const getPostList = async (
     (
       SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
       WHERE l.target_id = p.id
-      AND l.target_type_id = $3
+      AND l.target_type_id = $4
       AND l.is_liked = true
       AND p.is_deleted = false
     ),
@@ -162,8 +163,8 @@ const getPostList = async (
         (
           SELECT l.is_liked FROM "like" l
           WHERE l.target_id = p.id
-          AND l.target_type_id = $3
-          AND l.user_id = $2
+          AND l.target_type_id = $4
+          AND l.user_id = $3
           AND p.is_deleted = false
         ), false
       )
@@ -171,11 +172,12 @@ const getPostList = async (
   FROM "post" p
   INNER JOIN major m
     ON p.major_id = m.id
+    AND m.university_id = $1
     AND m.is_deleted = false
   INNER JOIN "user" u
     ON p.writer_id = u.id
     AND u.is_deleted = false
-  AND p.major_id = (CASE WHEN $1 <> 0 then $1 else p.major_id end)
+  AND p.major_id = (CASE WHEN $2 <> 0 then $2 else p.major_id end)
   AND p.post_type_id IN (${postTypeIds.join()})
   AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   AND p.is_deleted = false
@@ -183,7 +185,7 @@ const getPostList = async (
   OR p.content LIKE '%${search}%')
   ORDER BY p.created_at desc
   `,
-    [majorId, userId, likeTypeId],
+    [universityId, majorId, userId, likeTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
