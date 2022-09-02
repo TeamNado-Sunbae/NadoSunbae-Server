@@ -8,7 +8,7 @@ const { postType, likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { majorId, filter, sort } = req.query;
+  const { majorId, filter, sort, search } = req.query;
 
   if (!filter || !sort) {
     return res
@@ -48,6 +48,7 @@ module.exports = async (req, res) => {
       postTypeIds,
       req.user.id,
       likeType.POST,
+      search,
       invisibleUserIds,
     );
 
