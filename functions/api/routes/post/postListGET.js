@@ -8,8 +8,8 @@ const { postType, likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { universityId, majorId } = req.params;
-  const { filter, sort, search } = req.query;
+  const { universityId } = req.params;
+  const { majorId, filter, sort, search } = req.query;
 
   if (!filter || !sort || !universityId) {
     return res
@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
       postTypeIds,
       req.user.id,
       likeType.POST,
-      search,
+      search ? search : "",
       invisibleUserIds,
     );
 
