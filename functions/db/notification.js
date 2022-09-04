@@ -23,10 +23,13 @@ const createNotification = async (
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getNotificationListByReceiverId = async (client, receiverId, invisibleUserIds) => {
+const getNotificationList = async (client, receiverId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-  SELECT n.*, u.nickname sender_nickname, u.profile_image_id sender_profile_image_id
+  SELECT n.id, n.post_id, n.comment_id, n.created_at, n.content, n.is_read, n.notification_type_id,
+  n.sender_id,
+  u.nickname sender_nickname, 
+  u.profile_image_id sender_profile_image_id
   FROM notification n
   INNER JOIN "user" u
   ON n.sender_id = u.id
@@ -56,13 +59,13 @@ const getNotificationByNotificationId = async (client, notificationId) => {
 const updateNotificationListByIsRead = async (client, postId, receiverId, isRead) => {
   const { rows } = await client.query(
     `
-    UPDATE notification
+    UPDATE notification n
     SET is_read = $3, updated_at = now()
     WHERE post_id = $1
     AND receiver_id = $2
     AND is_deleted = false
     AND is_read = false
-    RETURNING *
+    RETURNING n.id, n.is_read
       `,
     [postId, receiverId, isRead],
   );
@@ -98,7 +101,7 @@ const deleteNotificationListByUserSecession = async (client, userId) => {
 
 module.exports = {
   createNotification,
-  getNotificationListByReceiverId,
+  getNotificationList,
   getNotificationByNotificationId,
   updateNotificationListByIsRead,
   deleteNotificationByNotificationId,
