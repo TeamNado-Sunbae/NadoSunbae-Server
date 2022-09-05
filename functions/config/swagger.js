@@ -20,11 +20,13 @@ const options = {
         description: "local url",
       },
     ],
-    securityDefinitions: {
-      jwt: {
-        type: "apiKey",
-        name: "accesstoken",
-        in: "header",
+    components: {
+      securitySchemes: {
+        jwt: {
+          type: "apiKey",
+          name: "accesstoken",
+          in: "header",
+        },
       },
     },
   },
