@@ -238,8 +238,11 @@ const getUserListByCommentPostId = async (client, commentPostId, invisibleUserId
   const { rows } = await client.query(
     `
       SELECT DISTINCT u.id, u.device_token FROM "user" u
-      INNER JOIN (SELECT DISTINCT writer_id FROM comment WHERE post_id = $1 AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[]) AND is_deleted = false) c
+      INNER JOIN COMMENT c
       ON c.writer_id = u.id
+      AND c.post_id = $1
+      AND c.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+      AND c.is_deleted = false
       AND u.is_deleted = false
       `,
     [commentPostId],

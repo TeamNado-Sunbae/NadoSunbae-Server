@@ -43,8 +43,8 @@ module.exports = async (req, res) => {
     if (loginUser.err) {
       if (loginUser.error.code === "auth/wrong-password") {
         return res
-          .status(statusCode.BAD_REQUEST)
-          .json(util.fail(statusCode.BAD_REQUEST, responseMessage.MISS_MATCH_PW));
+          .status(statusCode.UNAUTHORIZED)
+          .json(util.fail(statusCode.UNAUTHORIZED, responseMessage.MISS_MATCH_PW));
       } else {
         return res
           .status(statusCode.INTERNAL_SERVER_ERROR)

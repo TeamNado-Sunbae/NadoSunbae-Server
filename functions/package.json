@@ -4,6 +4,7 @@
   "scripts": {
     "lint": "eslint .",
     "serve": "firebase use local && cross-env NODE_ENV=local firebase emulators:start --only functions",
+    "swagger": "node ./config/swagger/swagger.js",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy:dev": "firebase use dev && cross-env NODE_ENV=development firebase deploy --only functions",
@@ -31,7 +32,9 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "math-random": "^2.0.1",
-    "pg": "^8.7.1"
+    "pg": "^8.7.1",
+    "swagger-jsdoc": "^6.2.5",
+    "swagger-ui-express": "^4.5.0"
   },
   "devDependencies": {
     "eslint": "^7.6.0",

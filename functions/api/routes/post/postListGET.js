@@ -8,9 +8,10 @@ const { postType, likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { majorId, filter, sort } = req.query;
+  const { universityId } = req.params;
+  const { majorId, filter, sort, search } = req.query;
 
-  if (!filter || !sort) {
+  if (!filter || !sort || !universityId) {
     return res
       .status(statusCode.BAD_REQUEST)
       .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
@@ -44,10 +45,12 @@ module.exports = async (req, res) => {
 
     let postList = await postDB.getPostList(
       client,
+      universityId,
       majorId ? majorId : 0,
       postTypeIds,
       req.user.id,
       likeType.POST,
+      search ? search : "",
       invisibleUserIds,
     );
 
