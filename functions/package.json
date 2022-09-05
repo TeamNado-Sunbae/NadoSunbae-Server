@@ -33,13 +33,13 @@
     "lodash": "^4.17.21",
     "math-random": "^2.0.1",
     "pg": "^8.7.1",
-    "swagger-autogen": "^2.21.5"
+    "swagger-jsdoc": "^6.2.5",
+    "swagger-ui-express": "^4.5.0"
   },
   "devDependencies": {
     "eslint": "^7.6.0",
     "eslint-config-google": "^0.14.0",
-    "firebase-functions-test": "^0.2.0",
-    "swagger-ui-express": "^4.5.0"
+    "firebase-functions-test": "^0.2.0"
   },
   "private": true
 }
