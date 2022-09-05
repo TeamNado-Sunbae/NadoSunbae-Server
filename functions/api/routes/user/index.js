@@ -35,6 +35,33 @@ router.get("/major/:majorId", checkUser, require("./userListMajorGET"));
 
 /**
  * @swagger
+ * /user/university/{universityId}:
+ *   get:
+ *     security:
+ *       - jwt: []
+ *     tags:
+ *       - user
+ *     summary: 선배 랭킹 조회
+ *     description: []
+ *     parameters:
+ *       - name: universityId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: '1'
+ *     responses:
+ *       '200':
+ *         description: 선배 랭킹 조회 성공
+ *       '400':
+ *         description: 필요한 값 누락
+ *       '500':
+ *         description: 서버 내부 에러
+ */
+router.get("/university/:universityId", checkUser, require("./userListUniversityGET"));
+
+/**
+ * @swagger
  * /user/post:
  *   get:
  *     security:

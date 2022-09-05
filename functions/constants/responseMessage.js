@@ -8,6 +8,7 @@ module.exports = {
 
   // 대학
   NO_EMAIL: "이메일 값이 없습니다.",
+  READ_SUNBAE_RANK: "선배 랭킹 조회 성공",
 
   // 서버 내 오류
   INTERNAL_SERVER_ERROR: "서버 내 오류",
