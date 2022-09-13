@@ -12,12 +12,20 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let bannerList = await imageDB.getBannerImageList(client);
-    bannerList = _.map(bannerList, "imageUrl");
+    const bannerList = await imageDB.getBannerImageList(client);
+    let iOS = [],
+      AOS = [];
+    bannerList.map(function (data) {
+      if (data.type == "iOS") {
+        iOS.push(data.imageUrl);
+      } else {
+        AOS.push(data.imageUrl);
+      }
+    });
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_APP_BANNER, bannerList));
+      .send(util.success(statusCode.OK, responseMessage.READ_APP_BANNER, { iOS, AOS }));
   } catch (error) {
     errorHandlers.error(req, error);
 
