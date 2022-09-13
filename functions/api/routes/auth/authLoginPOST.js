@@ -194,9 +194,9 @@ module.exports = async (req, res) => {
     };
 
     // 앱 업데이트 규모에 따른 알럿 문구
-    const alert = {
-      small: "유저들의 의견을 반영하여\n사용성을 개선했어요.\n지금 바로 업데이트해보세요!",
-      large: "안정적인 서비스 사용을 위해\n최신 버전으로 업데이트해주세요.",
+    const updateAlert = {
+      minor: "유저들의 의견을 반영하여\n사용성을 개선했어요.\n지금 바로 업데이트해보세요!",
+      major: "안정적인 서비스 사용을 위해\n최신 버전으로 업데이트해주세요.",
     };
 
     res.status(statusCode.OK).send(
@@ -204,7 +204,7 @@ module.exports = async (req, res) => {
         user,
         accesstoken,
         refreshtoken,
-        alert,
+        updateAlert,
       }),
     );
   } catch (error) {
