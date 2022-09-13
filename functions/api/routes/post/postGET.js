@@ -94,6 +94,8 @@ module.exports = async (req, res) => {
           secondMajorName: post.secondMajorName,
           secondMajorStart: post.secondMajorStart,
         },
+        // 1:1 하단 플로팅 버튼을 위한 권한 확인
+        isAuthorized: req.user.id == post.writerId || req.user.id == post.answererId,
         like: {
           isLiked: post.isLiked,
           likeCount: post.likeCount,
