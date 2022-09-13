@@ -19,8 +19,15 @@ router.get("/link", require("./appLinkGET"));
  * @swagger
  * /app/banner:
  *   get:
- *     summary: 앱 배너 리스트 조회
+ *     summary: 앱 배너 리스트 조회 (쿼리 있음)
+ *     description: 쿼리에 iOS 또는 AOS로 넣어주세요.
  *     tags: [app]
+ *     parameters:
+ *       - name: type
+ *         in: query
+ *         schema:
+ *           type: string
+ *           example: iOS
  *     responses:
  *       200:
  *         description: 앱 배너 리스트 조회 성공

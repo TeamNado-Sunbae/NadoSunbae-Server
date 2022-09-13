@@ -7,25 +7,25 @@ const { imageDB } = require("../../../db");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
+  const { type } = req.query;
+
+  if (!type) {
+    return res
+      .status(statusCode.BAD_REQUEST)
+      .send(util.fail(statusCode.BAD_REQUEST, responseMessage.NULL_VALUE));
+  }
+
   let client;
 
   try {
     client = await db.connect(req);
 
-    const bannerList = await imageDB.getBannerImageList(client);
-    let iOS = [],
-      AOS = [];
-    bannerList.map(function (data) {
-      if (data.type == "iOS") {
-        iOS.push(data.imageUrl);
-      } else {
-        AOS.push(data.imageUrl);
-      }
-    });
+    let bannerList = await imageDB.getBannerImageList(client, type);
+    bannerList = _.map(bannerList, "imageUrl");
 
     res
       .status(statusCode.OK)
-      .send(util.success(statusCode.OK, responseMessage.READ_APP_BANNER, { iOS, AOS }));
+      .send(util.success(statusCode.OK, responseMessage.READ_APP_BANNER, bannerList));
   } catch (error) {
     errorHandlers.error(req, error);
 
