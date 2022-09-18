@@ -14,4 +14,5 @@ module.exports = {
   blockDB: require("./block"),
   inappropriateReviewDB: require("./inappropriateReview"),
   imageDB: require("./image"),
+  favoritesDB: require("./favorites"),
 };

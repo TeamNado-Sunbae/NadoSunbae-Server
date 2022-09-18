@@ -33,7 +33,21 @@ const getMajorByMajorId = async (client, majorId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getMajorByExcludeMajorNames = async (client, majorNames, majorId) => {
+  const { rows } = await client.query(
+    `
+    SELECT id FROM "major" m
+    WHERE m.major_name <> all ($2)
+    AND m.id = $1
+    AND m.is_deleted = false
+    `,
+    [majorId, majorNames],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   getMajorByMajorId,
   getMajorListByUniversityId,
+  getMajorByExcludeMajorNames,
 };
