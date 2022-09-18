@@ -8,34 +8,42 @@ const getReviewListByFilters = async (
   tagFilter,
   invisibleUserIds,
   likeTypeId,
+  userId,
 ) => {
   const { rows } = await client.query(
     `
-    WITH USER_MAJOR AS (
-      SELECT u.id, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.is_deleted, m1.major_name first_major_name, m2.major_name second_major_name
-      FROM "user" u
-      INNER JOIN major m1
-      ON u.first_major_id = m1.id
-      AND u.is_deleted = false
-      AND m1.is_deleted = false
-      INNER JOIN major m2
-      ON u.second_major_id = m2.id
-      AND u.is_deleted = false
-      AND m2.is_deleted = false
-    )
-
-    SELECT DISTINCT ON (r.id) r.*, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.first_major_name, u.second_major_name,
+    SELECT DISTINCT ON (r.id) r.id, r.one_line_review, r.created_at, r.writer_id 
+    u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, m1.major_name first_major_name, m2.major_name second_major_name,
     (
       SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
       WHERE l.target_id = r.id
       AND l.target_type_id = $2
       AND l.is_liked = true
       AND r.is_deleted = false
-    )
+    ),
+    (
+      coalesce(
+        (
+          SELECT l.is_liked FROM "like" l
+          WHERE l.target_id = r.id
+          AND l.target_type_id = $2
+          AND l.user_id = $3
+          AND r.is_deleted = false
+        ), false
+      )
+    ) as is_liked
       FROM review r
-      INNER JOIN USER_MAJOR u
-      ON u.id = r.writer_id
-      AND u.is_deleted = false
+      INNER JOIN "user" u
+        ON u.id = r.writer_id
+        AND u.is_deleted = false
+      INNER JOIN major m1
+        ON u.first_major_id = m1.id
+        AND u.is_deleted = false
+        AND m1.is_deleted = false
+      INNER JOIN major m2
+        ON u.second_major_id = m2.id
+        AND u.is_deleted = false
+        AND m2.is_deleted = false
       AND r.is_deleted = false
       AND r.major_id = $1
       AND r.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
@@ -50,7 +58,7 @@ const getReviewListByFilters = async (
         AND t.is_deleted = false
        )
       `,
-    [majorId, likeTypeId],
+    [majorId, likeTypeId, userId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
