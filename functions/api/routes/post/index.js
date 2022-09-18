@@ -192,6 +192,6 @@ router.get("/:postId", checkUser, require("./postGET"));
  *       '500':
  *         description: 서버 내부 에러
  */
-router.get("/university/:universityId", checkUser, require("./postListGET"));
+router.get("/university/:universityId", checkUser, require("./postUniversityListGET"));
 
 module.exports = router;
