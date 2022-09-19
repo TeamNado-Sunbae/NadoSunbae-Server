@@ -13,5 +13,6 @@ module.exports = {
   reportDB: require("./report"),
   blockDB: require("./block"),
   inappropriateReviewDB: require("./inappropriateReview"),
+  favoritesDB: require("./favorites"),
   bannerDB: require("./banner"),
 };

@@ -9,7 +9,7 @@ const { NO_INFO, NOT_ENTERED, NO_MAJOR } = require("../../../constants/major");
 
 module.exports = async (req, res) => {
   const { universityId } = req.params;
-  const { filter, exclude } = req.query;
+  const { filter, exclude, userId } = req.query;
 
   if (!universityId || !filter) {
     return res
@@ -54,16 +54,20 @@ module.exports = async (req, res) => {
       isFirstMajor,
       isSecondMajor,
       invisibleMajorNames,
+      userId,
     );
 
     // separate major by default major, other major, other campus
     let defaultMajor = [],
       otherMajor = [],
-      otherCampus = [];
+      otherCampus = [],
+      favorites = [];
 
     majorList.map((m) => {
       if ([...NOT_ENTERED, ...NO_MAJOR].includes(m.majorName)) {
         otherMajor.push(m);
+      } else if (m.isFavorites) {
+        favorites.push(m);
       } else if (m.majorName.includes("(")) {
         otherCampus.push(m);
       } else {
@@ -76,11 +80,12 @@ module.exports = async (req, res) => {
       return char >= "가" && char <= "힣";
     };
 
+    favorites = _.sortBy(favorites, [(m) => !isCharKorean(m.majorName[0]), "majorName"]);
     defaultMajor = _.sortBy(defaultMajor, [(m) => !isCharKorean(m.majorName[0]), "majorName"]);
     otherCampus = _.sortBy(otherCampus, [(m) => !isCharKorean(m.majorName[0]), "majorName"]);
 
     // other major first, followed by default major, other campus
-    const result = otherMajor.concat(defaultMajor, otherCampus);
+    const result = otherMajor.concat(favorites, defaultMajor, otherCampus);
 
     res
       .status(statusCode.OK)

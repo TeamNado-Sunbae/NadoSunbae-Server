@@ -15,6 +15,7 @@ router.use("/notification", require("./notification"));
 router.use("/block", require("./block"));
 router.use("/inappropriate-review", require("./inappropriateReview"));
 router.use("/app", require("./app"));
+router.use("/favorites", require("./favorites"));
 
 // swagger
 router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerFile, { explorer: true }));
