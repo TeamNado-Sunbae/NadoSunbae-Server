@@ -30,11 +30,11 @@ const router = express.Router();
  *                 type: string
  *                 example: general
  *               majorId:
- *                 type: string
- *                 example: '14'
+ *                 type: number
+ *                 example: 14
  *               answererId:
- *                 type: string
- *                 example: '32'
+ *                 type: number
+ *                 example: 32
  *               title:
  *                 type: string
  *                 example: 제목입니다
@@ -59,8 +59,8 @@ router.post("/", checkUser, require("./postPOST"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '38'
+ *           type: number
+ *         example: 38
  *     responses:
  *       '200':
  *         description: 커뮤니티 글 삭제 성공
@@ -90,8 +90,8 @@ router.delete("/:postId", checkUser, require("./postDELETE"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '49'
+ *           type: number
+ *         example: 49
  *     responses:
  *       '200':
  *         description: 커뮤니티 글 수정 성공
@@ -133,8 +133,8 @@ router.put("/:postId", checkUser, require("./postPUT"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '25'
+ *           type: number
+ *         example: 25
  *     responses:
  *       '200':
  *         description: 커뮤니티 글 상세 조회 성공
@@ -162,13 +162,13 @@ router.get("/:postId", checkUser, require("./postGET"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '1'
+ *           type: number
+ *         example: 1
  *       - name: majorId
  *         in: query
  *         schema:
- *           type: string
- *         example: '5'
+ *           type: number
+ *         example: 5
  *       - name: filter
  *         in: query
  *         schema:

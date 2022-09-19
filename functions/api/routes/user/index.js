@@ -17,8 +17,8 @@ const router = express.Router();
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '5'
+ *           type: number
+ *         example: 5
  *       - name: exclude
  *         in: query
  *         schema:
@@ -48,8 +48,8 @@ router.get("/major/:majorId", checkUser, require("./userMajorListGET"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '1'
+ *           type: number
+ *         example: 1
  *     responses:
  *       '200':
  *         description: 선배 랭킹 조회 성공
@@ -153,8 +153,8 @@ router.get("/like", checkUser, require("./userLikeListGET"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '3'
+ *           type: number
+ *         example: 3
  *     responses:
  *       '200':
  *         description: 내가 쓴 후기 조회 성공
@@ -180,8 +180,8 @@ router.get("/:userId/review", checkUser, require("./userReviewListGET"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '109'
+ *           type: number
+ *         example: 109
  *       - name: sort
  *         in: query
  *         schema:
@@ -212,8 +212,8 @@ router.get("/:userId/post/question", checkUser, require("./userPostQuestionListG
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '109'
+ *           type: number
+ *         example: 109
  *     responses:
  *       '200':
  *         description: 해당 유저 마이페이지 조회 성공
@@ -253,8 +253,8 @@ router.get("/:userId", checkUser, require("./userGET"));
  *             type: object
  *             properties:
  *               profileImageId:
- *                 type: string
- *                 example: '3'
+ *                 type: number
+ *                 example: 3
  *               nickname:
  *                 type: string
  *                 example: jh
@@ -265,14 +265,14 @@ router.get("/:userId", checkUser, require("./userGET"));
  *                 type: boolean
  *                 example: true
  *               firstMajorId:
- *                 type: string
- *                 example: '4'
+ *                 type: number
+ *                 example: 4
  *               firstMajorStart:
  *                 type: string
  *                 example: 19-1
  *               secondMajorId:
- *                 type: string
- *                 example: '30'
+ *                 type: number
+ *                 example: 30
  *               secondMajorStart:
  *                 type: string
  *                 example: 21-1

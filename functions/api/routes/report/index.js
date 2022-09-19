@@ -31,8 +31,8 @@ const router = express.Router();
  *             type: object
  *             properties:
  *               targetId:
- *                 type: string
- *                 example: '10'
+ *                 type: number
+ *                 example: 10
  *               type:
  *                 type: string
  *                 example: comment
@@ -57,8 +57,8 @@ router.post("/", checkUser, require("./reportPOST"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '1'
+ *           type: number
+ *         example: 1
  *     responses:
  *       '200':
  *         description: 신고 수정 성공

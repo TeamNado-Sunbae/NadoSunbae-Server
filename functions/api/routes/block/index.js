@@ -46,8 +46,8 @@ router.get("/", checkUser, require("./blockListGET"));
  *             type: object
  *             properties:
  *               blockedUserId:
- *                 type: string
- *                 example: '1'
+ *                 type: number
+ *                 example: 1
  */
 router.post("/", checkUser, require("./blockPOST"));
 

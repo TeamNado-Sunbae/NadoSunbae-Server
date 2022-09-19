@@ -39,8 +39,8 @@ router.get("/", checkUser, require("./notificationListGET.js"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '23'
+ *           type: number
+ *         example: 23
  *     responses:
  *       '200':
  *         description: 알림 읽음 업데이트 성공
@@ -68,8 +68,8 @@ router.put("/:notificationId/read", checkUser, require("./notificationReadPUT.js
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '5'
+ *           type: number
+ *         example: 5
  *     responses:
  *       '200':
  *         description: 알림 삭제 성공
