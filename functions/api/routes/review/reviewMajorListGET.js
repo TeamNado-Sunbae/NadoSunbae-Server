@@ -3,15 +3,13 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { reviewDB, likeDB, relationReviewTagDB, blockDB } = require("../../../db");
+const { reviewDB, relationReviewTagDB, blockDB } = require("../../../db");
 const { likeType } = require("../../../constants/type");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
-  const { sort, tagFilter, writerFilter } = req.query;
   const { majorId } = req.params;
-
-  console.log(writerFilter);
+  const { sort, tagFilter, writerFilter } = req.query;
 
   if (!majorId || !writerFilter || !tagFilter || !sort) {
     return res
@@ -24,10 +22,9 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    const [invisibleUserList, relationReviewTagList, likeList] = await Promise.all([
+    const [invisibleUserList, relationReviewTagList] = await Promise.all([
       blockDB.getInvisibleUserListByUserId(client, req.user.id),
       relationReviewTagDB.getRelationReviewTagList(client),
-      likeDB.getLikeListByUserId(client, req.user.id),
     ]);
 
     // 내가 차단한 사람과 나를 차단한 사람을 block
@@ -53,40 +50,31 @@ module.exports = async (req, res) => {
       tagFilter,
       invisibleUserIds,
       likeType.REVIEW,
+      req.user.id,
     );
 
     reviewList = reviewList.map((review) => {
-      const writer = {
-        writerId: review.writerId,
-        profileImageId: review.profileImageId,
-        nickname: review.nickname,
-        firstMajorName: review.firstMajorName,
-        firstMajorStart: review.firstMajorStart,
-        secondMajorName: review.secondMajorName,
-        secondMajorStart: review.secondMajorStart,
-      };
-
       // 태그 정보
-      review.tagList = _.filter(relationReviewTagList, (r) => r.reviewId === review.id).map((o) => {
-        return { tagName: o.tagName };
+      review.tagList = _.filter(relationReviewTagList, (r) => r.reviewId === review.id).map((r) => {
+        return { tagName: r.tagName };
       });
-
-      // 좋아요 정보
-      const likeData = _.find(likeList, {
-        targetId: review.id,
-        targetTypeId: likeType.REVIEW,
-      });
-
-      const isLiked = likeData ? likeData.isLiked : false;
 
       return {
         id: review.id,
         oneLineReview: review.oneLineReview,
         createdAt: review.createdAt,
-        writer: writer,
+        writer: {
+          writerId: review.writerId,
+          profileImageId: review.profileImageId,
+          nickname: review.nickname,
+          firstMajorName: review.firstMajorName,
+          firstMajorStart: review.firstMajorStart,
+          secondMajorName: review.secondMajorName,
+          secondMajorStart: review.secondMajorStart,
+        },
         tagList: review.tagList,
         like: {
-          isLiked: isLiked,
+          isLiked: review.isLiked,
           likeCount: review.likeCount,
         },
       };

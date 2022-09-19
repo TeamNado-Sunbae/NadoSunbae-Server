@@ -31,7 +31,7 @@ const router = express.Router();
  *       '500':
  *         description: 서버 내부 에러
  */
-router.get("/major/:majorId", checkUser, require("./userListMajorGET"));
+router.get("/major/:majorId", checkUser, require("./userMajorListGET"));
 
 /**
  * @swagger
@@ -58,7 +58,7 @@ router.get("/major/:majorId", checkUser, require("./userListMajorGET"));
  *       '500':
  *         description: 서버 내부 에러
  */
-router.get("/university/:universityId", checkUser, require("./userListUniversityGET"));
+router.get("/university/:universityId", checkUser, require("./userUniversityListGET"));
 
 /**
  * @swagger
@@ -84,7 +84,7 @@ router.get("/university/:universityId", checkUser, require("./userListUniversity
  *       '500':
  *         description: 서버 내부 에러
  */
-router.get("/post", checkUser, require("./userMypagePostListGET"));
+router.get("/post", checkUser, require("./userPostListGET"));
 
 /**
  * @swagger
@@ -110,7 +110,7 @@ router.get("/post", checkUser, require("./userMypagePostListGET"));
  *       '500':
  *         description: 서버 내부 에러
  */
-router.get("/comment", checkUser, require("./userMypageCommentListGET"));
+router.get("/comment", checkUser, require("./userCommentListGET"));
 
 /**
  * @swagger
@@ -136,7 +136,7 @@ router.get("/comment", checkUser, require("./userMypageCommentListGET"));
  *       '500':
  *         description: 서버 내부 에러
  */
-router.get("/like", checkUser, require("./userMypageLikeListGET"));
+router.get("/like", checkUser, require("./userLikeListGET"));
 
 /**
  * @swagger
@@ -163,7 +163,7 @@ router.get("/like", checkUser, require("./userMypageLikeListGET"));
  *       '500':
  *         description: 서버 내부 에러
  */
-router.get("/:userId/review", checkUser, require("./userMypageReviewListGET"));
+router.get("/:userId/review", checkUser, require("./userReviewListGET"));
 
 /**
  * @swagger
@@ -195,7 +195,7 @@ router.get("/:userId/review", checkUser, require("./userMypageReviewListGET"));
  *       '500':
  *         description: 서버 내부 에러
  */
-router.get("/:userId/post/question", checkUser, require("./userMypagePostQuestionListGET"));
+router.get("/:userId/post/question", checkUser, require("./userPostQuestionListGET"));
 
 /**
  * @swagger
@@ -224,7 +224,7 @@ router.get("/:userId/post/question", checkUser, require("./userMypagePostQuestio
  *       '500':
  *         description: 서버 내부 에러
  */
-router.get("/:userId", checkUser, require("./userMypageGET"));
+router.get("/:userId", checkUser, require("./userGET"));
 
 /**
  * @swagger
@@ -277,6 +277,6 @@ router.get("/:userId", checkUser, require("./userMypageGET"));
  *                 type: string
  *                 example: 21-1
  */
-router.put("/", checkUser, require("./userMypagePUT"));
+router.put("/", checkUser, require("./userPUT"));
 
 module.exports = router;

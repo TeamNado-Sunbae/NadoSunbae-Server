@@ -96,7 +96,7 @@ module.exports = async (req, res) => {
       ) {
         receiver = await userDB.getUserByUserId(client, commentPost.answererId);
         unicastNotificationTypeId = notificationType.QUESTION_TO_PERSON_WRITER_COMMENT_ALARM;
-        unicastNotificationContent = `1:1 질문글에 ${sender.nickname}님이 답글을 남겼습니다.`;
+        unicastNotificationContent = `${sender.nickname}님이 1:1 질문글에 답글을 남겼습니다.`;
       }
     } else if (
       commentPost.postTypeId === postType.GENERAL ||

@@ -42,7 +42,8 @@ const router = express.Router();
  *       '500':
  *         description: 서버 내부 에러
  */
-router.get("/university/:universityId", require("./majorListUniversityGET"));
+
+router.get("/university/:universityId", require("./majorUniversityListGET"));
 
 /**
  * @swagger
