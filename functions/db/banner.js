@@ -1,9 +1,9 @@
 const convertSnakeToCamel = require("../lib/convertSnakeToCamel");
 
-const getBannerImageList = async (client, type) => {
+const getBannerList = async (client, type) => {
   const { rows } = await client.query(
     `
-    SELECT image_url FROM image
+    SELECT image_url, redirect_url FROM banner
     WHERE type = $1
     ORDER BY image_url
       `,
@@ -13,5 +13,5 @@ const getBannerImageList = async (client, type) => {
 };
 
 module.exports = {
-  getBannerImageList,
+  getBannerList,
 };

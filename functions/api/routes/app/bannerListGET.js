@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { imageDB } = require("../../../db");
+const { bannerDB } = require("../../../db");
 const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
@@ -20,8 +20,7 @@ module.exports = async (req, res) => {
   try {
     client = await db.connect(req);
 
-    let bannerList = await imageDB.getBannerImageList(client, type);
-    bannerList = _.map(bannerList, "imageUrl");
+    const bannerList = await bannerDB.getBannerList(client, type);
 
     res
       .status(statusCode.OK)
