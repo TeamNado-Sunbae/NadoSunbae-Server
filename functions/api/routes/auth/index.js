@@ -78,17 +78,17 @@ router.post("/duplication-check/email", require("./authDuplicationCheckEmailPOST
  *                 type: string
  *                 example: '123456'
  *               universityId:
- *                 type: string
- *                 example: '1'
+ *                 type: number
+ *                 example: 1
  *               firstMajorId:
- *                 type: string
- *                 example: '23'
+ *                 type: number
+ *                 example: 23
  *               firstMajorStart:
  *                 type: string
  *                 example: 19-1
  *               secondMajorId:
- *                 type: string
- *                 example: '24'
+ *                 type: number
+ *                 example: 24
  *               secondMajorStart:
  *                 type: string
  *                 example: 20-2
@@ -225,7 +225,7 @@ router.post("/reset/password", require("./authResetPasswordPOST"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
+ *           type: number
  *         example: 1
  *     responses:
  *       '200':

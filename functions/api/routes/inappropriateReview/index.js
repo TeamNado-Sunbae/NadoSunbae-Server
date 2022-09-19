@@ -31,8 +31,8 @@ const router = express.Router();
  *             type: object
  *             properties:
  *               reviewId:
- *                 type: string
- *                 example: '4'
+ *                 type: number
+ *                 example: 4
  *               reason:
  *                 type: string
  *                 example: 이유입니다.

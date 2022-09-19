@@ -17,8 +17,8 @@ const router = express.Router();
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '1'
+ *           type: number
+ *         example: 1
  *       - name: filter
  *         in: query
  *         schema:
@@ -32,7 +32,7 @@ const router = express.Router();
  *       - name: userId
  *         in: query
  *         schema:
- *           type: int
+ *           type: number
  *         example: 65
  *     responses:
  *       '200':
@@ -60,8 +60,8 @@ router.get("/university/:universityId", require("./majorUniversityListGET"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '2'
+ *           type: number
+ *         example: 2
  *     responses:
  *       '200':
  *         description: 학과 상세 조회 성공

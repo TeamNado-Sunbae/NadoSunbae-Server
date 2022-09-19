@@ -27,11 +27,11 @@ const router = express.Router();
  *             type: object
  *             properties:
  *               majorId:
- *                 type: string
- *                 example: '3'
+ *                 type: number
+ *                 example: 3
  *               backgroundImageId:
- *                 type: string
- *                 example: '9'
+ *                 type: number
+ *                 example: 9
  *               oneLineReview:
  *                 type: string
  *                 example: 한 줄 후기
@@ -71,8 +71,8 @@ router.post("/", checkUser, require("./reviewPOST"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '46'
+ *           type: number
+ *         example: 46
  *     responses:
  *       '200':
  *         description: 후기 삭제 성공
@@ -121,8 +121,8 @@ router.get("/tag", checkUser, require("./reviewTagListGET"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '45'
+ *           type: number
+ *         example: 45
  *     responses:
  *       '200':
  *         description: 후기 상세 조회 성공
@@ -150,8 +150,8 @@ router.get("/:id", checkUser, require("./reviewDetailGET"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '5'
+ *           type: number
+ *         example: 5
  *       - name: sort
  *         in: query
  *         schema:
@@ -160,8 +160,8 @@ router.get("/:id", checkUser, require("./reviewDetailGET"));
  *       - name: tagFilter
  *         in: query
  *         schema:
- *           type: string
- *           example: '2'
+ *           type: number
+ *           example: 2
  *       - name: writerFilter
  *         in: query
  *         schema:
@@ -192,8 +192,8 @@ router.get("/major/:majorId", checkUser, require("./reviewMajorListGET"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '46'
+ *           type: number
+ *         example: 46
  *     responses:
  *       '200':
  *         description: 후기 수정 성공
@@ -212,8 +212,8 @@ router.get("/major/:majorId", checkUser, require("./reviewMajorListGET"));
  *             type: object
  *             properties:
  *               backgroundImageId:
- *                 type: string
- *                 example: '6'
+ *                 type: number
+ *                 example: 6
  *               oneLineReview:
  *                 type: string
  *                 example: 한 줄 후기
@@ -234,7 +234,7 @@ router.get("/major/:majorId", checkUser, require("./reviewMajorListGET"));
  *                 example: 진로
  *               tip:
  *                 type: string
- *                 example: 꿀팁ㅁㅁ
+ *                 example: 꿀팁
  */
 router.put("/:id", checkUser, require("./reviewPUT"));
 
@@ -253,8 +253,8 @@ router.put("/:id", checkUser, require("./reviewPUT"));
  *         in: path
  *         required: true
  *         schema:
- *          type: string
- *         example: '1'
+ *          type: number
+ *         example: 1
  *     responses:
  *       '200':
  *         description: 학교 리뷰 조회 성공

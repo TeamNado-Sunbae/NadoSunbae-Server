@@ -31,8 +31,8 @@ const router = express.Router();
  *             type: object
  *             properties:
  *               postId:
- *                 type: string
- *                 example: '14'
+ *                 type: number
+ *                 example: 14
  *               content:
  *                 type: string
  *                 example: 댓글 내용입니다
@@ -54,8 +54,8 @@ router.post("/", checkUser, require("./commentPOST"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '78'
+ *           type: number
+ *         example: 78
  *     responses:
  *       '200':
  *         description: 댓글 수정 성공
@@ -94,8 +94,8 @@ router.put("/:commentId", checkUser, require("./commentPUT"));
  *         in: path
  *         required: true
  *         schema:
- *           type: string
- *         example: '65'
+ *           type: number
+ *         example: 65
  *     responses:
  *       '200':
  *         description: 댓글 삭제 성공

@@ -26,7 +26,7 @@ const router = express.Router();
  *             type: object
  *             properties:
  *               majorId:
- *                 type: int
+ *                 type: number
  *                 example: 2
  */
 router.post("/", checkUser, require("./favoritesPOST"));

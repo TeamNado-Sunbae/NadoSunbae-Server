@@ -27,8 +27,8 @@ const router = express.Router();
  *             type: object
  *             properties:
  *               targetId:
- *                 type: string
- *                 example: '123'
+ *                 type: number
+ *                 example: 123
  *               type:
  *                 type: string
  *                 example: review
