@@ -105,4 +105,8 @@ module.exports = {
   READ_APP_VERSION: "최신 앱 버전 조회 성공",
   READ_APP_LINK: "앱 링크 조회 성공",
   READ_APP_BANNER: "앱 배너 조회 성공",
+
+  // 즐겨찾기
+  INCORRECT_MAJOR: "학과가 잘못되었습니다.",
+  UPDATE_FAVORITES_SUCCESS: "즐겨찾기 업데이트 성공",
 };

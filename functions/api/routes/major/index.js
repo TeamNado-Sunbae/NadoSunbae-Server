@@ -29,6 +29,11 @@ const router = express.Router();
  *         schema:
  *           type: string
  *         example: noMajor
+ *       - name: userId
+ *         in: query
+ *         schema:
+ *           type: int
+ *         example: 65
  *     responses:
  *       '200':
  *         description: 해당 학교 학과 리스트 조회 성공
@@ -37,6 +42,7 @@ const router = express.Router();
  *       '500':
  *         description: 서버 내부 에러
  */
+
 router.get("/university/:universityId", require("./majorUniversityListGET"));
 
 /**
