@@ -6,7 +6,6 @@ const updateFavorites = async (client, majorId, userId) => {
       SELECT * FROM favorites
       WHERE major_id = $1
       AND user_id = $2
-      AND is_deleted = false
       `,
     [majorId, userId],
   );
