@@ -32,7 +32,7 @@ const router = express.Router();
  *       - name: userId
  *         in: query
  *         schema:
- *           type: int
+ *           type: number
  *         example: 65
  *     responses:
  *       '200':
