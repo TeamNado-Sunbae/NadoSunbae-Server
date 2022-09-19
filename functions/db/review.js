@@ -12,7 +12,7 @@ const getReviewListByFilters = async (
 ) => {
   const { rows } = await client.query(
     `
-    SELECT DISTINCT ON (r.id) r.id, r.one_line_review, r.created_at, r.writer_id 
+    SELECT DISTINCT ON (r.id) r.id, r.one_line_review, r.created_at, r.writer_id,
     u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, m1.major_name first_major_name, m2.major_name second_major_name,
     (
       SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
