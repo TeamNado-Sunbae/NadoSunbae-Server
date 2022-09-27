@@ -357,7 +357,7 @@ const getPostDetailByPostId = async (client, postId, userId, likeTypeId, invisib
   const { rows } = await client.query(
     `
     SELECT p.id, p.post_type_id, p.title, p.content, p.created_at, m.major_name,
-    p.writer_id, u.profile_image_id, u.nickname, u.first_major_start, u.second_major_start, m1.major_name first_major_name, m2.major_name second_major_name,
+    p.writer_id, p.answerer_id, u.profile_image_id, u.nickname, u.first_major_start, u.second_major_start, m1.major_name first_major_name, m2.major_name second_major_name,
     (
       SELECT cast(count(c.*) as integer) comment_count FROM comment c
       WHERE c.post_id = p.id
