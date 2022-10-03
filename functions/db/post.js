@@ -143,7 +143,7 @@ const getPostList = async (
 ) => {
   const { rows } = await client.query(
     `
-    SELECT p.id, p.post_type_id, p.title, p.content, p.created_at, p.writer_id, u.nickname, m.major_name,
+    SELECT p.id, p.post_type_id, p.title, p.content, p.created_at, p.answerer_id, p.writer_id, u.nickname, m.major_name,
     (
       SELECT cast(count(c.*) as integer) comment_count FROM comment c
       WHERE c.post_id = p.id
