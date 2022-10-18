@@ -6,8 +6,6 @@ const router = express.Router();
  * @swagger
  * /major/university/{universityId}:
  *   get:
- *     security:
- *       - jwt: []
  *     tags:
  *       - major
  *     summary: 학과 리스트 조회
