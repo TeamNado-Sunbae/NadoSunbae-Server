@@ -5,23 +5,23 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const prodFirebaseConfig = {
-  apiKey: "AIzaSyBEqiqaiIR7czG5XLBgxgbFERioHa6kGJ0",
-  authDomain: "nadosunbae-server.firebaseapp.com",
-  projectId: "nadosunbae-server",
-  storageBucket: "nadosunbae-server.appspot.com",
-  messagingSenderId: "473721519726",
-  appId: "1:473721519726:web:9c1a172885f4c6e479307f",
-  measurementId: "G-QG47JRQXY7",
+  apiKey: process.env.PROD_API_KEY,
+  authDomain: process.env.PROD_AUTH_DOMAIN,
+  projectId: process.env.PROD_PROJECT_ID,
+  storageBucket: process.env.PROD_STORAGE_BUCKET,
+  messagingSenderId: process.env.PROD_MESSAGING_SENDER_ID,
+  appId: process.env.PROD_APP_ID,
+  measurementId: process.env.PROD_MEASUREMENT_ID,
 };
 
 const devFirebaseConfig = {
-  apiKey: "AIzaSyA1bFdLq0jfVfBhb3EihIgw5WJ-KIeNVwI",
-  authDomain: "nadosunbae-server-dev-90ac3.firebaseapp.com",
-  projectId: "nadosunbae-server-dev-90ac3",
-  storageBucket: "nadosunbae-server-dev-90ac3.appspot.com",
-  messagingSenderId: "978556585705",
-  appId: "1:978556585705:web:7539681d09460699db9278",
-  measurementId: "G-YL3225MTLE",
+  apiKey: process.env.DEV_API_KEY,
+  authDomain: process.env.DEV_AUTH_DOMAIN,
+  projectId: process.env.DEV_PROJECT_ID,
+  storageBucket: process.env.DEV_STORAGE_BUCKET,
+  messagingSenderId: process.env.DEV_MESSAGING_SENDER_ID,
+  appId: process.env.DEV_APP_ID,
+  measurementId: process.env.DEV_MEASUREMENT_ID,
 };
 
 const firebaseConfig =

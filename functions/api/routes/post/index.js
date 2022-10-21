@@ -11,7 +11,7 @@ const router = express.Router();
  *     tags:
  *       - post
  *     summary: 게시글 작성
- *     description: 'type -> 자유: general, 정보: information, 1:1 질문: questionToEveryone, 전체 질문: questionToPerson'
+ *     description: 'type -> 자유: general, 정보: information, 1:1 질문: questionToPerson, 전체 질문: questionToEveryone'
  *     parameters: []
  *     responses:
  *       '201':
@@ -156,7 +156,7 @@ router.get("/:postId", checkUser, require("./postGET"));
  *     tags:
  *       - post
  *     summary: 게시글 조회 (쿼리 있음)
- *     description: 'filter -> 커뮤니티: community, 자유: general, 정보: information, 1:1 질문: questionToEveryone, 전체에게 질문: questionToPerson / sort -> 최신순: recent, 좋아요순: like / majorId -> 필수가 아님 안 넣으면 전체 조회'
+ *     description: 'filter -> 커뮤니티: community, 자유: general, 정보: information, 1:1 질문: questionToPerson, 전체에게 질문: questionToEveryone / sort -> 최신순: recent, 좋아요순: like / majorId -> 필수가 아님 안 넣으면 전체 조회'
  *     parameters:
  *       - name: universityId
  *         in: path
