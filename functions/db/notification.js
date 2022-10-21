@@ -26,18 +26,20 @@ const createNotification = async (
 const getNotificationList = async (client, receiverId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-  SELECT n.id, n.post_id, n.comment_id, n.created_at, n.content, n.is_read, n.notification_type_id,
-  n.sender_id,
-  u.nickname sender_nickname, 
-  u.profile_image_id sender_profile_image_id
-  FROM notification n
-  INNER JOIN "user" u
-  ON n.sender_id = u.id
-  AND u.is_deleted = false
-  AND n.receiver_id = $1
-  AND n.is_deleted = false
-  AND n.sender_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-  ORDER BY n.created_at desc
+    SELECT n.id, n.post_id, p.major_id, m.major_name, n.comment_id, n.created_at, n.content, n.is_read, n.notification_type_id,
+    n.sender_id,
+    u.nickname sender_nickname,
+    u.profile_image_id sender_profile_image_id
+    FROM notification n
+    INNER JOIN "user" u
+    ON n.sender_id = u.id
+    AND u.is_deleted = false
+    AND n.receiver_id = $1
+    AND n.is_deleted = false
+    AND n.sender_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    LEFT JOIN post p on n.post_id = p.id
+    LEFT JOIN major m on p.major_id = m.id
+    ORDER BY n.created_at desc
   `,
     [receiverId],
   );

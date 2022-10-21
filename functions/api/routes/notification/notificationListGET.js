@@ -47,8 +47,12 @@ module.exports = async (req, res) => {
       return {
         notificationId: notification.id,
         sender: {
-          senderId: notification.senderId,
-          nickname: notification.senderNickname,
+          senderId:
+            notification.notificationTypeId === 10 ? notification.majorId : notification.senderId,
+          senderName:
+            notification.notificationTypeId === 10
+              ? notification.majorName
+              : notification.senderNickname,
           profileImageId: notification.senderProfileImageId,
         },
         isRead: notification.isRead,
