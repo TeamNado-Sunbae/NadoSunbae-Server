@@ -20,7 +20,6 @@ module.exports = async (req, res) => {
   if (
     !profileImageId ||
     !nickname ||
-    !bio ||
     !firstMajorId ||
     !firstMajorStart ||
     !secondMajorId ||
