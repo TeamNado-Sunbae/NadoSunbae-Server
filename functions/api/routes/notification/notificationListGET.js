@@ -49,7 +49,7 @@ module.exports = async (req, res) => {
         sender: {
           senderId:
             notification.notificationTypeId === 10 ? notification.majorId : notification.senderId,
-          senderName:
+          nickname:
             notification.notificationTypeId === 10
               ? notification.majorName
               : notification.senderNickname,
