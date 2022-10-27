@@ -44,6 +44,7 @@ module.exports = async (req, res) => {
           id: post.writerId,
           nickname: post.nickname,
         },
+        isAuthorized: req.user.id === post.writerId || req.user.id === post.answererId,
         commentCount: post.commentCount,
         like: {
           isLiked: post.isLiked,
