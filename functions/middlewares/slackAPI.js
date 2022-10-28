@@ -30,7 +30,7 @@ const sendMessageToSlack = (message, apiEndPoint) => {
     ],
   };
   // send message to slack using slack webhook
-  if (process.env.NODE_ENV !== "local") {
+  if (process.env.NODE_ENV === "production") {
     try {
       axios
         .post(apiEndPoint, payload)
