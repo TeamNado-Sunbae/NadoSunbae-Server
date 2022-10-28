@@ -82,7 +82,7 @@ module.exports = async (req, res) => {
     if (commentPost.postTypeId === postType.QUESTION_TO_PERSON) {
       // question to person - answerer comment
       if (
-        comment.writer === commentPost.answererId &&
+        comment.writer.writerId === commentPost.answererId &&
         invisibleUserIds.indexOf(commentPost.writerId) === -1
       ) {
         receiver = await userDB.getUserByUserId(client, commentPost.writerId);
@@ -91,7 +91,7 @@ module.exports = async (req, res) => {
 
         // question to person - writer comment
       } else if (
-        comment.writer === commentPost.writerId &&
+        comment.writer.writerId === commentPost.writerId &&
         invisibleUserIds.indexOf(commentPost.answererId) === -1
       ) {
         receiver = await userDB.getUserByUserId(client, commentPost.answererId);
