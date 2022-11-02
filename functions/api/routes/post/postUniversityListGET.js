@@ -43,16 +43,30 @@ module.exports = async (req, res) => {
     const invisibleUserList = await blockDB.getInvisibleUserListByUserId(client, req.user.id);
     const invisibleUserIds = _.map(invisibleUserList, "userId");
 
-    let postList = await postDB.getPostList(
-      client,
-      universityId,
-      majorId ? majorId : 0,
-      postTypeIds,
-      req.user.id,
-      likeType.POST,
-      search ? search : "",
-      invisibleUserIds,
-    );
+    let postList;
+    if (filter === "questionToPerson") {
+      postList = await postDB.getQuestionToPersonPostList(
+        client,
+        universityId,
+        majorId ? majorId : 0,
+        postTypeIds,
+        req.user.id,
+        likeType.POST,
+        search ? search : "",
+        invisibleUserIds,
+      );
+    } else {
+      postList = await postDB.getPostList(
+        client,
+        universityId,
+        majorId ? majorId : 0,
+        postTypeIds,
+        req.user.id,
+        likeType.POST,
+        search ? search : "",
+        invisibleUserIds,
+      );
+    }
 
     postList = postList.map((post) => {
       let type;
