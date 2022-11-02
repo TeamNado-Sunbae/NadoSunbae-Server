@@ -59,24 +59,21 @@ const getCommentCountByPostId = async (client, postId, invisibleUserIds) => {
 const getCommentListByPostId = async (client, postId, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-      WITH USER_MAJOR AS (
-        SELECT u.id, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.is_deleted, m1.major_name first_major_name, m2.major_name second_major_name
-        FROM "user" u
-        INNER JOIN major m1
+      SELECT c.id, c.content, c.created_at, c.is_deleted,
+      c.writer_id, u.profile_image_id, u.nickname, u.first_major_start, u.second_major_start, m1.major_name first_major_name, m2.major_name second_major_name
+      FROM comment c
+      INNER JOIN "user" u
+        ON c.writer_id = u.id
+        AND u.is_deleted = false
+      INNER JOIN major m1
         ON u.first_major_id = m1.id
         AND u.is_deleted = false
         AND m1.is_deleted = false
-        INNER JOIN major m2
+      INNER JOIN major m2
         ON u.second_major_id = m2.id
         AND u.is_deleted = false
         AND m2.is_deleted = false
-      )
-
-      SELECT c.*, u.first_major_start, u.second_major_start, u.profile_image_id, u.nickname, u.first_major_name, u.second_major_name FROM comment c
-      INNER JOIN USER_MAJOR u
-      ON c.writer_id = u.id
-      AND c.post_id = $1
-      AND u.is_deleted = false
+      WHERE c.post_id = $1
       AND c.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
       ORDER BY c.created_at
       `,
@@ -148,30 +145,7 @@ const deleteCommentByCommentId = async (client, commentId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getClassroomPostListByMyCommentList = async (
-  client,
-  commentWriterId,
-  postTypeId,
-  invisibleUserIds,
-) => {
-  const { rows } = await client.query(
-    `
-    SELECT p.id, p.writer_id, p.title, p.content, p.created_at, p.post_type_id
-    FROM (SELECT DISTINCT post_id FROM comment WHERE writer_id = $1 AND is_deleted = false) AS c 
-    INNER JOIN classroom_post AS p
-    ON c.post_id = p.id 
-    AND p.writer_id != $1
-    AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-    AND p.post_type_id = $2
-    AND p.is_deleted = false
-    ORDER BY p.created_at desc
-      `,
-    [commentWriterId, postTypeId],
-  );
-  return convertSnakeToCamel.keysToCamel(rows);
-};
-
-const deleteCommentListByUserSecession = async (client, userId) => {
+const deleteCommentListByUserSecession = async (client, writerId) => {
   const { rows } = await client.query(
     `
     UPDATE comment
@@ -180,7 +154,7 @@ const deleteCommentListByUserSecession = async (client, userId) => {
     AND is_deleted = false
     RETURNING id, is_deleted, updated_at
     `,
-    [userId],
+    [writerId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -190,7 +164,6 @@ module.exports = {
   getCommentCountByPostId,
   getCommentListByPostId,
   getCommentByCommentId,
-  getClassroomPostListByMyCommentList,
   updateComment,
   deleteCommentByCommentId,
   deleteCommentListByPostId,

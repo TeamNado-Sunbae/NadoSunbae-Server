@@ -1,9 +1,9 @@
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { userDB } = require("../../../db");
+const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
   const { nickname } = req.body;
@@ -29,11 +29,7 @@ module.exports = async (req, res) => {
       .status(statusCode.OK)
       .send(util.success(statusCode.OK, responseMessage.AVAILABLE_NICKNAME, nickname));
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

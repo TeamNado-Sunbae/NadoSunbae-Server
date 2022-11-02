@@ -6,8 +6,9 @@ module.exports = {
   INCORRECT_FILTER: "필터값이 잘못되었습니다.",
   INCORRECT_SORT: "정렬값이 잘못되었습니다.",
 
-  // 데이터 없음
-  NO_CONTENT: "찾는 데이터가 없습니다.",
+  // 대학
+  NO_EMAIL: "이메일 값이 없습니다.",
+  READ_SUNBAE_RANK: "선배 랭킹 조회 성공",
 
   // 서버 내 오류
   INTERNAL_SERVER_ERROR: "서버 내 오류",
@@ -75,6 +76,7 @@ module.exports = {
   // 전공
   READ_ONE_MAJOR_SUCCESS: "해당 학과 정보 가져오기 성공",
   READ_ALL_MAJORS_SUCCESS: "해당 학교의 학과 목록 조회 성공",
+  NO_MAJOR: "존재하지 않는 전공입니다.",
 
   // 좋아요
   UPDATE_LIKE_SUCCESS: "게시글 좋아요 업데이트 성공",
@@ -85,7 +87,7 @@ module.exports = {
   ALREADY_REPORT: "이미 신고한 글/답글입니다.",
   NO_REPORT_TARGET: "존재하지 않는 글/답글입니다.",
   NO_REPORT: "존재하지 않는(혹은 만료된) 신고입니다.",
-  CREATE_ONE_INAPPROPRIATE_REVIEW_POST_SUCCESS: "부적절 후기 등록 성공",
+  CREATE_ONE_INAPPROPRIATE_REVIEW_SUCCESS: "부적절 후기 등록 성공",
 
   // 차단
   BLOCK_SUCCESS: "차단 업데이트 성공",
@@ -102,4 +104,9 @@ module.exports = {
   // 앱 정보
   READ_APP_VERSION: "최신 앱 버전 조회 성공",
   READ_APP_LINK: "앱 링크 조회 성공",
+  READ_APP_BANNER: "앱 배너 조회 성공",
+
+  // 즐겨찾기
+  INCORRECT_MAJOR: "학과가 잘못되었습니다.",
+  UPDATE_FAVORITES_SUCCESS: "즐겨찾기 업데이트 성공",
 };

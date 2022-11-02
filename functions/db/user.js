@@ -129,15 +129,57 @@ const getUserByFirebaseId = async (client, firebaseId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getUserListByMajorId = async (client, majorId, invisibleUserIds) => {
+// response rate policy (answered questionToPerson post cnt/questionToPerson post cnt) * 100
+const getUserListByMajorId = async (client, majorId, reviewFilter, invisibleUserIds) => {
   const { rows } = await client.query(
     `
-    SELECT * FROM "user" u
+    SELECT u.id, u.is_on_question, u.profile_image_id, u.nickname,
+    CASE WHEN u.first_major_id = $1 THEN true ELSE false END is_first_major,
+    CASE WHEN u.first_major_id = $1 THEN u.first_major_start ELSE u.second_major_start END major_start,
+    cast(COUNT(DISTINCT CASE WHEN p.answerer_id = c.writer_id THEN p.id END) * 100 / NULLIF(COUNT(DISTINCT p.id), 0) as integer) rate
+    FROM "user" u
+    LEFT JOIN post p
+      ON p.answerer_id = u.id
+      AND p.is_deleted = false
+    LEFT JOIN "comment" c
+      ON c.post_id = p.id
+      AND c.is_deleted = false
     WHERE (u.first_major_id = $1 OR u.second_major_id = $1)
-    AND id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-    AND is_deleted = false
+    AND u.is_reviewed IN (${reviewFilter.join()})
+    AND u.id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    AND u.is_deleted = false
+    GROUP BY u.id
+    ORDER BY rate DESC NULLS LAST
         `,
     [majorId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows);
+};
+
+// response rate policy (answered questionToPerson post cnt/questionToPerson post cnt) * 100
+const getUserListByUniversityId = async (client, universityId, invisibleUserIds) => {
+  const { rows } = await client.query(
+    `
+    SELECT u.id, u.profile_image_id, u.nickname,
+    (SELECT m.major_name from major m WHERE m.id = u.first_major_id) as first_major_name,
+    u.first_major_start,
+    (SELECT m.major_name from major m WHERE m.id = u.second_major_id) as second_major_name,
+    u.second_major_start,
+    cast(COUNT(DISTINCT CASE WHEN p.answerer_id = c.writer_id THEN p.id END) * 100 / NULLIF(COUNT(DISTINCT p.id), 0) as integer) rate
+    FROM "user" u
+    LEFT JOIN post p
+      ON p.answerer_id = u.id
+      AND p.is_deleted = false
+    LEFT JOIN "comment" c
+      ON c.post_id = p.id
+      AND c.is_deleted = false
+    WHERE u.university_id = $1
+    AND u.id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+    AND u.is_deleted = false
+    GROUP BY u.id
+    ORDER BY rate DESC NULLS LAST, u.is_reviewed DESC, u.nickname
+        `,
+    [universityId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
@@ -196,8 +238,11 @@ const getUserListByCommentPostId = async (client, commentPostId, invisibleUserId
   const { rows } = await client.query(
     `
       SELECT DISTINCT u.id, u.device_token FROM "user" u
-      INNER JOIN (SELECT DISTINCT writer_id FROM comment WHERE post_id = $1 AND writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[]) AND is_deleted = false) c
+      INNER JOIN COMMENT c
       ON c.writer_id = u.id
+      AND c.post_id = $1
+      AND c.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
+      AND c.is_deleted = false
       AND u.is_deleted = false
       `,
     [commentPostId],
@@ -205,22 +250,32 @@ const getUserListByCommentPostId = async (client, commentPostId, invisibleUserId
   return convertSnakeToCamel.keysToCamel(rows);
 };
 
-const updateUserByMypage = async (
+const updateUser = async (
   client,
   userId,
+  profileImageId,
   nickname,
+  bio,
+  isOnQuestion,
   firstMajorId,
   firstMajorStart,
   secondMajorId,
   secondMajorStart,
-  isOnQuestion,
   isNicknameUpdated,
 ) => {
   const { rows } = await client.query(
     `
     UPDATE "user"
-    SET nickname = $2, first_major_id = $3, first_major_start = $4, second_major_id = $5, second_major_start = $6, is_on_question = $7, 
-    nickname_updated_at = (CASE WHEN $8 = true THEN now() ELSE nickname_updated_at END),
+    SET 
+    profile_image_id = $2,
+    nickname = $3,
+    bio = $4,
+    is_on_question = $5,
+    first_major_id = $6, 
+    first_major_start = $7, 
+    second_major_id = $8,
+    second_major_start = $9, 
+    nickname_updated_at = (CASE WHEN $10 = true THEN now() ELSE nickname_updated_at END),
     updated_at = now()
     WHERE id = $1
     AND is_deleted = false
@@ -228,12 +283,14 @@ const updateUserByMypage = async (
     `,
     [
       userId,
+      profileImageId,
       nickname,
+      bio,
+      isOnQuestion,
       firstMajorId,
       firstMajorStart,
       secondMajorId,
       secondMajorStart,
-      isOnQuestion,
       isNicknameUpdated,
     ],
   );
@@ -347,10 +404,11 @@ module.exports = {
   getUserByUserId,
   getUserByFirebaseId,
   getUserListByMajorId,
+  getUserListByUniversityId,
   updateUserByDeviceToken,
   updateUserByRefreshToken,
   getUserListByCommentPostId,
-  updateUserByMypage,
+  updateUser,
   getUserByRefreshToken,
   updateUserByReport,
   updateUserByExpiredReport,

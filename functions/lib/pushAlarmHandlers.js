@@ -1,12 +1,11 @@
 const admin = require("firebase-admin");
 const responseMessage = require("../constants/responseMessage");
 
-const sendUnicast = function (token, notificationTitle, notificationContent) {
-  // 메세지 내용
-  const message = {
+const baseMessage = function (title, body) {
+  return {
     notification: {
-      title: notificationTitle,
-      body: notificationContent,
+      title: title,
+      body: body,
     },
     android: {
       notification: {
@@ -20,10 +19,15 @@ const sendUnicast = function (token, notificationTitle, notificationContent) {
         },
       },
     },
-    token: token,
   };
+};
 
-  // 메세지 전송
+const sendUnicast = function (token, notificationTitle, notificationContent) {
+  const message = Object.assign(baseMessage(notificationTitle, notificationContent), {
+    token: token,
+  });
+
+  // send message
   admin
     .messaging()
     .send(message)
@@ -36,31 +40,13 @@ const sendUnicast = function (token, notificationTitle, notificationContent) {
 };
 
 const sendMulticast = function (tokens, notificationTitle, notificationContent) {
-  // 알림을 전송할 사용자가 없어 tokens가 비어있으면 푸시알림을 전송하지 않음
-
+  // prevent from sending to empty tokens
   if (tokens.length !== 0) {
-    // 메세지 내용
-    const message = {
-      notification: {
-        title: notificationTitle,
-        body: notificationContent,
-      },
-      android: {
-        notification: {
-          sound: "default",
-        },
-      },
-      apns: {
-        payload: {
-          aps: {
-            sound: "default",
-          },
-        },
-      },
+    const message = Object.assign(baseMessage(notificationTitle, notificationContent), {
       tokens: tokens,
-    };
+    });
 
-    // 메세지 전송
+    // send message
     admin
       .messaging()
       .sendMulticast(message)

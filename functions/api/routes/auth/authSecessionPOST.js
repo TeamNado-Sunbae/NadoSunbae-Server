@@ -1,21 +1,20 @@
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
-const { signInWithEmailAndPassword, deleteUser } = require("firebase/auth");
 const { firebaseAuth } = require("../../../config/firebaseClient");
+const { signInWithEmailAndPassword, deleteUser } = require("firebase/auth");
 const db = require("../../../db/db");
 const {
   userDB,
   blockDB,
-  classroomPostDB,
+  postDB,
   commentDB,
   likeDB,
   notificationDB,
   reportDB,
-  reviewPostDB,
+  reviewDB,
 } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
+const errorHandlers = require("../../../lib/errorHandlers");
 
 module.exports = async (req, res) => {
   const { password } = req.body;
@@ -44,8 +43,8 @@ module.exports = async (req, res) => {
     if (loginUser.err) {
       if (loginUser.error.code === "auth/wrong-password") {
         return res
-          .status(statusCode.BAD_REQUEST)
-          .json(util.fail(statusCode.BAD_REQUEST, responseMessage.MISS_MATCH_PW));
+          .status(statusCode.UNAUTHORIZED)
+          .json(util.fail(statusCode.UNAUTHORIZED, responseMessage.MISS_MATCH_PW));
       } else {
         return res
           .status(statusCode.INTERNAL_SERVER_ERROR)
@@ -75,8 +74,7 @@ module.exports = async (req, res) => {
       client,
       userId,
     );
-    const classroomPostUpdatedByUserSecession =
-      await classroomPostDB.deleteClassroomPostListByUserSecession(client, userId);
+    const postUpdatedByUserSecession = await postDB.deletePostListByUserSecession(client, userId);
     const commentUpdatedByUserSecession = await commentDB.deleteCommentListByUserSecession(
       client,
       userId,
@@ -88,7 +86,7 @@ module.exports = async (req, res) => {
       client,
       userId,
     );
-    const reviewPostUpdatedByUserSecession = await reviewPostDB.deleteReviewPostListByUserSecession(
+    const reviewUpdatedByUserSecession = await reviewDB.deleteReviewListByUserSecession(
       client,
       userId,
     );
@@ -101,28 +99,19 @@ module.exports = async (req, res) => {
         updatedAt: userUpdatedByUserSecession.updatedAt,
       },
       block: blockUpdatedByUserSecession,
-      classroomPost: classroomPostUpdatedByUserSecession,
+      post: postUpdatedByUserSecession,
       comment: commentUpdatedByUserSecession,
       like: likeUpdatedByUserSecession,
       notification: notificationUpdatedByUserSecession,
       report: reportUpdatedByUserSecession,
-      reviewPost: reviewPostUpdatedByUserSecession,
+      review: reviewUpdatedByUserSecession,
     };
 
     res
       .status(statusCode.OK)
       .send(util.success(statusCode.OK, responseMessage.DELETE_USER, dataUpdatedByUserSecession));
   } catch (error) {
-    functions.logger.error(
-      `[ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] ${error}`,
-    );
-    console.log(error);
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)

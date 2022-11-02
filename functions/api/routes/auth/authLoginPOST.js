@@ -1,15 +1,14 @@
-const functions = require("firebase-functions");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
-const { signInWithEmailAndPassword } = require("firebase/auth");
 const db = require("../../../db/db");
-const { userDB, reportDB, inappropriateReviewPostDB } = require("../../../db");
-const slackAPI = require("../../../middlewares/slackAPI");
+const { userDB, reportDB, inappropriateReviewDB } = require("../../../db");
 const { firebaseAuth } = require("../../../config/firebaseClient");
+const { signInWithEmailAndPassword } = require("firebase/auth");
 const jwtHandlers = require("../../../lib/jwtHandlers");
 const dateHandlers = require("../../../lib/dateHandlers");
-const reportPeriodType = require("../../../constants/reportPeriodType");
+const errorHandlers = require("../../../lib/errorHandlers");
+const reportPeriod = require("../../../constants/reportPeriod");
 
 module.exports = async (req, res) => {
   const { email, password, deviceToken } = req.body;
@@ -55,8 +54,6 @@ module.exports = async (req, res) => {
     const {
       user: { uid: firebaseId, emailVerified: isEmailVerified },
     } = userFirebase;
-    // const firebaseId = userFirebase.user.uid;
-    // const isEmailVerified = userFirebase.user.emailVerified; 와 동일
 
     const userData = await userDB.getUserByFirebaseId(client, firebaseId);
     if (!userData) {
@@ -88,7 +85,7 @@ module.exports = async (req, res) => {
       return res
         .status(statusCode.INTERNAL_SERVER_ERROR)
         .send(
-          util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_DEVICE_TOKEN_FAIL),
+          util.fail(statusCode.INTERNAL_SERVER_ERROR, responseMessage.UPDATE_REFRESH_TOKEN_FAIL),
         );
     }
 
@@ -115,10 +112,12 @@ module.exports = async (req, res) => {
     }
 
     // 부적절 후기 등록 유저인지
-    const inappropriateReviewPost =
-      await inappropriateReviewPostDB.getInappropriateReviewPostByUser(client, userData.id);
+    const inappropriateReview = await inappropriateReviewDB.getInappropriateReviewByUser(
+      client,
+      userData.id,
+    );
 
-    const isReviewInappropriate = inappropriateReviewPost ? true : false;
+    const isReviewInappropriate = inappropriateReview ? true : false;
 
     // 부적절 후기글 등록 유저
     if (isReviewInappropriate) {
@@ -132,20 +131,20 @@ module.exports = async (req, res) => {
     // 신고로 인해 제재 중인 유저의 경우 - 신고 만료 확인
     if (userData.reportCreatedAt) {
       // 유저 신고 기간
-      let reportPeriod;
+      let period;
 
       if (userData.reportCount === 1) {
-        reportPeriod = reportPeriodType.FIRST_PERIOD;
+        period = reportPeriod.FIRST_PERIOD;
       } else if (userData.reportCount === 2) {
-        reportPeriod = reportPeriodType.SECOND_PERIOD;
+        period = reportPeriod.SECOND_PERIOD;
       } else if (userData.reportCount === 3) {
-        reportPeriod = reportPeriodType.THIRD_PERIOD;
+        period = reportPeriod.THIRD_PERIOD;
       }
 
       // 신고 만료 날짜
       const expirationDate = dateHandlers.getExpirationDateByMonth(
         userData.reportCreatedAt,
-        reportPeriod,
+        period,
       );
 
       message = `신고 누적이용자로\n${expirationDate.format(
@@ -194,24 +193,22 @@ module.exports = async (req, res) => {
       message: message,
     };
 
+    // 앱 업데이트 규모에 따른 알럿 문구
+    const updateAlert = {
+      minor: "유저들의 의견을 반영하여\n사용성을 개선했어요.\n지금 바로 업데이트해보세요!",
+      major: "안정적인 서비스 사용을 위해\n최신 버전으로 업데이트해주세요.",
+    };
+
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.LOGIN_SUCCESS, {
         user,
         accesstoken,
         refreshtoken,
+        updateAlert,
       }),
     );
   } catch (error) {
-    console.log(error);
-    functions.logger.error(
-      `[EMAIL LOGIN ERROR] [${req.method.toUpperCase()}] ${req.originalUrl}`,
-      `[CONTENT] email:${email} ${error}`,
-    );
-
-    const slackMessage = `[ERROR] [${req.method.toUpperCase()}] ${
-      req.originalUrl
-    } ${error} ${JSON.stringify(error)}`;
-    slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_ERROR_MONITORING);
+    errorHandlers.error(req, error, `email:${email}`);
 
     res
       .status(statusCode.INTERNAL_SERVER_ERROR)
