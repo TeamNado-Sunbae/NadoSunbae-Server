@@ -194,6 +194,7 @@ const getQuestionToPersonPostList = async (
   client,
   universityId,
   majorId,
+  postTypeIds,
   userId,
   likeTypeId,
   search,
@@ -239,7 +240,7 @@ const getQuestionToPersonPostList = async (
     ON p.answerer_id = u2.id
     AND (u2.first_major_id = (CASE WHEN $2 <> 0 then $2 else u2.first_major_id end)
     OR u2.second_major_id = (CASE WHEN $2 <> 0 then $2 else u2.second_major_id end))
-  AND p.post_type_id = 4
+  AND p.post_type_id IN (${postTypeIds.join()})
   AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   AND p.is_deleted = false
   AND (p.title LIKE '%${search}%'

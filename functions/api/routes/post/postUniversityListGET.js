@@ -48,7 +48,8 @@ module.exports = async (req, res) => {
       postList = await postDB.getQuestionToPersonPostList(
         client,
         universityId,
-        majorId,
+        majorId ? majorId : 0,
+        postTypeIds,
         req.user.id,
         likeType.POST,
         search ? search : "",
