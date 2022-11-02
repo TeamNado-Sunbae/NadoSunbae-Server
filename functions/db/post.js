@@ -193,6 +193,7 @@ const getPostList = async (
 const getQuestionToPersonPostList = async (
   client,
   universityId,
+  majorId,
   userId,
   likeTypeId,
   search,
@@ -211,7 +212,7 @@ const getQuestionToPersonPostList = async (
     (
       SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
       WHERE l.target_id = p.id
-      AND l.target_type_id = $3
+      AND l.target_type_id = $4
       AND l.is_liked = true
       AND p.is_deleted = false
     ),
@@ -220,8 +221,8 @@ const getQuestionToPersonPostList = async (
         (
           SELECT l.is_liked FROM "like" l
           WHERE l.target_id = p.id
-          AND l.target_type_id = $3
-          AND l.user_id = $2
+          AND l.target_type_id = $4
+          AND l.user_id = $3
           AND p.is_deleted = false
         ), false
       )
@@ -235,9 +236,9 @@ const getQuestionToPersonPostList = async (
     ON p.writer_id = u.id
     AND u.is_deleted = false
   INNER JOIN "user" u2
-    on p.answerer_id = u2.id
-    AND (p.major_id = u2.first_major_id
-    OR p.major_id = u2.second_major_id)
+    ON p.answerer_id = u2.id
+    AND (u2.first_major_id = (CASE WHEN $2 <> 0 then $2 else u2.first_major_id end)
+    OR u2.second_major_id = (CASE WHEN $2 <> 0 then $2 else u2.second_major_id end))
   AND p.post_type_id = 4
   AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   AND p.is_deleted = false
@@ -245,7 +246,7 @@ const getQuestionToPersonPostList = async (
   OR p.content LIKE '%${search}%')
   ORDER BY p.created_at desc
   `,
-    [universityId, userId, likeTypeId],
+    [universityId, majorId, userId, likeTypeId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };
