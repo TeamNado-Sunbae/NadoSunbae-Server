@@ -158,10 +158,12 @@ module.exports = async (req, res) => {
     }
 
     // 더미 데이터에 1:1 질문 들어왔을 경우 슬랙에 메세지 전송
-    if (answererId >= 1 && answererId <= 63) {
+    if ((answererId >= 1 && answererId <= 63) || (answererId >= 692 && answererId <= 798)) {
       const answerer = await userDB.getUserByUserId(client, answererId);
-      const major = await majorDB.getMajorByMajorId(client, majorId);
-      const slackMessage = `[NEW QUESTION]\n answererId: ${answererId}\n nickname: ${answerer.nickname}\n major: ${major.majorName}\n title: ${title}\n content: ${content} `;
+      const slackMessage = `[NEW QUESTION]\n writerMajor: ${req.user.firstMajorName} / ${req.user.secondMajorName}
+      answererId: ${answererId}\n answererNickname: ${answerer.nickname}\n 
+      major: ${answerer.firstMajorName} / ${answerer.secondMajorName}\n 
+      title: ${title}\n content: ${content} `;
       slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_DUMMY_MONITORING);
     }
   } catch (error) {
