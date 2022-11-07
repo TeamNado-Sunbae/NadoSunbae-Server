@@ -117,8 +117,7 @@ module.exports = async (req, res) => {
       majorDB.getMajorByMajorId(client, secondMajorId),
     ]);
 
-    const slackMessage = `[NEW USER]\nId: ${user.userId}\n닉네임: ${nickname}\n학교: ${university.universityName}
-    \n본전공: ${firstMajor.majorName} ${firstMajorStart}\n제2전공: ${secondMajor.majorName} ${secondMajorStart} `;
+    const slackMessage = `[NEW USER]\nId: ${user.userId}\n닉네임: ${nickname}\n학교: ${university.universityName}\n본전공: ${firstMajor.majorName} ${firstMajorStart}\n제2전공: ${secondMajor.majorName} ${secondMajorStart} `;
     slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_USER_MONITORING);
   } catch (error) {
     errorHandlers.error(req, error, `email: ${email}`);
