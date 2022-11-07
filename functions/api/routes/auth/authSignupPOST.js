@@ -2,7 +2,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { userDB, majorDB } = require("../../../db");
+const { userDB, majorDB, universityDB } = require("../../../db");
 const admin = require("firebase-admin");
 const { firebaseAuth } = require("../../../config/firebaseClient");
 const { sendEmailVerification, signInWithEmailAndPassword } = require("firebase/auth");
@@ -111,10 +111,14 @@ module.exports = async (req, res) => {
     );
 
     // 슬랙에 유저 정보 전송
-    const firstMajor = await majorDB.getMajorByMajorId(client, firstMajorId);
-    const secondMajor = await majorDB.getMajorByMajorId(client, secondMajorId);
+    const [university, firstMajor, secondMajor] = await Promise.all([
+      universityDB.getNameByUniversityId(client, universityId),
+      majorDB.getMajorByMajorId(client, firstMajorId),
+      majorDB.getMajorByMajorId(client, secondMajorId),
+    ]);
 
-    const slackMessage = `[NEW USER]\nId: ${user.userId}\n닉네임: ${nickname}\n본전공: ${firstMajor.majorName} ${firstMajorStart}\n제2전공: ${secondMajor.majorName} ${secondMajorStart} `;
+    const slackMessage = `[NEW USER]\nId: ${user.userId}\n닉네임: ${nickname}\n학교: ${university.universityName}
+    \n본전공: ${firstMajor.majorName} ${firstMajorStart}\n제2전공: ${secondMajor.majorName} ${secondMajorStart} `;
     slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_USER_MONITORING);
   } catch (error) {
     errorHandlers.error(req, error, `email: ${email}`);
