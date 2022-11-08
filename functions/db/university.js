@@ -12,6 +12,19 @@ const getEmailByUniversityId = async (client, universityId) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
+const getNameByUniversityId = async (client, universityId) => {
+  const { rows } = await client.query(
+    `
+    SELECT university_name FROM university
+    WHERE id = $1
+    AND is_deleted = false
+    `,
+    [universityId],
+  );
+  return convertSnakeToCamel.keysToCamel(rows[0]);
+};
+
 module.exports = {
   getEmailByUniversityId,
+  getNameByUniversityId,
 };
