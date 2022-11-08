@@ -166,7 +166,7 @@ module.exports = async (req, res) => {
 
       const slackMessage = `[NEW QUESTION]\n 
       university: ${university.universityName}\n
-      writerMajor: ${req.user.firstMajorName} / ${req.user.secondMajorName}
+      writerMajor: ${req.user.firstMajorName} / ${req.user.secondMajorName}\n
       answererId: ${answererId}\n answererNickname: ${answerer.nickname}\n 
       major: ${answerer.firstMajorName} / ${answerer.secondMajorName}\n 
       title: ${title}\n content: ${content} `;
