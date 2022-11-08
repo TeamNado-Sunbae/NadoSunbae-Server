@@ -9,6 +9,7 @@ const {
   majorDB,
   relationReviewTagDB,
   inappropriateReviewDB,
+  universityDB,
 } = require("../../../db");
 const {
   PROS_CONS,
@@ -168,8 +169,12 @@ module.exports = async (req, res) => {
     );
 
     // 슬랙에 알림 전송
-    const major = await majorDB.getMajorByMajorId(client, majorId);
-    const slackMessage = `[NEW REVIEW]\n id: ${review.id}\nmajor: ${major.majorName}\nwriterId: ${writer.writerId} `;
+    const [university, major] = await Promise.all([
+      universityDB.getNameByMajorId(client, majorId),
+      majorDB.getMajorByMajorId(client, majorId),
+    ]);
+
+    const slackMessage = `[NEW REVIEW]\n id: ${review.id}\nuniversity: ${university.universityName}\nmajor: ${major.majorName}\nwriterId: ${writer.writerId} `;
     slackAPI.sendMessageToSlack(slackMessage, slackAPI.DEV_WEB_HOOK_USER_MONITORING);
   } catch (error) {
     errorHandlers.error(req, error);
