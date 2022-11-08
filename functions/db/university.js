@@ -32,7 +32,7 @@ const getNameByMajorId = async (client, majorId) => {
     INNER JOIN major m
     ON m.university_id = u.id
     AND m.id = $1
-    AND is_deleted = false
+    AND u.is_deleted = false
     `,
     [majorId],
   );
