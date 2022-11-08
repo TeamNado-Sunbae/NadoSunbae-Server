@@ -3,7 +3,7 @@ const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
-const { postDB, userDB, notificationDB, majorDB, blockDB } = require("../../../db");
+const { postDB, userDB, notificationDB, majorDB, blockDB, universityDB } = require("../../../db");
 const { postType, notificationType } = require("../../../constants/type");
 const pushAlarmHandlers = require("../../../lib/pushAlarmHandlers");
 const errorHandlers = require("../../../lib/errorHandlers");
@@ -159,8 +159,14 @@ module.exports = async (req, res) => {
 
     // 더미 데이터에 1:1 질문 들어왔을 경우 슬랙에 메세지 전송
     if ((answererId >= 1 && answererId <= 63) || (answererId >= 692 && answererId <= 798)) {
-      const answerer = await userDB.getUserByUserId(client, answererId);
-      const slackMessage = `[NEW QUESTION]\n writerMajor: ${req.user.firstMajorName} / ${req.user.secondMajorName}
+      const [answerer, university] = await Promise.all([
+        userDB.getUserByUserId(client, answererId),
+        universityDB.getNameByMajorId(client, majorId),
+      ]);
+
+      const slackMessage = `[NEW QUESTION]\n 
+      university: ${university.universityName}\n
+      writerMajor: ${req.user.firstMajorName} / ${req.user.secondMajorName}
       answererId: ${answererId}\n answererNickname: ${answerer.nickname}\n 
       major: ${answerer.firstMajorName} / ${answerer.secondMajorName}\n 
       title: ${title}\n content: ${content} `;
