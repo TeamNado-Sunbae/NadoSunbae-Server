@@ -8,6 +8,12 @@ const { postType, notificationType } = require("../../../constants/type");
 const pushAlarmHandlers = require("../../../lib/pushAlarmHandlers");
 const errorHandlers = require("../../../lib/errorHandlers");
 const slackAPI = require("../../../middlewares/slackAPI");
+const {
+  MONITORING_USERS_GROUP1_FROM,
+  MONITORING_USERS_GROUP1_TO,
+  MONITORING_USERS_GROUP2_FROM,
+  MONITORING_USERS_GROUP2_TO,
+} = require("../../../constants/slackMonitoring");
 
 module.exports = async (req, res) => {
   const { type, majorId, answererId, title, content } = req.body;
@@ -158,7 +164,10 @@ module.exports = async (req, res) => {
     }
 
     // 더미 데이터에 1:1 질문 들어왔을 경우 슬랙에 메세지 전송
-    if ((answererId >= 1 && answererId <= 63) || (answererId >= 692 && answererId <= 798)) {
+    if (
+      (answererId >= MONITORING_USERS_GROUP1_FROM && answererId <= MONITORING_USERS_GROUP1_TO) ||
+      (answererId >= MONITORING_USERS_GROUP2_FROM && answererId <= MONITORING_USERS_GROUP2_TO)
+    ) {
       const [answerer, university] = await Promise.all([
         userDB.getUserByUserId(client, answererId),
         universityDB.getNameByMajorId(client, majorId),
