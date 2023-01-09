@@ -5,6 +5,7 @@ const responseMessage = require("../../../constants/responseMessage");
 const db = require("../../../db/db");
 const { notificationDB, postDB, commentDB, blockDB } = require("../../../db");
 const errorHandlers = require("../../../lib/errorHandlers");
+const { notificationType } = require("../../../constants/type");
 
 module.exports = async (req, res) => {
   let client;
@@ -48,9 +49,11 @@ module.exports = async (req, res) => {
         notificationId: notification.id,
         sender: {
           senderId:
-            notification.notificationTypeId === 10 ? notification.majorId : notification.senderId,
+            notification.notificationTypeId === notificationType.COMMUNITY_ALARM
+              ? notification.majorId
+              : notification.senderId,
           nickname:
-            notification.notificationTypeId === 10
+            notification.notificationTypeId === notificationType.COMMUNITY_ALARM
               ? notification.majorName
               : notification.senderNickname,
           profileImageId: notification.senderProfileImageId,
