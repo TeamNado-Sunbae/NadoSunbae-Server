@@ -156,7 +156,7 @@ router.get("/:postId", checkUser, require("./postGET"));
  *     tags:
  *       - post
  *     summary: 게시글 조회 (쿼리 있음)
- *     description: 'filter -> 커뮤니티: community, 자유: general, 정보: information, 1:1 질문: questionToPerson, 전체에게 질문: questionToEveryone / sort -> 최신순: recent, 좋아요순: like / majorId -> 필수가 아님 안 넣으면 전체 조회'
+ *     description: 'filter -> 커뮤니티: community, 자유: general, 정보: information, 1:1 질문: questionToPerson, 전체에게 질문: questionToEveryone / sort -> 최신순: recent, 좋아요순: like'
  *     parameters:
  *       - name: universityId
  *         in: path
@@ -164,8 +164,44 @@ router.get("/:postId", checkUser, require("./postGET"));
  *         schema:
  *           type: number
  *         example: 1
- *       - name: majorId
+ *       - name: filter
  *         in: query
+ *         schema:
+ *           type: string
+ *         example: community
+ *       - name: sort
+ *         in: query
+ *         schema:
+ *           type: string
+ *         example: like
+ *       - name: search
+ *         in: query
+ *         schema:
+ *           type: string
+ *         example: 이러지마
+ *     responses:
+ *       '200':
+ *         description: 커뮤니티 글 조회 성공
+ *       '400':
+ *         description: 필요한 값 누락, 필터 에러
+ *       '500':
+ *         description: 서버 내부 에러
+ */
+router.get("/university/:universityId", checkUser, require("./postUniversityListGET"));
+
+/**
+ * @swagger
+ * /post/major/{majorId}:
+ *   get:
+ *     security:
+ *       - jwt: []
+ *     tags:
+ *       - post
+ *     summary: 게시글 조회 (쿼리 있음)
+ *     description: 'filter -> 커뮤니티: community, 자유: general, 정보: information, 1:1 질문: questionToPerson, 전체에게 질문: questionToEveryone / sort -> 최신순: recent, 좋아요순: like'
+ *     parameters:
+ *       - name: majorId
+ *         in: path
  *         schema:
  *           type: number
  *         example: 5
@@ -192,6 +228,6 @@ router.get("/:postId", checkUser, require("./postGET"));
  *       '500':
  *         description: 서버 내부 에러
  */
-router.get("/university/:universityId", checkUser, require("./postUniversityListGET"));
+router.get("/major/:majorId", checkUser, require("./postMajorListGET"));
 
 module.exports = router;
