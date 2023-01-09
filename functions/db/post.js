@@ -153,7 +153,7 @@ const getPostListByUniversity = async (
     (
       SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
       WHERE l.target_id = p.id
-      AND l.target_type_id = $4
+      AND l.target_type_id = $3
       AND l.is_liked = true
       AND p.is_deleted = false
     ),
@@ -162,8 +162,8 @@ const getPostListByUniversity = async (
         (
           SELECT l.is_liked FROM "like" l
           WHERE l.target_id = p.id
-          AND l.target_type_id = $4
-          AND l.user_id = $3
+          AND l.target_type_id = $3
+          AND l.user_id = $2
           AND p.is_deleted = false
         ), false
       )
@@ -210,7 +210,7 @@ const getPostListByMajor = async (
     (
       SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
       WHERE l.target_id = p.id
-      AND l.target_type_id = $4
+      AND l.target_type_id = $3
       AND l.is_liked = true
       AND p.is_deleted = false
     ),
@@ -219,17 +219,20 @@ const getPostListByMajor = async (
         (
           SELECT l.is_liked FROM "like" l
           WHERE l.target_id = p.id
-          AND l.target_type_id = $4
-          AND l.user_id = $3
+          AND l.target_type_id = $3
+          AND l.user_id = $2
           AND p.is_deleted = false
         ), false
       )
     ) as is_liked
   FROM "post" p
+  INNER JOIN major m
+    ON p.major_id = m.id
+    AND m.is_deleted = false
   INNER JOIN "user" u
     ON p.writer_id = u.id
     AND u.is_deleted = false
-  AND p.major_id = $2
+  AND p.major_id = $1
   AND p.post_type_id IN (${postTypeIds.join()})
   AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   AND p.is_deleted = false
@@ -264,7 +267,7 @@ const getQuestionToPersonPostListByUniversity = async (
     (
       SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
       WHERE l.target_id = p.id
-      AND l.target_type_id = $4
+      AND l.target_type_id = $3
       AND l.is_liked = true
       AND p.is_deleted = false
     ),
@@ -273,8 +276,8 @@ const getQuestionToPersonPostListByUniversity = async (
         (
           SELECT l.is_liked FROM "like" l
           WHERE l.target_id = p.id
-          AND l.target_type_id = $4
-          AND l.user_id = $3
+          AND l.target_type_id = $3
+          AND l.user_id = $2
           AND p.is_deleted = false
         ), false
       )
@@ -321,7 +324,7 @@ const getQuestionToPersonPostListByMajor = async (
     (
       SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
       WHERE l.target_id = p.id
-      AND l.target_type_id = $4
+      AND l.target_type_id = $3
       AND l.is_liked = true
       AND p.is_deleted = false
     ),
@@ -330,20 +333,23 @@ const getQuestionToPersonPostListByMajor = async (
         (
           SELECT l.is_liked FROM "like" l
           WHERE l.target_id = p.id
-          AND l.target_type_id = $4
-          AND l.user_id = $3
+          AND l.target_type_id = $3
+          AND l.user_id = $2
           AND p.is_deleted = false
         ), false
       )
     ) as is_liked
   FROM "post" p
+  INNER JOIN major m
+    ON p.major_id = m.id
+    AND m.is_deleted = false
   INNER JOIN "user" u
     ON p.writer_id = u.id
     AND u.is_deleted = false
   INNER JOIN "user" u2
     ON p.answerer_id = u2.id
-    AND (u2.first_major_id = (CASE WHEN $2 <> 0 then $2 else u2.first_major_id end)
-    OR u2.second_major_id = (CASE WHEN $2 <> 0 then $2 else u2.second_major_id end))
+    AND (u2.first_major_id = (CASE WHEN $1 <> 0 then $1 else u2.first_major_id end)
+    OR u2.second_major_id = (CASE WHEN $1 <> 0 then $1 else u2.second_major_id end))
   AND p.post_type_id IN (${postTypeIds.join()})
   AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   AND p.is_deleted = false
