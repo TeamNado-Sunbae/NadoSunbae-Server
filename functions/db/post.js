@@ -348,8 +348,8 @@ const getQuestionToPersonPostListByMajor = async (
     AND u.is_deleted = false
   INNER JOIN "user" u2
     ON p.answerer_id = u2.id
-    AND (u2.first_major_id = (CASE WHEN $1 <> 0 then $1 else u2.first_major_id end)
-    OR u2.second_major_id = (CASE WHEN $1 <> 0 then $1 else u2.second_major_id end))
+    AND (u2.first_major_id = $1
+    OR u2.second_major_id = $1)
   AND p.post_type_id IN (${postTypeIds.join()})
   AND p.writer_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
   AND p.is_deleted = false
