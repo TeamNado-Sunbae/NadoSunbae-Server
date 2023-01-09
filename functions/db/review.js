@@ -128,19 +128,37 @@ const deleteReview = async (client, id) => {
   return convertSnakeToCamel.keysToCamel(rows[0]);
 };
 
-const getReviewListByUserId = async (client, userId) => {
+const getReviewListByUserId = async (client, writerId, likeTypeId, userId) => {
   const { rows } = await client.query(
     `
-      SELECT r.*, m.major_name
+      SELECT r.*, m.major_name,
+      (
+        SELECT cast(count(l.*) as integer) AS like_count FROM "like" l
+        WHERE l.target_id = r.id
+        AND l.target_type_id = $2
+        AND l.is_liked = true
+        AND r.is_deleted = false
+      ),
+      (
+        coalesce(
+          (
+            SELECT l.is_liked FROM "like" l
+            WHERE l.target_id = r.id
+            AND l.target_type_id = $2
+            AND l.user_id = $3
+            AND r.is_deleted = false
+          ), false
+        )
+      ) as is_liked
       FROM review r
       INNER JOIN major m
-      ON r.major_id = m.id
-      AND m.is_deleted = false
+        ON r.major_id = m.id
+        AND m.is_deleted = false
       AND r.writer_id = $1
       AND r.is_deleted = false
       ORDER BY created_at desc
       `,
-    [userId],
+    [writerId, likeTypeId, userId],
   );
   return convertSnakeToCamel.keysToCamel(rows);
 };

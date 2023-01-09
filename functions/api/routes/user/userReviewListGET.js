@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const util = require("../../../lib/util");
 const statusCode = require("../../../constants/statusCode");
 const responseMessage = require("../../../constants/responseMessage");
@@ -18,49 +19,42 @@ module.exports = async (req, res) => {
 
   try {
     client = await db.connect(req);
-    let reviewList = await reviewDB.getReviewListByUserId(client, userId);
+    const [writer, relationReviewTagList] = await Promise.all([
+      userDB.getUserByUserId(client, userId),
+      relationReviewTagDB.getRelationReviewTagList(client),
+    ]);
 
-    let writer = await userDB.getUserByUserId(client, userId);
-
-    writer = {
-      writerId: writer.id,
-      nickname: writer.nickname,
-    };
-
-    reviewList = await Promise.all(
-      reviewList.map(async (review) => {
-        const tagNameList = await relationReviewTagDB.getTagNameListByReviewId(client, review.id);
-
-        // 좋아요 정보
-        const likeData = await likeDB.getLikeByTarget(
-          client,
-          review.id,
-          likeType.REVIEW,
-          req.user.id,
-        );
-
-        const isLiked = likeData ? likeData.isLiked : false;
-
-        const likeCount = await likeDB.getLikeCountByTarget(client, review.id, likeType.REVIEW);
-        const like = {
-          isLiked: isLiked,
-          likeCount: likeCount.likeCount,
-        };
-
-        return {
-          id: review.id,
-          majorName: review.majorName,
-          oneLineReview: review.oneLineReview,
-          createdAt: review.createdAt,
-          tagList: tagNameList,
-          like: like,
-        };
-      }),
+    let reviewList = await reviewDB.getReviewListByUserId(
+      client,
+      userId,
+      likeType.REVIEW,
+      req.user.id,
     );
+
+    reviewList = reviewList.map((review) => {
+      review.tagList = _.filter(relationReviewTagList, (r) => r.reviewId === review.id).map((r) => {
+        return { tagName: r.tagName };
+      });
+
+      return {
+        id: review.id,
+        majorName: review.majorName,
+        oneLineReview: review.oneLineReview,
+        createdAt: review.createdAt,
+        tagList: review.tagList,
+        like: {
+          isLiked: review.isLiked,
+          likeCount: review.likeCount,
+        },
+      };
+    });
 
     res.status(statusCode.OK).send(
       util.success(statusCode.OK, responseMessage.READ_ALL_POSTS_SUCCESS, {
-        writer,
+        writer: {
+          writerId: writer.id,
+          nickname: writer.nickname,
+        },
         reviewList,
       }),
     );
