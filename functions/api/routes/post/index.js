@@ -198,7 +198,7 @@ router.get("/university/:universityId", checkUser, require("./postUniversityList
  *     tags:
  *       - post
  *     summary: 게시글 조회 (쿼리 있음)
- *     description: 'filter -> 커뮤니티: community, 자유: general, 정보: information, 1:1 질문: questionToPerson, 전체에게 질문: questionToEveryone / sort -> 최신순: recent, 좋아요순: like / majorId -> 필수가 아님 안 넣으면 전체 조회'
+ *     description: 'filter -> 커뮤니티: community, 자유: general, 정보: information, 1:1 질문: questionToPerson, 전체에게 질문: questionToEveryone / sort -> 최신순: recent, 좋아요순: like'
  *     parameters:
  *       - name: majorId
  *         in: path
