@@ -37,8 +37,11 @@ const getNotificationList = async (client, receiverId, invisibleUserIds) => {
     AND n.receiver_id = $1
     AND n.is_deleted = false
     AND n.sender_id <> all (ARRAY[${invisibleUserIds.join()}]::int[])
-    LEFT JOIN post p on n.post_id = p.id
-    LEFT JOIN major m on p.major_id = m.id
+    LEFT JOIN post p 
+      ON n.post_id = p.id
+    LEFT JOIN major m 
+      ON p.major_id = m.id
+      AND m.is_deleted = false
     ORDER BY n.created_at desc
   `,
     [receiverId],
