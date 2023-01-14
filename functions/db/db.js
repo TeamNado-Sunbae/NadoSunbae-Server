@@ -1,4 +1,3 @@
-const functions = require("firebase-functions");
 const { Pool, Query } = require("pg");
 const dayjs = require("dayjs");
 const dotenv = require("dotenv");
@@ -49,14 +48,8 @@ const connect = async (req) => {
   const release = client.release;
 
   const releaseChecker = setTimeout(() => {
-    localMode
-      ? console.error("[ERROR] client connection이 15초 동안 릴리즈되지 않았습니다.", { callStack })
-      : functions.logger.error("[ERROR] client connection이 15초 동안 릴리즈되지 않았습니다.", {
-          callStack,
-        });
-    localMode
-      ? console.error(`마지막으로 실행된 쿼리문입니다. ${client.lastQuery}`)
-      : functions.logger.error(`마지막으로 실행된 쿼리문입니다. ${client.lastQuery}`);
+    console.error("[ERROR] client connection이 15초 동안 릴리즈되지 않았습니다.", { callStack });
+    console.error(`마지막으로 실행된 쿼리문입니다. ${client.lastQuery}`);
   }, 15 * 1000);
 
   client.query = (...args) => {
